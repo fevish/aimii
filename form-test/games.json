@@ -1,0 +1,352 @@
+[
+  {
+    "game": "Aimlabs",
+    "gameFactor": 0.05
+  },
+  {
+    "game": "Apex Legends",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "Arena Breakout: Infinite",
+    "gameFactor": 0.10237393
+  },
+  {
+    "game": "ARK: Survival Evolved",
+    "gameFactor": 0.17498152972
+  },
+  {
+    "game": "Back 4 Blood",
+    "gameFactor": 0.00136097503
+  },
+  {
+    "game": "BattleBit Remastered",
+    "gameFactor": 0.0005
+  },
+  {
+    "game": "Battlefield 1",
+    "gameFactor": 2.29183118052,
+    "specialConversion": true,
+    "sourceFormula": "((0.0015*sensitivity+0.005)*gameFactor)*dpi",
+    "targetFormula": "((360/(gameFactor*targetDPI*cm360/2.54))-0.005)/0.0015"
+  },
+  {
+    "game": "Battlefield 2042",
+    "gameFactor": 2.29183118052,
+    "specialConversion": true,
+    "sourceFormula": "((0.0015*sensitivity+0.005)*gameFactor)*dpi",
+    "targetFormula": "((360/(gameFactor*targetDPI*cm360/2.54))-0.005)/0.0015"
+  },
+  {
+    "game": "Battlefield 4",
+    "gameFactor": 2.29183118052,
+    "specialConversion": true,
+    "sourceFormula": "((0.0015*sensitivity+0.005)*gameFactor)*dpi",
+    "targetFormula": "((360/(gameFactor*targetDPI*cm360/2.54))-0.005)/0.0015"
+  },
+  {
+    "game": "Battlefield V",
+    "gameFactor": 2.29183118052,
+    "specialConversion": true,
+    "sourceFormula": "((0.0015*sensitivity+0.005)*gameFactor)*dpi",
+    "targetFormula": "((360/(gameFactor*targetDPI*cm360/2.54))-0.005)/0.0015"
+  },
+  {
+    "game": "Black Squad",
+    "gameFactor": 0.00549316406
+  },
+  {
+    "game": "Borderlands 3",
+    "gameFactor": 0.00699929929
+  },
+  {
+    "game": "Call of Duty: Black Ops 4",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "Call of Duty: Black Ops 6",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "Call of Duty: Black Ops Cold War",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "Call of Duty: Modern Warfare (2019)",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "Call of Duty: Modern Warfare 2 (2022)",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "Call of Duty: Modern Warfare 3 (2023)",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "Call of Duty: Vanguard",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "Call of Duty: Warzone",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "Combat Master",
+    "gameFactor": 0.001
+  },
+  {
+    "game": "CS 1.6",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "CS2",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "CS:GO",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "CS:S",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "Cyberpunk 2077",
+    "gameFactor": 0.01
+  },
+  {
+    "game": "Deadlock",
+    "gameFactor": 0.04400009777
+  },
+  {
+    "game": "Delta Force",
+    "gameFactor": 0.01
+  },
+  {
+    "game": "Destiny 2",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "DOOM Eternal",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "Dying Light 2",
+    "gameFactor": 0.00833333333
+  },
+  {
+    "game": "Escape From Tarkov",
+    "gameFactor": 0.125
+  },
+  {
+    "game": "Fallout 4",
+    "gameFactor": 3.77992440151
+  },
+  {
+    "game": "Fallout 76",
+    "gameFactor": 3.77992440151
+  },
+  {
+    "game": "Far Cry 5",
+    "gameFactor": 0.00179960012
+  },
+  {
+    "game": "Fortnite",
+    "gameFactor": 0.00555500005
+  },
+  {
+    "game": "FragPunk",
+    "gameFactor": 0.05555006912
+  },
+  {
+    "game": "Garry's Mod",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "Gray Zone Warfare",
+    "gameFactor": 0.063
+  },
+  {
+    "game": "GTA 5 (TPP)",
+    "gameFactor": 1.0,
+    "specialConversion": true,
+    "sourceFormula": "66124.8/(dpi*(sensitivity+6.024))",
+    "targetFormula": "(66124.8/(targetDPI*cm360/2.54))-6.024"
+  },
+  {
+    "game": "Half-Life 2",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "Halo Infinite",
+    "gameFactor": 0.0225
+  },
+  {
+    "game": "Halo: Reach",
+    "gameFactor": 0.02222222222
+  },
+  {
+    "game": "Helldivers 2",
+    "gameFactor": 0.57295
+  },
+  {
+    "game": "Heroes & Generals",
+    "gameFactor": 0.1512605042
+  },
+  {
+    "game": "Hunt: Showdown",
+    "gameFactor": 0.04297173414
+  },
+  {
+    "game": "Insurgency: Sandstorm",
+    "gameFactor": 0.13999937778
+  },
+  {
+    "game": "Left 4 Dead 2",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "Marvel Rivals",
+    "gameFactor": 0.01749999027
+  },
+  {
+    "game": "Minecraft: Java Edition",
+    "gameFactor": 1.0,
+    "specialConversion": true,
+    "sourceFormula": "(1.2*Math.pow(0.6*sensitivity*0.005+0.2, 3))*dpi",
+    "targetFormula": "(Math.pow((360/(1.2*targetDPI*cm360/2.54)),1/3)-0.2)/0.003"
+  },
+  {
+    "game": "Off The Grid",
+    "gameFactor": 0.07000023333
+  },
+  {
+    "game": "osu!",
+    "gameFactor": 0.0796
+  },
+  {
+    "game": "Overwatch 2",
+    "gameFactor": 0.00660000176
+  },
+  {
+    "game": "Paladins",
+    "gameFactor": 0.00915527343
+  },
+  {
+    "game": "Palworld",
+    "gameFactor": 0.0437455
+  },
+  {
+    "game": "PAYDAY 2",
+    "gameFactor": 0.015
+  },
+  {
+    "game": "PUBG (TPP)",
+    "gameFactor": 1.0,
+    "specialConversion": true,
+    "sourceFormula": "(Math.exp((sensitivity-114.80)/21.769))*dpi",
+    "targetFormula": "114.80+21.769*Math.log(360/(targetDPI*cm360/2.54))"
+  },
+  {
+    "game": "Quake Champions",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "Rainbow Six Extraction",
+    "gameFactor": 0.00572957914
+  },
+  {
+    "game": "Rainbow Six Siege",
+    "gameFactor": 0.00572957914
+  },
+  {
+    "game": "Redmatch 2",
+    "gameFactor": 0.05
+  },
+  {
+    "game": "REMATCH",
+    "gameFactor": 0.11043
+  },
+  {
+    "game": "Roblox",
+    "gameFactor": 0.39789557451
+  },
+  {
+    "game": "Rust",
+    "gameFactor": 0.1125
+  },
+  {
+    "game": "Spectre Divide",
+    "gameFactor": 0.07152052639
+  },
+  {
+    "game": "Spellbreak",
+    "gameFactor": 0.008
+  },
+  {
+    "game": "Splitgate",
+    "gameFactor": 0.0036574884
+  },
+  {
+    "game": "Splitgate 2",
+    "gameFactor": 0.01117268501
+  },
+  {
+    "game": "STALKER 2",
+    "gameFactor": 1.0,
+    "specialConversion": true,
+    "sourceFormula": "(0.9*(sensitivity+9.99998)/428.571)*dpi",
+    "targetFormula": "(360*428.571/(0.9*targetDPI*cm360/2.54))-9.99998"
+  },
+  {
+    "game": "Strinova",
+    "gameFactor": 0.01388194791
+  },
+  {
+    "game": "Squad",
+    "gameFactor": 0.17498152972
+  },
+  {
+    "game": "Team Fortress 2",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "THE FINALS",
+    "gameFactor": 0.001
+  },
+  {
+    "game": "The First Descendant",
+    "gameFactor": 1.0,
+    "specialConversion": true,
+    "sourceFormula": "((sensitivity-1.667)/133.35)*dpi",
+    "targetFormula": "(360*133.35/(targetDPI*cm360/2.54))+1.667"
+  },
+  {
+    "game": "Titanfall 2",
+    "gameFactor": 0.02199999511
+  },
+  {
+    "game": "Unturned",
+    "gameFactor": 0.5
+  },
+  {
+    "game": "Valheim",
+    "gameFactor": 0.05
+  },
+  {
+    "game": "Valorant",
+    "gameFactor": 0.07
+  },
+  {
+    "game": "Warface",
+    "gameFactor": 0.00332999963
+  },
+  {
+    "game": "XDefiant",
+    "gameFactor": 1.0,
+    "specialConversion": true,
+    "sourceFormula": "((0.9*(sensitivity+0.6780))/527.1486)*dpi",
+    "targetFormula": "(360*527.1486/(0.9*targetDPI*cm360/2.54))-0.6780"
+  }
+]
