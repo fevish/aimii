@@ -51,13 +51,15 @@
     }
   },
   "scripts": {
+    "watch:renderer": "webpack --watch --config ./webpack.renderer.config.js",
     "build:renderer": "webpack --config ./webpack.renderer.config.js",
     "build:main": "webpack --config ./webpack.main.config.js",
     "build": "webpack --mode=development && npm run build:main && npm run build:renderer",
     "build:dev": "webpack --watch --mode=development",
     "build:start": "npm run build && ow-electron . ",
     "start": "ow-electron .",
-    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=GameEventsTester --publish=never"
+    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=GameEventsTester --publish=never",
+    "watch": "npm run watch:renderer && npm run start"
   },
   "devDependencies": {
     "@overwolf/ow-electron": "latest",
