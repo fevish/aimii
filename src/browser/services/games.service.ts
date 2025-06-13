@@ -115,6 +115,22 @@ export class GamesService {
     return this.games.find(game => game.owGameId === owGameId);
   }
 
+  public getEnabledGameIds(): number[] {
+    return this.getEnabledGames()
+      .map(game => parseInt(game.owGameId))
+      .filter(id => !isNaN(id));
+  }
+
+  public getEnabledGameNames(): string[] {
+    return this.getEnabledGames().map(game => game.game);
+  }
+
+  public getGameSummary(): string {
+    const enabled = this.getEnabledGames();
+    const gameNames = enabled.map(game => `${game.game} (${game.owGameId})`).join(', ');
+    return `${enabled.length} enabled games: ${gameNames}`;
+  }
+
   public calculateCm360(game: GameData, sensitivity: number, dpi: number): number {
     if (game.specialConversion && game.sourceFormula) {
       // Handle special conversion games like Minecraft

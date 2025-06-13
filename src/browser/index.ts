@@ -100,7 +100,7 @@ const bootstrap = (): Application => {
     settingsService
   );
 
-  return new Application(overlayService, gepService, mainWindowController);
+  return new Application(overlayService, gepService, mainWindowController, gamesService);
 }
 
 const app = bootstrap();
