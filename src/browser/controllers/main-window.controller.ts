@@ -123,6 +123,14 @@ export class MainWindowController {
       return this.gamesService.getEnabledGames();
     });
 
+    ipcMain.handle('games-get-summary', () => {
+      return this.gamesService.getGameSummary();
+    });
+
+    ipcMain.handle('games-get-enabled-ids', () => {
+      return this.gamesService.getEnabledGameIds();
+    });
+
     // Canonical settings IPC handlers
     ipcMain.handle('settings-get-canonical', () => {
       return this.settingsService.getCanonicalSettings();
@@ -150,13 +158,13 @@ export class MainWindowController {
     ipcMain.handle('restart-initialization', async () => {
       this.printLogMessage('=== Re-initializing AIMII ===');
 
+      // Get enabled games from games.json
+      const gameIds = this.gamesService.getEnabledGameIds();
+
+      this.printLogMessage(`Re-registering games: ${this.gamesService.getGameSummary()}`);
+
       // Re-register games for GEP
-      this.gepService.registerGames([
-        5426,  // TeamfightTactics
-        21570, // Other games as needed
-        10798,
-        22700
-      ]);
+      this.gepService.registerGames(gameIds);
 
       // Trigger required features setup
       try {
@@ -168,12 +176,7 @@ export class MainWindowController {
       // Re-register overlay games if overlay is ready
       if (this.overlayService.overlayApi) {
         try {
-          await this.overlayService.registerToGames([
-            5426,  // LeagueofLegends
-            21570, // TeamfightTactics
-            10798, // RocketLeague
-            22700  // DiabloIV
-          ]);
+          await this.overlayService.registerToGames(gameIds);
         } catch (error) {
           this.printLogMessage('Error registering overlay games:', error);
         }

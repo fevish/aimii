@@ -1,9 +1,8 @@
 import { GameInfo, GameLaunchEvent } from '@overwolf/ow-electron-packages-types';
 import { MainWindowController } from './controllers/main-window.controller';
 import { OverlayService } from './services/overlay.service';
-import { kGameIds } from "@overwolf/ow-electron-packages-types/game-list";
-import { kGepSupportedGameIds } from '@overwolf/ow-electron-packages-types/gep-supported-games';
 import { GameEventsService } from './services/gep.service';
+import { GamesService } from './services/games.service';
 
 export class Application {
   /**
@@ -12,7 +11,8 @@ export class Application {
   constructor(
     private readonly overlayService: OverlayService,
     private readonly gepService: GameEventsService,
-    private readonly mainWindowController: MainWindowController) {
+    private readonly mainWindowController: MainWindowController,
+    private readonly gamesService: GamesService) {
 
     overlayService.on('ready', this.onOverlayServiceReady.bind(this));
 
@@ -28,13 +28,8 @@ export class Application {
     // Listen for game injection to create widget
     this.setupGameInjectionHandling();
 
-    // for gep supported games goto:
-    // https://overwolf.github.io/api/electron/game-events/
-    gepService.registerGames([
-      kGepSupportedGameIds.TeamfightTactics,
-      //kGepSupportedGameIds.DiabloIV,
-      //kGepSupportedGameIds.RocketLeague,
-    ]);
+    // Register games for GEP (Game Events Provider) using games.json
+    this.registerGepGames();
   }
 
   /**
@@ -53,16 +48,23 @@ export class Application {
   }
 
   /**
-   *
+   * Register games for GEP (Game Events Provider) based on games.json
+   */
+  private registerGepGames() {
+    const gepGameIds = this.gamesService.getEnabledGameIds();
+
+    this.mainWindowController.printLogMessage(`Registering games for GEP: ${this.gamesService.getGameSummary()}`);
+    this.gepService.registerGames(gepGameIds);
+  }
+
+  /**
+   * Register games for overlay injection based on games.json
    */
   private onOverlayServiceReady() {
-    // Which games to support overlay for
-    this.overlayService.registerToGames([
-      kGameIds.LeagueofLegends,
-      kGameIds.TeamfightTactics,
-      kGameIds.RocketLeague,
-      kGameIds.DiabloIV
-    ]);
+    const overlayGameIds = this.gamesService.getEnabledGameIds();
+
+    this.mainWindowController.printLogMessage(`Registering games for overlay: ${this.gamesService.getGameSummary()}`);
+    this.overlayService.registerToGames(overlayGameIds);
   }
 
   /**
@@ -74,7 +76,10 @@ export class Application {
       if (this.overlayService.overlayApi) {
         // Listen for game injection events
         this.overlayService.overlayApi.on('game-injected', (gameInfo: GameInfo) => {
-          this.mainWindowController.printLogMessage('Game injected, creating widget:', gameInfo.name);
+          const gameData = this.gamesService.getGameByOwId(gameInfo.id?.toString() || '');
+          const gameName = gameData?.game || gameInfo.name || 'Unknown Game';
+
+          this.mainWindowController.printLogMessage('Game injected, creating widget:', gameName);
 
           // Automatically create widget when game is injected
           this.createGameWidget();
@@ -82,7 +87,10 @@ export class Application {
 
         // Listen for game exit to clean up
         this.overlayService.overlayApi.on('game-exit', (gameInfo: GameInfo) => {
-          this.mainWindowController.printLogMessage('Game exited:', gameInfo.name);
+          const gameData = this.gamesService.getGameByOwId(gameInfo.id?.toString() || '');
+          const gameName = gameData?.game || gameInfo.name || 'Unknown Game';
+
+          this.mainWindowController.printLogMessage('Game exited:', gameName);
         });
       }
     });

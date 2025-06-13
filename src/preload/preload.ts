@@ -72,6 +72,12 @@ contextBridge.exposeInMainWorld('games', {
   },
   getEnabledGames: () => {
     return ipcRenderer.invoke('games-get-enabled');
+  },
+  getGameSummary: () => {
+    return ipcRenderer.invoke('games-get-summary');
+  },
+  getEnabledGameIds: () => {
+    return ipcRenderer.invoke('games-get-enabled-ids');
   }
 });
 

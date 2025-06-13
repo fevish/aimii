@@ -22,6 +22,8 @@ declare global {
     games: {
       getAllGames: () => Promise<GameData[]>;
       getEnabledGames: () => Promise<GameData[]>;
+      getGameSummary: () => Promise<string>;
+      getEnabledGameIds: () => Promise<number[]>;
     };
     settings: {
       getCanonicalSettings: () => Promise<CanonicalSettings | null>;
