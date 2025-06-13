@@ -54,26 +54,85 @@ export class WidgetWindowController {
 
     console.log('overlayApi:', this.overlayService.overlayApi);
 
-    // Get specific game window info
-    // const activeGameFull = this.overlayService.overlayApi?.getActiveGameInfo();
-    // console.log('activeGame full object:', activeGameFull);
+    // Listen for game window changes (resolution changes, etc.)
+    if (this.overlayService.overlayApi) {
+      this.overlayService.overlayApi.on('game-window-changed', (windowInfo: any, gameInfo: any, reason: any) => {
+        console.log('🎮 Game window changed!');
+        console.log('New window info:', windowInfo);
+        console.log('Game info:', gameInfo);
+        console.log('Change reason:', reason);
 
-    // if (activeGameFull) {
-    //   console.log('gameWindowInfo:', activeGameFull.gameWindowInfo);
-    //   console.log('gameInfo:', activeGameFull.gameInfo);
-    //   console.log('gameInputInfo:', activeGameFull.gameInputInfo);
-    // }
-
-    // // Try to get window bounds from overlay API
-    // const allWindows = this.overlayService.overlayApi?.getAllWindows();
-    // console.log('All overlay windows:', allWindows);
-
-    // // Check if there's a way to get screen/game dimensions
-    // if (this.overlayService.overlayApi) {
-    //   console.log('Overlay API methods:', Object.getOwnPropertyNames(this.overlayService.overlayApi));
-    // }
+        // Check if widget is still within new bounds and reposition if needed
+        this.checkAndRepositionWidget(windowInfo);
+      });
+    }
 
     this.registerWindowEvents();
+  }
+
+  private checkAndRepositionWidget(windowInfo?: any): void {
+    if (!this.widgetWindow) return;
+
+    const bounds = this.widgetWindow.window.getBounds();
+    let gameWidth = 2560; // Default fallback
+    let gameHeight = 1440; // Default fallback
+
+    // Use provided windowInfo or get current game info
+    if (windowInfo?.size) {
+      gameWidth = windowInfo.size.width;
+      gameHeight = windowInfo.size.height;
+      console.log('Using provided window info for bounds:', { width: gameWidth, height: gameHeight });
+    } else {
+      const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
+      if (activeGame?.gameWindowInfo?.size) {
+        gameWidth = activeGame.gameWindowInfo.size.width;
+        gameHeight = activeGame.gameWindowInfo.size.height;
+        console.log('Game bounds from gameWindowInfo:', { width: gameWidth, height: gameHeight });
+      } else {
+        // Use screen dimensions as fallback
+        const { screen } = require('electron');
+        const primaryDisplay = screen.getPrimaryDisplay();
+        gameWidth = primaryDisplay.workAreaSize.width;
+        gameHeight = primaryDisplay.workAreaSize.height;
+        console.log('Game bounds from screen:', { width: gameWidth, height: gameHeight });
+      }
+    }
+
+    // Calculate restricted bounds
+    let newX = bounds.x;
+    let newY = bounds.y;
+    let needsReposition = false;
+
+    // Restrict to game bounds
+    if (newX < 0) {
+      newX = 0;
+      needsReposition = true;
+    }
+    if (newY < 0) {
+      newY = 0;
+      needsReposition = true;
+    }
+    if (newX + bounds.width > gameWidth) {
+      newX = gameWidth - bounds.width;
+      needsReposition = true;
+    }
+    if (newY + bounds.height > gameHeight) {
+      newY = gameHeight - bounds.height;
+      needsReposition = true;
+    }
+
+    // Apply restriction if needed
+    if (needsReposition) {
+      console.log('🔄 Repositioning widget to bounds:', { x: newX, y: newY });
+      this.widgetWindow.window.setPosition(newX, newY);
+    }
+
+    // Log bounds status
+    const isWithinBounds = bounds.x >= 0 &&
+                          bounds.y >= 0 &&
+                          bounds.x + bounds.width <= gameWidth &&
+                          bounds.y + bounds.height <= gameHeight;
+    console.log('Widget within game bounds:', isWithinBounds);
   }
 
   public toggleVisibility(): void {
@@ -162,61 +221,8 @@ export class WidgetWindowController {
         const bounds = this.widgetWindow.window.getBounds();
         console.log('Widget moved to:', bounds);
 
-        // Try multiple ways to get game bounds
-        const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
-        let gameWidth = 2560; // Default fallback
-        let gameHeight = 1440; // Default fallback
-
-        // Method 1: Try gameWindowInfo
-        if (activeGame?.gameWindowInfo?.size) {
-          gameWidth = activeGame.gameWindowInfo.size.width;
-          gameHeight = activeGame.gameWindowInfo.size.height;
-          console.log('Game bounds from gameWindowInfo:', { width: gameWidth, height: gameHeight });
-        }
-        // Method 2: Try to get from screen/display
-        else {
-          // Use screen dimensions as fallback
-          const { screen } = require('electron');
-          const primaryDisplay = screen.getPrimaryDisplay();
-          gameWidth = primaryDisplay.workAreaSize.width;
-          gameHeight = primaryDisplay.workAreaSize.height;
-          console.log('Game bounds from screen:', { width: gameWidth, height: gameHeight });
-        }
-
-        // Calculate restricted bounds
-        let newX = bounds.x;
-        let newY = bounds.y;
-        let needsReposition = false;
-
-        // Restrict to game bounds
-        if (newX < 0) {
-          newX = 0;
-          needsReposition = true;
-        }
-        if (newY < 0) {
-          newY = 0;
-          needsReposition = true;
-        }
-        if (newX + bounds.width > gameWidth) {
-          newX = gameWidth - bounds.width;
-          needsReposition = true;
-        }
-        if (newY + bounds.height > gameHeight) {
-          newY = gameHeight - bounds.height;
-          needsReposition = true;
-        }
-
-        // Apply restriction if needed
-        if (needsReposition) {
-          console.log('Restricting widget to bounds:', { x: newX, y: newY });
-          this.widgetWindow.window.setPosition(newX, newY);
-        }
-
-        const isWithinBounds = bounds.x >= 0 &&
-                              bounds.y >= 0 &&
-                              bounds.x + bounds.width <= gameWidth &&
-                              bounds.y + bounds.height <= gameHeight;
-        console.log('Widget within game bounds:', isWithinBounds);
+        // Use the modular bounds checking method
+        this.checkAndRepositionWidget();
       }
     });
 
