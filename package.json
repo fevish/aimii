@@ -52,14 +52,16 @@
   },
   "scripts": {
     "watch:renderer": "webpack --watch --config ./webpack.renderer.config.js",
+    "watch:main": "webpack --watch --config ./webpack.main.config.js",
     "build:renderer": "webpack --config ./webpack.renderer.config.js",
     "build:main": "webpack --config ./webpack.main.config.js",
     "build": "webpack --mode=development && npm run build:main && npm run build:renderer",
     "build:dev": "webpack --watch --mode=development",
     "build:start": "npm run build && ow-electron . ",
     "start": "ow-electron .",
-    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=GameEventsTester --publish=never",
-    "watch": "npm run watch:renderer && npm run start"
+    "dev": "concurrently \"npm run watch:main\" \"npm run watch:renderer\"",
+    "watch": "npm run build && concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"npm run start\"",
+    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=GameEventsTester --publish=never"
   },
   "devDependencies": {
     "@overwolf/ow-electron": "latest",
@@ -70,6 +72,7 @@
     "@types/node": "^18.11.18",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "concurrently": "^9.1.2",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^7.1.2",
     "electron": "21.1.0",
