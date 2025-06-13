@@ -11,6 +11,7 @@ import { setMainWindowForConsole } from '../index';
 import { GamesService } from '../services/games.service';
 import { SettingsService } from '../services/settings.service';
 import { CurrentGameService } from '../services/current-game.service';
+import { SensitivityConverterService } from '../services/sensitivity-converter.service';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
 
@@ -33,7 +34,8 @@ export class MainWindowController {
     private readonly overlayInputService: OverlayInputService,
     private readonly gamesService: GamesService,
     private readonly settingsService: SettingsService,
-    private readonly currentGameService: CurrentGameService
+    private readonly currentGameService: CurrentGameService,
+    private readonly sensitivityConverterService: SensitivityConverterService
   ) {
     this.registerToIpc();
 
@@ -163,6 +165,26 @@ export class MainWindowController {
 
     ipcMain.handle('current-game-is-supported', () => {
       return this.currentGameService.isCurrentGameSupported();
+    });
+
+    // Sensitivity converter service IPC handlers
+    ipcMain.handle('sensitivity-get-suggested-for-current-game', () => {
+      return this.sensitivityConverterService.getSuggestedSensitivityForCurrentGame();
+    });
+
+    ipcMain.handle('sensitivity-get-all-conversions', () => {
+      return this.sensitivityConverterService.getAllConversionsFromCanonical();
+    });
+
+    ipcMain.handle('sensitivity-convert', (event, fromGame: string, toGame: string, sensitivity: number, dpi: number) => {
+      const fromGameData = this.gamesService.getGameByName(fromGame);
+      const toGameData = this.gamesService.getGameByName(toGame);
+
+      if (!fromGameData || !toGameData) {
+        return null;
+      }
+
+      return this.sensitivityConverterService.convertSensitivity(fromGameData, toGameData, sensitivity, dpi);
     });
 
     ipcMain.handle('gep-set-required-feature', async () => {

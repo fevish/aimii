@@ -3,6 +3,7 @@ import './Widget.css';
 
 // Import the interface from the service
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
+import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 
 // Type declaration for window object
 declare global {
@@ -15,6 +16,7 @@ declare global {
 
 const Widget: React.FC = () => {
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
+  const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrentGame = async () => {
@@ -26,17 +28,32 @@ const Widget: React.FC = () => {
     } catch (error) {
       console.error('Failed to fetch current game:', error);
       setCurrentGame(null);
-    } finally {
-      setIsLoading(false);
     }
   };
 
+  const fetchSuggestedSensitivity = async () => {
+    try {
+      const { ipcRenderer } = require('electron');
+      const suggestion = await ipcRenderer.invoke('sensitivity-get-suggested-for-current-game');
+      setSuggestedSensitivity(suggestion);
+    } catch (error) {
+      console.error('Failed to fetch suggested sensitivity:', error);
+      setSuggestedSensitivity(null);
+    }
+  };
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    await Promise.all([fetchCurrentGame(), fetchSuggestedSensitivity()]);
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    // Fetch initial game info
-    fetchCurrentGame();
+    // Fetch initial data
+    fetchData();
 
     // Set up periodic refresh to detect game changes
-    const interval = setInterval(fetchCurrentGame, 2000); // Check every 2 seconds
+    const interval = setInterval(fetchData, 2000); // Check every 2 seconds
 
     // Add hotkey listeners for dev tools
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -79,9 +96,25 @@ const Widget: React.FC = () => {
             <p className="game-status no-game">No game detected</p>
           )}
         </div>
+
+        {suggestedSensitivity && (
+          <div className="sensitivity-suggestion">
+            <h4>Suggested Sensitivity</h4>
+            <div className="suggestion-details">
+              <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+              <p className="conversion-info">
+                From {suggestedSensitivity.fromGame}: {suggestedSensitivity.fromSensitivity}
+              </p>
+              <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p>
+            </div>
+          </div>
+        )}
+
         <div className="widget-placeholder">
           <p>Mouse Sensitivity Converter</p>
-          <p>Widget content goes here...</p>
+          {!suggestedSensitivity && currentGame?.isSupported && (
+            <p>Set canonical settings to see suggestions</p>
+          )}
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { OverwolfTerminal } from '../OverwolfTerminal/OverwolfTerminal';
 import './MyMainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
+import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 
 interface GameData {
   game: string;
@@ -41,6 +42,11 @@ declare global {
       createWidget: () => Promise<void>;
       toggleWidget: () => Promise<void>;
     };
+    sensitivityConverter: {
+      getSuggestedForCurrentGame: () => Promise<SensitivityConversion | null>;
+      getAllConversions: () => Promise<SensitivityConversion[]>;
+      convert: (fromGame: string, toGame: string, sensitivity: number, dpi: number) => Promise<SensitivityConversion | null>;
+    };
   }
 }
 
@@ -48,6 +54,7 @@ export const MyMainWindow: React.FC = () => {
   const [games, setGames] = useState<GameData[]>([]);
   const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
+  const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
   const [selectedGame, setSelectedGame] = useState<string>('');
   const [sensitivity, setSensitivity] = useState<string>('');
   const [dpi, setDpi] = useState<string>('800');
@@ -57,10 +64,10 @@ export const MyMainWindow: React.FC = () => {
   useEffect(() => {
     loadGames();
     loadCanonicalSettings();
-    loadCurrentGame();
+    loadCurrentGameData();
 
     // Set up periodic refresh for current game
-    const interval = setInterval(loadCurrentGame, 3000); // Check every 3 seconds
+    const interval = setInterval(loadCurrentGameData, 3000); // Check every 3 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -88,12 +95,17 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-  const loadCurrentGame = async () => {
+  const loadCurrentGameData = async () => {
     try {
       const gameInfo = await window.currentGame.getCurrentGameInfo();
       setCurrentGame(gameInfo);
+
+      if (window.sensitivityConverter) {
+        const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
+        setSuggestedSensitivity(suggestion);
+      }
     } catch (error) {
-      console.error('Error loading current game:', error);
+      console.error('Error loading current game data:', error);
     }
   };
 
@@ -132,6 +144,8 @@ export const MyMainWindow: React.FC = () => {
       await window.settings.setCanonicalSettings(selectedGame, sensitivityNum, dpiNum);
       setCanonicalSettings({ game: selectedGame, sensitivity: sensitivityNum, dpi: dpiNum });
       setMessage('Canonical settings saved successfully!');
+      // Refresh current game data to update suggestions
+      loadCurrentGameData();
     } catch (error) {
       console.error('Error saving canonical settings:', error);
       setMessage('Error saving settings');
@@ -229,6 +243,20 @@ export const MyMainWindow: React.FC = () => {
                 <p className={`game-status ${currentGame.isSupported ? 'supported' : 'unsupported'}`}>
                   {currentGame.isSupported ? '✓ Supported' : '⚠ Not Supported'}
                 </p>
+
+                {suggestedSensitivity && (
+                  <div className="sensitivity-suggestion">
+                    <h4>Suggested Sensitivity</h4>
+                    <div className="suggestion-details">
+                      <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+                      <p className="conversion-info">
+                        From {suggestedSensitivity.fromGame}: {suggestedSensitivity.fromSensitivity} @ {suggestedSensitivity.fromDPI} DPI
+                      </p>
+                      <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p>
+                    </div>
+                  </div>
+                )}
+
                 <button onClick={handleToggleWidget} className="widget-toggle-btn">
                   Toggle Widget (Ctrl+Shift+W)
                 </button>

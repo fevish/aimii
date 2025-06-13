@@ -282,3 +282,48 @@
   color: #6c757d !important;
   opacity: 0.8 !important;
 }
+
+/* Sensitivity Suggestion Styles for Main Window */
+.sensitivity-suggestion {
+  background: #181a20;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  border: 1px solid #3a3f47;
+}
+
+.sensitivity-suggestion h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffb347;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.suggestion-details {
+  text-align: center;
+}
+
+.suggested-value {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.conversion-info {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  opacity: 0.8;
+}
+
+.cm360-info {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6c757d;
+  opacity: 0.7;
+}
