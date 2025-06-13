@@ -5,6 +5,12 @@ import './Widget.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 
+interface CanonicalSettings {
+  game: string;
+  sensitivity: number;
+  dpi: number;
+}
+
 // Type declaration for window object
 declare global {
   interface Window {
@@ -17,6 +23,7 @@ declare global {
 const Widget: React.FC = () => {
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
   const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
+  const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrentGame = async () => {
@@ -24,10 +31,41 @@ const Widget: React.FC = () => {
       // Use require since nodeIntegration is enabled
       const { ipcRenderer } = require('electron');
       const gameInfo = await ipcRenderer.invoke('widget-get-current-game');
-      setCurrentGame(gameInfo);
+
+      // Only update if the game info has actually changed
+      setCurrentGame(prevGame => {
+        if (!prevGame && !gameInfo) return prevGame;
+        if (!prevGame || !gameInfo) return gameInfo;
+        if (prevGame.id === gameInfo.id && prevGame.name === gameInfo.name && prevGame.isSupported === gameInfo.isSupported) {
+          return prevGame; // No change, keep previous state
+        }
+        return gameInfo;
+      });
     } catch (error) {
       console.error('Failed to fetch current game:', error);
       setCurrentGame(null);
+    }
+  };
+
+  const fetchCanonicalSettings = async () => {
+    try {
+      const { ipcRenderer } = require('electron');
+      const settings = await ipcRenderer.invoke('widget-get-canonical-settings');
+
+      // Only update if settings have actually changed
+      setCanonicalSettings(prevSettings => {
+        if (!prevSettings && !settings) return prevSettings;
+        if (!prevSettings || !settings) return settings;
+        if (prevSettings.game === settings.game &&
+            prevSettings.sensitivity === settings.sensitivity &&
+            prevSettings.dpi === settings.dpi) {
+          return prevSettings; // No change, keep previous state
+        }
+        return settings;
+      });
+    } catch (error) {
+      console.error('Failed to fetch canonical settings:', error);
+      setCanonicalSettings(null);
     }
   };
 
@@ -35,7 +73,18 @@ const Widget: React.FC = () => {
     try {
       const { ipcRenderer } = require('electron');
       const suggestion = await ipcRenderer.invoke('sensitivity-get-suggested-for-current-game');
-      setSuggestedSensitivity(suggestion);
+
+      // Only update if suggestion has actually changed
+      setSuggestedSensitivity(prevSuggestion => {
+        if (!prevSuggestion && !suggestion) return prevSuggestion;
+        if (!prevSuggestion || !suggestion) return suggestion;
+        if (prevSuggestion.fromGame === suggestion.fromGame &&
+            prevSuggestion.toGame === suggestion.toGame &&
+            prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
+          return prevSuggestion; // No change, keep previous state
+        }
+        return suggestion;
+      });
     } catch (error) {
       console.error('Failed to fetch suggested sensitivity:', error);
       setSuggestedSensitivity(null);
@@ -44,16 +93,20 @@ const Widget: React.FC = () => {
 
   const fetchData = async () => {
     setIsLoading(true);
-    await Promise.all([fetchCurrentGame(), fetchSuggestedSensitivity()]);
+    await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchSuggestedSensitivity()]);
     setIsLoading(false);
   };
+
+  // Check if current game matches canonical game
+  const isPlayingCanonicalGame = currentGame && canonicalSettings &&
+    currentGame.name === canonicalSettings.game && currentGame.isSupported;
 
   useEffect(() => {
     // Fetch initial data
     fetchData();
 
-    // Set up periodic refresh to detect game changes
-    const interval = setInterval(fetchData, 2000); // Check every 2 seconds
+    // Set up periodic refresh to detect game changes - reduced frequency
+    const interval = setInterval(fetchData, 5000); // Check every 5 seconds instead of 2
 
     // Add hotkey listeners for dev tools
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -97,7 +150,16 @@ const Widget: React.FC = () => {
           )}
         </div>
 
-        {suggestedSensitivity && (
+        {isPlayingCanonicalGame ? (
+          <div className="current-settings">
+            <h4>Your Current Settings</h4>
+            <div className="settings-details">
+              <p className="setting-item"><span className="label">Game:</span> {canonicalSettings.game}</p>
+              <p className="setting-item"><span className="label">Sensitivity:</span> {canonicalSettings.sensitivity}</p>
+              <p className="setting-item"><span className="label">DPI:</span> {canonicalSettings.dpi}</p>
+            </div>
+          </div>
+        ) : suggestedSensitivity ? (
           <div className="sensitivity-suggestion">
             <h4>Suggested Sensitivity</h4>
             <div className="suggestion-details">
@@ -108,12 +170,15 @@ const Widget: React.FC = () => {
               <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p>
             </div>
           </div>
-        )}
+        ) : null}
 
         <div className="widget-placeholder">
           <p>Mouse Sensitivity Converter</p>
-          {!suggestedSensitivity && currentGame?.isSupported && (
+          {!isPlayingCanonicalGame && !suggestedSensitivity && currentGame?.isSupported && (
             <p>Set canonical settings to see suggestions</p>
+          )}
+          {!currentGame?.isSupported && currentGame && (
+            <p>Game not supported for conversion</p>
           )}
         </div>
       </div>

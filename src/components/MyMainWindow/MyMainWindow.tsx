@@ -66,8 +66,8 @@ export const MyMainWindow: React.FC = () => {
     loadCanonicalSettings();
     loadCurrentGameData();
 
-    // Set up periodic refresh for current game
-    const interval = setInterval(loadCurrentGameData, 3000); // Check every 3 seconds
+    // Set up periodic refresh for current game - reduced frequency
+    const interval = setInterval(loadCurrentGameData, 8000); // Check every 8 seconds instead of 3
     return () => clearInterval(interval);
   }, []);
 
@@ -98,16 +98,40 @@ export const MyMainWindow: React.FC = () => {
   const loadCurrentGameData = async () => {
     try {
       const gameInfo = await window.currentGame.getCurrentGameInfo();
-      setCurrentGame(gameInfo);
+
+      // Only update if the game info has actually changed
+      setCurrentGame(prevGame => {
+        if (!prevGame && !gameInfo) return prevGame;
+        if (!prevGame || !gameInfo) return gameInfo;
+        if (prevGame.id === gameInfo.id && prevGame.name === gameInfo.name && prevGame.isSupported === gameInfo.isSupported) {
+          return prevGame; // No change, keep previous state
+        }
+        return gameInfo;
+      });
 
       if (window.sensitivityConverter) {
         const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
-        setSuggestedSensitivity(suggestion);
+
+        // Only update if suggestion has actually changed
+        setSuggestedSensitivity(prevSuggestion => {
+          if (!prevSuggestion && !suggestion) return prevSuggestion;
+          if (!prevSuggestion || !suggestion) return suggestion;
+          if (prevSuggestion.fromGame === suggestion.fromGame &&
+              prevSuggestion.toGame === suggestion.toGame &&
+              prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
+            return prevSuggestion; // No change, keep previous state
+          }
+          return suggestion;
+        });
       }
     } catch (error) {
       console.error('Error loading current game data:', error);
     }
   };
+
+  // Check if current game matches canonical game
+  const isPlayingCanonicalGame = currentGame && canonicalSettings &&
+    currentGame.name === canonicalSettings.game && currentGame.isSupported;
 
   const handleToggleWidget = async () => {
     try {
@@ -142,8 +166,12 @@ export const MyMainWindow: React.FC = () => {
     setIsLoading(true);
     try {
       await window.settings.setCanonicalSettings(selectedGame, sensitivityNum, dpiNum);
-      setCanonicalSettings({ game: selectedGame, sensitivity: sensitivityNum, dpi: dpiNum });
+
+      // Update canonical settings state
+      const newSettings = { game: selectedGame, sensitivity: sensitivityNum, dpi: dpiNum };
+      setCanonicalSettings(newSettings);
       setMessage('Canonical settings saved successfully!');
+
       // Refresh current game data to update suggestions
       loadCurrentGameData();
     } catch (error) {
@@ -244,7 +272,25 @@ export const MyMainWindow: React.FC = () => {
                   {currentGame.isSupported ? '✓ Supported' : '⚠ Not Supported'}
                 </p>
 
-                {suggestedSensitivity && (
+                {isPlayingCanonicalGame ? (
+                  <div className="current-settings-display">
+                    <h4>Your Current Settings</h4>
+                    <div className="settings-grid">
+                      <div className="setting-row">
+                        <span className="setting-label">Game:</span>
+                        <span className="setting-value">{canonicalSettings.game}</span>
+                      </div>
+                      <div className="setting-row">
+                        <span className="setting-label">Sensitivity:</span>
+                        <span className="setting-value">{canonicalSettings.sensitivity}</span>
+                      </div>
+                      <div className="setting-row">
+                        <span className="setting-label">DPI:</span>
+                        <span className="setting-value">{canonicalSettings.dpi}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : suggestedSensitivity ? (
                   <div className="sensitivity-suggestion">
                     <h4>Suggested Sensitivity</h4>
                     <div className="suggestion-details">
@@ -255,7 +301,7 @@ export const MyMainWindow: React.FC = () => {
                       <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p>
                     </div>
                   </div>
-                )}
+                ) : null}
 
                 <button onClick={handleToggleWidget} className="widget-toggle-btn">
                   Toggle Widget (Ctrl+Shift+W)
