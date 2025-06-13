@@ -23,9 +23,11 @@ export class WidgetWindowController {
       name: 'aimii-widget',
       height: 500,
       width: 300,
+      title: 'AIMII Widget',
       show: false, // Start hidden
-      transparent: true,
-      resizable: false,
+      transparent: true, // Frameless overlay
+      resizable: false, // Keep fixed size
+      frame: false, // No title bar
       passthrough: PassthroughType.NoPassThrough,
       zOrder: ZOrderType.TopMost,
       webPreferences: {
@@ -85,6 +87,11 @@ export class WidgetWindowController {
     }
   }
 
+  public openDevTools(): void {
+    if (!this.widgetWindow) return;
+    this.widgetWindow.window.webContents.openDevTools({ mode: 'detach' });
+  }
+
   private registerHotkey(): void {
     // We'll register the hotkey through the overlay service
     // The hotkey will be: Ctrl+Shift+W
@@ -100,6 +107,21 @@ export class WidgetWindowController {
       }, (hotkey, state) => {
         if (state === 'pressed') {
           this.toggleVisibility();
+        }
+      });
+
+      // Add hotkey for dev tools: Ctrl+Shift+I
+      this.overlayService.overlayApi.hotkeys.register({
+        name: "openWidgetDevTools",
+        keyCode: 73, // I key
+        modifiers: {
+          ctrl: true,
+          shift: true
+        },
+        passthrough: true
+      }, (hotkey, state) => {
+        if (state === 'pressed') {
+          this.openDevTools();
         }
       });
     }
