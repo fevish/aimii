@@ -10,7 +10,7 @@ const app = electronApp as overwolf.OverwolfApp;
  *
  */
 export class GameEventsService extends EventEmitter {
-  private gepApi: overwolf.packages.OverwolfGameEventPackage;
+  private gepApi!: overwolf.packages.OverwolfGameEventPackage;
   private activeGame = 0;
   private gepGamesId: number[] = [];
 
@@ -35,7 +35,7 @@ export class GameEventsService extends EventEmitter {
   public async setRequiredFeaturesForAllSupportedGames() {
     await Promise.all(this.gepGamesId.map(async (gameId) => {
       this.emit('log', `set-required-feature for: ${gameId}`);
-      await this.gepApi.setRequiredFeatures(gameId, null);
+      await this.gepApi.setRequiredFeatures(gameId, undefined);
     }));
   }
 

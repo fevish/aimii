@@ -18,7 +18,8 @@ const btn = document.querySelector('#clearTerminalTextAreaBtn') as HTMLButtonEle
 btn.addEventListener('click', function(e) {
   var begin = new Date().getTime();
   const terminal = document.querySelector('#TerminalTextArea');
-  terminal.innerHTML = '';
+  if (!terminal) return;
+  (terminal as HTMLElement).innerHTML = '';
 });
 
 const setRequiredBtn = document.querySelector('#setRequiredFeaturesBtn') as HTMLButtonElement;
@@ -79,11 +80,12 @@ updateHotkeyBtn.addEventListener('click', async function(e) {
 });
 
 
-function addMessageToTerminal(message) {
+function addMessageToTerminal(message: string) {
   const terminal = document.querySelector('#TerminalTextArea');
-  // $('#TerminalTextArea');
-  terminal.append(message + '\n');
-  terminal.scrollTop = terminal.scrollHeight;
+  if (!terminal) return;
+  const textarea = terminal as HTMLTextAreaElement;
+  textarea.value += message + '\n';
+  textarea.scrollTop = textarea.scrollHeight;
 }
 
 export function sendExclusiveOptions() {
