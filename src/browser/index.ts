@@ -21,13 +21,14 @@ const safeStringify = (obj: any): string => {
   if (typeof obj === 'function') return `[Function: ${obj.name || 'anonymous'}]`;
 
   try {
+    const seen = new WeakSet();
     return JSON.stringify(obj, (key, value) => {
       if (typeof value === 'function') return `[Function: ${value.name || 'anonymous'}]`;
       if (typeof value === 'object' && value !== null) {
-        // Handle circular references
-        if (value.constructor && value.constructor.name) {
-          return `[${value.constructor.name}]`;
+        if (seen.has(value)) {
+          return `[Circular Reference]`;
         }
+        seen.add(value);
       }
       return value;
     }, 2);
