@@ -8,10 +8,12 @@ import { MainWindowController } from './controllers/main-window.controller';
 import { DemoOSRWindowController } from './controllers/demo-osr-window.controller';
 import { WidgetWindowController } from './controllers/widget-window.controller';
 import { OverlayInputService } from './services/overlay-input.service';
+import { SettingsService } from './services/settings.service';
 import { BrowserWindow } from 'electron';
 
 // Simple global console override - just like a normal website
 let mainWindow: BrowserWindow | null = null;
+let earlyLogs: Array<{ args: any[], timestamp: number }> = [];
 
 const safeStringify = (obj: any): string => {
   if (obj === null) return 'null';
@@ -37,8 +39,7 @@ const safeStringify = (obj: any): string => {
   }
 };
 
-const originalConsole = console.log;
-console.log = (...args: any[]) => {
+const sendToChrome = (args: any[]) => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     const serializedArgs = args.map(arg => safeStringify(arg));
     mainWindow.webContents.executeJavaScript(`
@@ -47,8 +48,23 @@ console.log = (...args: any[]) => {
   }
 };
 
+const originalConsole = console.log;
+console.log = (...args: any[]) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    sendToChrome(args);
+  } else {
+    earlyLogs.push({ args, timestamp: Date.now() });
+  }
+};
+
 export const setMainWindowForConsole = (window: BrowserWindow) => {
   mainWindow = window;
+
+  // Replay all queued early logs to Chrome dev tools
+  earlyLogs.forEach(({ args }) => {
+    sendToChrome(args);
+  });
+  earlyLogs = [];
 };
 
 /**
@@ -59,6 +75,7 @@ const bootstrap = (): Application => {
   const overlayHotkeysService = new OverlayHotkeysService(overlayService);
   const gepService = new GameEventsService();
   const inputService = new OverlayInputService(overlayService);
+  const settingsService = new SettingsService();
 
   const createDemoOsrWindowControllerFactory = (): DemoOSRWindowController => {
     const controller = new DemoOSRWindowController(overlayService);
@@ -66,7 +83,7 @@ const bootstrap = (): Application => {
   }
 
   const createWidgetWindowControllerFactory = (): WidgetWindowController => {
-    const controller = new WidgetWindowController(overlayService);
+    const controller = new WidgetWindowController(overlayService, settingsService);
     return controller;
   }
 
