@@ -72,6 +72,7 @@ export class MainWindowController {
     this.browserWindow = new BrowserWindow({
       width: 900,
       height: 900,
+      title: 'AIMII - Mouse Sensitivity Converter',
       show: true,
       webPreferences: {
         // NOTE: nodeIntegration and contextIsolation are only required for this
@@ -85,7 +86,7 @@ export class MainWindowController {
       },
     });
 
-    this.browserWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    this.browserWindow.loadFile(path.join(__dirname, '../my-main.html'));
   }
 
   /**
@@ -101,6 +102,42 @@ export class MainWindowController {
 
     ipcMain.handle('gep-getInfo', async () => {
       return await this.gepService.getInfoForActiveGame();
+    });
+
+    ipcMain.handle('restart-initialization', async () => {
+      this.printLogMessage('=== Re-initializing AIMII ===');
+
+      // Re-register games for GEP
+      this.gepService.registerGames([
+        5426,  // TeamfightTactics
+        21570, // Other games as needed
+        10798,
+        22700
+      ]);
+
+      // Trigger required features setup
+      try {
+        await this.gepService.setRequiredFeaturesForAllSupportedGames();
+      } catch (error) {
+        this.printLogMessage('Error setting required features:', error);
+      }
+
+      // Re-register overlay games if overlay is ready
+      if (this.overlayService.overlayApi) {
+        try {
+          await this.overlayService.registerToGames([
+            5426,  // LeagueofLegends
+            21570, // TeamfightTactics
+            10798, // RocketLeague
+            22700  // DiabloIV
+          ]);
+        } catch (error) {
+          this.printLogMessage('Error registering overlay games:', error);
+        }
+      }
+
+      this.printLogMessage('=== Re-initialization complete ===');
+      return true;
     });
 
     ipcMain.handle('toggleOSRVisibility', async () => {

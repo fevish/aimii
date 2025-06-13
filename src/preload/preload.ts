@@ -30,6 +30,10 @@ contextBridge.exposeInMainWorld('gep', {
   getInfo: () => {
     return ipcRenderer.invoke('gep-getInfo');
   },
+
+  restartInitialization: () => {
+    return ipcRenderer.invoke('restart-initialization');
+  },
 });
 
 contextBridge.exposeInMainWorld('osr', {

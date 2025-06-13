@@ -37,7 +37,7 @@ rendererConfig.plugins.push(new HtmlWebpackPlugin({
   template: './public/my-main.html',
   filename: path.join(__dirname, './dist/my-main.html'),
   chunks: ['my-main'],
-  inject: false
+  inject: true
 }));
 
 module.exports = rendererConfig;

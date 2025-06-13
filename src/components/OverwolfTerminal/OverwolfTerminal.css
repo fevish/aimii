@@ -6,6 +6,8 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   color: #e0e0e0;
   max-width: 600px;
+  display: flex;
+  flex-flow: column;
 }
 
 .overwolf-terminal h2 {
@@ -15,7 +17,6 @@
 }
 
 .overwolf-terminal-textarea {
-  width: 100%;
   height: 180px;
   background: #181a20;
   color: #e0e0e0;
@@ -28,6 +29,12 @@
   margin-bottom: 8px;
 }
 
+.overwolf-terminal-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.overwolf-terminal-start,
 .overwolf-terminal-clear {
   background: #ffb347;
   color: #23272e;
@@ -35,10 +42,20 @@
   border-radius: 4px;
   padding: 6px 16px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
+}
+
+.overwolf-terminal-start:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.overwolf-terminal-clear {
+  background-color: #dc3545;
+  color: white;
 }
 
 .overwolf-terminal-clear:hover {
-  background: #ffa500;
+  background-color: #c82333;
 }
