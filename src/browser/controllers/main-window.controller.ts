@@ -8,6 +8,8 @@ import { overwolf } from '@overwolf/ow-electron';
 import { OverlayHotkeysService } from '../services/overlay-hotkeys.service';
 import { ExclusiveHotKeyMode, OverlayInputService } from '../services/overlay-input.service';
 import { setMainWindowForConsole } from '../index';
+import { GamesService } from '../services/games.service';
+import { SettingsService } from '../services/settings.service';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
 
@@ -27,7 +29,9 @@ export class MainWindowController {
     private readonly createDemoOsrWinController: () => DemoOSRWindowController,
     private readonly createWidgetWinController: () => WidgetWindowController,
     private readonly overlayHotkeysService: OverlayHotkeysService,
-    private readonly overlayInputService: OverlayInputService
+    private readonly overlayInputService: OverlayInputService,
+    private readonly gamesService: GamesService,
+    private readonly settingsService: SettingsService
   ) {
     this.registerToIpc();
 
@@ -108,6 +112,30 @@ export class MainWindowController {
 
     ipcMain.handle('openWidgetDevTools', () => {
       this.openWidgetDevTools();
+    });
+
+    // Games service IPC handlers
+    ipcMain.handle('games-get-all', () => {
+      return this.gamesService.getAllGames();
+    });
+
+    ipcMain.handle('games-get-enabled', () => {
+      return this.gamesService.getEnabledGames();
+    });
+
+    // Canonical settings IPC handlers
+    ipcMain.handle('settings-get-canonical', () => {
+      return this.settingsService.getCanonicalSettings();
+    });
+
+    ipcMain.handle('settings-set-canonical', (event, game: string, sensitivity: number, dpi: number) => {
+      this.settingsService.setCanonicalSettings(game, sensitivity, dpi);
+      this.printLogMessage(`Canonical settings saved: ${game}, sensitivity: ${sensitivity}, DPI: ${dpi}`);
+      return true;
+    });
+
+    ipcMain.handle('settings-has-canonical', () => {
+      return this.settingsService.hasCanonicalSettings();
     });
 
     ipcMain.handle('gep-set-required-feature', async () => {

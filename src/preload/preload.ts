@@ -66,4 +66,25 @@ contextBridge.exposeInMainWorld('electronAPI', {
   }
 });
 
+contextBridge.exposeInMainWorld('games', {
+  getAllGames: () => {
+    return ipcRenderer.invoke('games-get-all');
+  },
+  getEnabledGames: () => {
+    return ipcRenderer.invoke('games-get-enabled');
+  }
+});
+
+contextBridge.exposeInMainWorld('settings', {
+  getCanonicalSettings: () => {
+    return ipcRenderer.invoke('settings-get-canonical');
+  },
+  setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => {
+    return ipcRenderer.invoke('settings-set-canonical', game, sensitivity, dpi);
+  },
+  hasCanonicalSettings: () => {
+    return ipcRenderer.invoke('settings-has-canonical');
+  }
+});
+
 

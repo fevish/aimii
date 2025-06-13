@@ -34,7 +34,7 @@
   margin: 0 auto;
 }
 
-.welcome-section {
+.canonical-settings-section {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 2rem;
@@ -42,25 +42,142 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.welcome-section h2 {
+.canonical-settings-section h2 {
   margin: 0 0 1rem 0;
   font-size: 1.8rem;
   color: #ffffff;
 }
 
-.welcome-section p {
+.canonical-settings-section p {
   margin: 0 0 1.5rem 0;
   font-size: 1.1rem;
   opacity: 0.9;
 }
 
-.converter-placeholder {
+.current-settings {
   background: rgba(255, 255, 255, 0.1);
-  border: 2px dashed rgba(255, 255, 255, 0.3);
   border-radius: 8px;
-  padding: 3rem;
-  text-align: center;
-  font-size: 1.2rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.current-settings h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.4rem;
+  color: #ffffff;
+}
+
+.current-settings p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.canonical-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group select,
+.form-group input {
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.form-group select option {
+  background: #333;
+  color: white;
+}
+
+.form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.save-button {
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  align-self: flex-start;
+}
+
+.save-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+.message.success {
+  background: rgba(76, 175, 80, 0.2);
+  border: 1px solid rgba(76, 175, 80, 0.4);
+  color: #81C784;
+}
+
+.message.error {
+  background: rgba(244, 67, 54, 0.2);
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  color: #EF5350;
 }
 
 .debug-section {

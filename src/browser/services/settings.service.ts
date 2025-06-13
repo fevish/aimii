@@ -2,11 +2,18 @@ import { app } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 
+export interface CanonicalGameSettings {
+  game: string;
+  sensitivity: number;
+  dpi: number;
+}
+
 export interface UserSettings {
   widget: {
     position: { x: number; y: number };
     visible: boolean;
   };
+  canonical: CanonicalGameSettings | null;
   // Add more settings categories as needed
   // ui: { theme: string; fontSize: number };
   // game: { autoStart: boolean; hotkeys: any };
@@ -30,7 +37,8 @@ export class SettingsService {
       widget: {
         position: { x: 100, y: 100 },
         visible: false
-      }
+      },
+      canonical: null
     };
   }
 
@@ -76,6 +84,25 @@ export class SettingsService {
 
   public setWidgetVisible(visible: boolean): void {
     this.settings.widget.visible = visible;
+    this.saveSettings();
+  }
+
+  // Canonical game settings methods
+  public getCanonicalSettings(): CanonicalGameSettings | null {
+    return this.settings.canonical;
+  }
+
+  public setCanonicalSettings(game: string, sensitivity: number, dpi: number): void {
+    this.settings.canonical = { game, sensitivity, dpi };
+    this.saveSettings();
+  }
+
+  public hasCanonicalSettings(): boolean {
+    return this.settings.canonical !== null;
+  }
+
+  public clearCanonicalSettings(): void {
+    this.settings.canonical = null;
     this.saveSettings();
   }
 

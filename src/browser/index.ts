@@ -9,6 +9,7 @@ import { DemoOSRWindowController } from './controllers/demo-osr-window.controlle
 import { WidgetWindowController } from './controllers/widget-window.controller';
 import { OverlayInputService } from './services/overlay-input.service';
 import { SettingsService } from './services/settings.service';
+import { GamesService } from './services/games.service';
 import { BrowserWindow } from 'electron';
 
 // Simple global console override - just like a normal website
@@ -76,6 +77,7 @@ const bootstrap = (): Application => {
   const gepService = new GameEventsService();
   const inputService = new OverlayInputService(overlayService);
   const settingsService = new SettingsService();
+  const gamesService = new GamesService();
 
   const createDemoOsrWindowControllerFactory = (): DemoOSRWindowController => {
     const controller = new DemoOSRWindowController(overlayService);
@@ -93,7 +95,9 @@ const bootstrap = (): Application => {
     createDemoOsrWindowControllerFactory,
     createWidgetWindowControllerFactory,
     overlayHotkeysService,
-    inputService
+    inputService,
+    gamesService,
+    settingsService
   );
 
   return new Application(overlayService, gepService, mainWindowController);
