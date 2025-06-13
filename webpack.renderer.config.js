@@ -9,7 +9,8 @@ rendererConfig.entry = {
   'renderer': './src/renderer/renderer.ts',
   'preload': './src/preload/preload.ts',
   'exclusive': './src/renderer/exclusive.ts',
-  'my-main': './src/my-main.tsx'
+  'my-main': './src/my-main.tsx',
+  'widget': './src/widget.tsx'
 };
 
 rendererConfig.plugins.push(new HtmlWebpackPlugin({
@@ -37,6 +38,13 @@ rendererConfig.plugins.push(new HtmlWebpackPlugin({
   template: './public/my-main.html',
   filename: path.join(__dirname, './dist/my-main.html'),
   chunks: ['my-main'],
+  inject: true
+}));
+
+rendererConfig.plugins.push(new HtmlWebpackPlugin({
+  template: './public/widget.html',
+  filename: path.join(__dirname, './dist/widget/widget.html'),
+  chunks: ['widget'],
   inject: true
 }));
 

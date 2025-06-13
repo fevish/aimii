@@ -5,6 +5,7 @@ import { OverlayService } from './services/overlay.service';
 import { GameEventsService } from './services/gep.service';
 import { MainWindowController } from './controllers/main-window.controller';
 import { DemoOSRWindowController } from './controllers/demo-osr-window.controller';
+import { WidgetWindowController } from './controllers/widget-window.controller';
 import { OverlayInputService } from './services/overlay-input.service';
 
 /**
@@ -21,10 +22,16 @@ const bootstrap = (): Application => {
     return controller;
   }
 
+  const createWidgetWindowControllerFactory = (): WidgetWindowController => {
+    const controller = new WidgetWindowController(overlayService);
+    return controller;
+  }
+
   const mainWindowController = new MainWindowController(
     gepService,
     overlayService,
     createDemoOsrWindowControllerFactory,
+    createWidgetWindowControllerFactory,
     overlayHotkeysService,
     inputService
   );

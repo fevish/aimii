@@ -23,7 +23,10 @@ export class Application {
       // Always inject because we tell it which games we want in
       // onOverlayServiceReady
       event.inject();
-    })
+    });
+
+    // Listen for game injection to create widget
+    this.setupGameInjectionHandling();
 
     // for gep supported games goto:
     // https://overwolf.github.io/api/electron/game-events/
@@ -60,5 +63,41 @@ export class Application {
       kGameIds.RocketLeague,
       kGameIds.DiabloIV
     ]);
+  }
+
+  /**
+   * Setup handling for when games are injected
+   */
+  private setupGameInjectionHandling() {
+    // Listen for when overlay is ready to register for game events
+    this.overlayService.on('ready', () => {
+      if (this.overlayService.overlayApi) {
+        // Listen for game injection events
+        this.overlayService.overlayApi.on('game-injected', (gameInfo: GameInfo) => {
+          this.mainWindowController.printLogMessage('Game injected, creating widget:', gameInfo.name);
+
+          // Automatically create widget when game is injected
+          this.createGameWidget();
+        });
+
+        // Listen for game exit to clean up
+        this.overlayService.overlayApi.on('game-exit', (gameInfo: GameInfo) => {
+          this.mainWindowController.printLogMessage('Game exited:', gameInfo.name);
+        });
+      }
+    });
+  }
+
+  /**
+   * Create the in-game widget
+   */
+  private async createGameWidget() {
+    try {
+      this.mainWindowController.printLogMessage('Creating AIMII widget...');
+      await this.mainWindowController.createWidgetWindow();
+      this.mainWindowController.printLogMessage('AIMII widget created successfully!');
+    } catch (error) {
+      this.mainWindowController.printLogMessage('Error creating widget:', error);
+    }
   }
 }
