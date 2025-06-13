@@ -148,28 +148,6 @@ export const MyMainWindow: React.FC = () => {
       </header>
 
       <main className="app-content">
-        <section className="current-game-section">
-          <h2>Current Game Status</h2>
-          <div className="current-game-info">
-            {currentGame ? (
-              <div className="game-detected">
-                <h3>{currentGame.name}</h3>
-                <p className={`game-status ${currentGame.isSupported ? 'supported' : 'unsupported'}`}>
-                  {currentGame.isSupported ? '✓ Supported' : '⚠ Not Supported'}
-                </p>
-                <button onClick={handleToggleWidget} className="widget-toggle-btn">
-                  Toggle Widget (Ctrl+Shift+W)
-                </button>
-              </div>
-            ) : (
-              <div className="no-game">
-                <p>No supported game detected</p>
-                <p className="help-text">Launch a supported game to see sensitivity conversion options</p>
-              </div>
-            )}
-          </div>
-        </section>
-
         <section className="canonical-settings-section">
           <h2>Canonical Game Settings</h2>
           <p>Set your preferred game, sensitivity, and DPI as your baseline for conversions.</p>
@@ -240,6 +218,28 @@ export const MyMainWindow: React.FC = () => {
               {message}
             </div>
           )}
+        </section>
+
+        <section className="current-game-section">
+          <h2>Current Game Status</h2>
+          <div className="current-game-info">
+            {currentGame ? (
+              <div className="game-detected">
+                <h3>{currentGame.name}</h3>
+                <p className={`game-status ${currentGame.isSupported ? 'supported' : 'unsupported'}`}>
+                  {currentGame.isSupported ? '✓ Supported' : '⚠ Not Supported'}
+                </p>
+                <button onClick={handleToggleWidget} className="widget-toggle-btn">
+                  Toggle Widget (Ctrl+Shift+W)
+                </button>
+              </div>
+            ) : (
+              <div className="no-game">
+                <p>No supported game detected</p>
+                <p className="help-text">Launch a supported game to see sensitivity conversion options</p>
+              </div>
+            )}
+          </div>
         </section>
 
         <section className="debug-section">
