@@ -63,7 +63,7 @@ export class WidgetWindowController {
 
     this.widgetWindow = await this.overlayService.createNewOsrWindow(options);
 
-    await this.widgetWindow.window.loadURL(
+    await this.widgetWindow.window.loadFile(
       path.join(__dirname, '../widget/widget.html')
     );
 
