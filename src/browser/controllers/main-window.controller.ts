@@ -288,6 +288,10 @@ export class MainWindowController {
       }
     });
 
+    // Widget hotkey info handler
+    ipcMain.handle('widget-get-hotkey-info', () => {
+      return this.getWidgetHotkeyInfo();
+    });
   }
 
   /**
@@ -339,5 +343,28 @@ export class MainWindowController {
     } else {
       this.printLogMessage('Widget not created yet. Create widget first.');
     }
+  }
+
+  private getWidgetHotkeyInfo(): { keyCode: number; modifiers: { ctrl: boolean; shift: boolean; alt: boolean }; displayText: string } {
+    // Widget hotkey configuration - should match the one in WidgetWindowController
+    const keyCode = 77; // M key
+    const modifiers = { ctrl: true, shift: true, alt: false };
+
+    // Convert keyCode to readable key name
+    const keyName = String.fromCharCode(keyCode);
+
+    // Build display text
+    const modifierParts = [];
+    if (modifiers.ctrl) modifierParts.push('Ctrl');
+    if (modifiers.shift) modifierParts.push('Shift');
+    if (modifiers.alt) modifierParts.push('Alt');
+
+    const displayText = `${modifierParts.join('+')}+${keyName}`;
+
+    return {
+      keyCode,
+      modifiers,
+      displayText
+    };
   }
 }

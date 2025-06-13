@@ -19,6 +19,12 @@ interface CanonicalSettings {
   dpi: number;
 }
 
+interface HotkeyInfo {
+  keyCode: number;
+  modifiers: { ctrl: boolean; shift: boolean; alt: boolean };
+  displayText: string;
+}
+
 declare global {
   interface Window {
     games: {
@@ -43,6 +49,7 @@ declare global {
     widget: {
       createWidget: () => Promise<void>;
       toggleWidget: () => Promise<void>;
+      getHotkeyInfo: () => Promise<HotkeyInfo>;
     };
     sensitivityConverter: {
       getSuggestedForCurrentGame: () => Promise<SensitivityConversion | null>;
@@ -57,6 +64,7 @@ export const MyMainWindow: React.FC = () => {
   const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
   const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
+  const [hotkeyInfo, setHotkeyInfo] = useState<HotkeyInfo | null>(null);
   const [selectedGame, setSelectedGame] = useState<string>('');
   const [sensitivity, setSensitivity] = useState<string>('');
   const [dpi, setDpi] = useState<string>('800');
@@ -67,6 +75,7 @@ export const MyMainWindow: React.FC = () => {
     loadGames();
     loadCanonicalSettings();
     loadCurrentGameData();
+    loadHotkeyInfo();
 
     // Set up listener for game change events using the preload API
     const handleGameChanged = (gameInfo: any) => {
@@ -147,6 +156,15 @@ export const MyMainWindow: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading current game data:', error);
+    }
+  };
+
+  const loadHotkeyInfo = async () => {
+    try {
+      const hotkey = await window.widget.getHotkeyInfo();
+      setHotkeyInfo(hotkey);
+    } catch (error) {
+      console.error('Error loading hotkey info:', error);
     }
   };
 
@@ -325,7 +343,7 @@ export const MyMainWindow: React.FC = () => {
                 ) : null}
 
                 <button onClick={handleToggleWidget} className="widget-toggle-btn">
-                  Toggle Widget (Ctrl+Shift+W)
+                  Toggle Widget {hotkeyInfo ? `(${hotkeyInfo.displayText})` : '(Loading...)'}
                 </button>
               </div>
             ) : (
