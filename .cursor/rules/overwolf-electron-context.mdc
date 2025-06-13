@@ -1,0 +1,13 @@
+---
+description: Project context and rules for overwolf-electron sample and custom app development.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+- This project is based on the overwolf-electron sample app (NOT Overwolf Native).
+- All code and configuration is for overwolf-electron, not native Overwolf.
+- Game events and in-game overlays are confirmed to work in this setup.
+- The existing sample app files are to be kept for reference on how to use overwolf-electron APIs, game events, and overlays.
+- When building new features or the new app, use the sample files as reference only; new app code should be completely separate.
+- Do not remove or modify the sample files unless explicitly requested; they serve as a working reference for overwolf-electron usage.
