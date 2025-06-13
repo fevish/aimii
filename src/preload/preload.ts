@@ -105,6 +105,14 @@ contextBridge.exposeInMainWorld('currentGame', {
   },
   isCurrentGameSupported: () => {
     return ipcRenderer.invoke('current-game-is-supported');
+  },
+  onGameChanged: (callback: (gameInfo: any) => void) => {
+    ipcRenderer.on('current-game-changed', (event: any, gameInfo: any) => {
+      callback(gameInfo);
+    });
+  },
+  removeGameChangedListener: () => {
+    ipcRenderer.removeAllListeners('current-game-changed');
   }
 });
 
