@@ -92,9 +92,7 @@ const Widget: React.FC = () => {
   };
 
   const fetchData = async () => {
-    setIsLoading(true);
     await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchSuggestedSensitivity()]);
-    setIsLoading(false);
   };
 
   // Check if current game matches canonical game
@@ -103,10 +101,23 @@ const Widget: React.FC = () => {
 
   useEffect(() => {
     // Fetch initial data
-    fetchData();
+    setIsLoading(true);
+    fetchData().finally(() => setIsLoading(false));
 
-    // Set up periodic refresh to detect game changes - reduced frequency
-    const interval = setInterval(fetchData, 5000); // Check every 5 seconds instead of 2
+    // Set up IPC listener for game change events
+    const { ipcRenderer } = require('electron');
+
+    const handleGameChanged = () => {
+      console.log('Game changed event received in widget');
+      fetchData(); // Refresh all data when game changes
+    };
+
+    // Listen for game change events from main process
+    ipcRenderer.on('current-game-changed', handleGameChanged);
+
+    // Fallback: reduced frequency polling for canonical settings changes
+    // (since settings changes don't have events)
+    const settingsInterval = setInterval(fetchCanonicalSettings, 10000); // Check settings every 10 seconds
 
     // Add hotkey listeners for dev tools
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -124,7 +135,8 @@ const Widget: React.FC = () => {
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      clearInterval(interval);
+      ipcRenderer.removeListener('current-game-changed', handleGameChanged);
+      clearInterval(settingsInterval);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);

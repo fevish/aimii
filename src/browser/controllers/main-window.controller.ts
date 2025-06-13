@@ -38,6 +38,7 @@ export class MainWindowController {
     private readonly sensitivityConverterService: SensitivityConverterService
   ) {
     this.registerToIpc();
+    this.setupGameChangeListener();
 
     gepService.on('log', this.printLogMessage.bind(this));
     overlayService.on('log', this.printLogMessage.bind(this));
@@ -56,6 +57,26 @@ export class MainWindowController {
       'failed-to-initialize',
       this.logPackageManagerErrors.bind(this)
     );
+  }
+
+  private setupGameChangeListener(): void {
+    // Listen for game changes from the CurrentGameService
+    this.currentGameService.on('game-changed', (gameInfo) => {
+      this.printLogMessage('Current game changed:', gameInfo?.name || 'No game');
+
+      // Notify all renderer processes about the game change
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send('current-game-changed', gameInfo);
+      }
+
+      // Notify widget if it exists
+      if (this.widgetController?.overlayBrowserWindow) {
+        this.widgetController.overlayBrowserWindow.window.webContents.send('current-game-changed', gameInfo);
+      }
+    });
+
+    // Trigger initial game detection
+    this.currentGameService.refreshCurrentGame();
   }
 
   /**

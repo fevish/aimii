@@ -37,6 +37,8 @@ declare global {
       isGameRunning: () => Promise<boolean>;
       getCurrentGameName: () => Promise<string | null>;
       isCurrentGameSupported: () => Promise<boolean>;
+      onGameChanged: (callback: (gameInfo: any) => void) => void;
+      removeGameChangedListener: () => void;
     };
     widget: {
       createWidget: () => Promise<void>;
@@ -66,9 +68,28 @@ export const MyMainWindow: React.FC = () => {
     loadCanonicalSettings();
     loadCurrentGameData();
 
-    // Set up periodic refresh for current game - reduced frequency
-    const interval = setInterval(loadCurrentGameData, 8000); // Check every 8 seconds instead of 3
-    return () => clearInterval(interval);
+    // Set up listener for game change events using the preload API
+    const handleGameChanged = (gameInfo: any) => {
+      console.log('Game changed event received in main window:', gameInfo);
+      loadCurrentGameData(); // Refresh game data when game changes
+    };
+
+    // Listen for game change events using the preload exposed API
+    if (window.currentGame && window.currentGame.onGameChanged) {
+      window.currentGame.onGameChanged(handleGameChanged);
+    }
+
+    // Fallback: reduced frequency polling for canonical settings changes
+    // (since settings changes don't have events and we want to detect external changes)
+    const settingsInterval = setInterval(loadCanonicalSettings, 15000); // Check settings every 15 seconds
+
+    return () => {
+      // Clean up game change listener
+      if (window.currentGame && window.currentGame.removeGameChangedListener) {
+        window.currentGame.removeGameChangedListener();
+      }
+      clearInterval(settingsInterval);
+    };
   }, []);
 
   const loadGames = async () => {
