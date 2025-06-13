@@ -1,12 +1,17 @@
 import path from "path";
 import { OverlayService } from "../services/overlay.service";
 import { OverlayBrowserWindow, OverlayWindowOptions, PassthroughType, ZOrderType } from "@overwolf/ow-electron-packages-types";
+import { SettingsService } from "../services/settings.service";
 
 export class WidgetWindowController {
   private widgetWindow: OverlayBrowserWindow | null = null;
   private isVisible: boolean = false;
+  private savePositionTimeout: NodeJS.Timeout | null = null;
 
-  constructor(private readonly overlayService: OverlayService) {
+  constructor(
+    private readonly overlayService: OverlayService,
+    private readonly settingsService: SettingsService
+  ) {
     this.registerHotkey();
   }
 
@@ -37,13 +42,23 @@ export class WidgetWindowController {
       },
     };
 
-    // Position widget in top-right corner
+    // Use saved position or calculate default position
+    const savedPosition = this.settingsService.getWidgetPosition();
     const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
     const gameWindowInfo = activeGame?.gameWindowInfo;
 
-    if (gameWindowInfo) {
+    if (savedPosition.x !== 100 || savedPosition.y !== 100) {
+      // Use saved position if it's not the default
+      options.x = savedPosition.x;
+      options.y = savedPosition.y;
+    } else if (gameWindowInfo) {
+      // Calculate default position (top-right corner)
       options.x = gameWindowInfo.size.width - 320; // 300 + 20px margin
       options.y = 20;
+    } else {
+      // Use saved position as fallback
+      options.x = savedPosition.x;
+      options.y = savedPosition.y;
     }
 
     this.widgetWindow = await this.overlayService.createNewOsrWindow(options);
@@ -52,19 +67,18 @@ export class WidgetWindowController {
       path.join(__dirname, '../widget/widget.html')
     );
 
-    console.log('overlayApi:', this.overlayService.overlayApi);
-
     // Listen for game window changes (resolution changes, etc.)
     if (this.overlayService.overlayApi) {
       this.overlayService.overlayApi.on('game-window-changed', (windowInfo: any, gameInfo: any, reason: any) => {
-        console.log('🎮 Game window changed!');
-        console.log('New window info:', windowInfo);
-        console.log('Game info:', gameInfo);
-        console.log('Change reason:', reason);
-
-        // Check if widget is still within new bounds and reposition if needed
+        console.log('Game window changed, checking widget bounds...');
         this.checkAndRepositionWidget(windowInfo);
       });
+    }
+
+    // Restore visibility state
+    const savedVisibility = this.settingsService.getWidgetVisible();
+    if (savedVisibility) {
+      this.show();
     }
 
     this.registerWindowEvents();
@@ -81,20 +95,17 @@ export class WidgetWindowController {
     if (windowInfo?.size) {
       gameWidth = windowInfo.size.width;
       gameHeight = windowInfo.size.height;
-      console.log('Using provided window info for bounds:', { width: gameWidth, height: gameHeight });
     } else {
       const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
       if (activeGame?.gameWindowInfo?.size) {
         gameWidth = activeGame.gameWindowInfo.size.width;
         gameHeight = activeGame.gameWindowInfo.size.height;
-        console.log('Game bounds from gameWindowInfo:', { width: gameWidth, height: gameHeight });
       } else {
         // Use screen dimensions as fallback
         const { screen } = require('electron');
         const primaryDisplay = screen.getPrimaryDisplay();
         gameWidth = primaryDisplay.workAreaSize.width;
         gameHeight = primaryDisplay.workAreaSize.height;
-        console.log('Game bounds from screen:', { width: gameWidth, height: gameHeight });
       }
     }
 
@@ -123,7 +134,6 @@ export class WidgetWindowController {
 
     // Apply restriction if needed
     if (needsReposition) {
-      console.log('🔄 Repositioning widget to bounds:', { x: newX, y: newY });
       this.widgetWindow.window.setPosition(newX, newY);
     }
 
@@ -132,7 +142,6 @@ export class WidgetWindowController {
                           bounds.y >= 0 &&
                           bounds.x + bounds.width <= gameWidth &&
                           bounds.y + bounds.height <= gameHeight;
-    console.log('Widget within game bounds:', isWithinBounds);
   }
 
   public toggleVisibility(): void {
@@ -151,16 +160,23 @@ export class WidgetWindowController {
     if (!this.widgetWindow) return;
     this.widgetWindow.window.show();
     this.isVisible = true;
+    this.settingsService.setWidgetVisible(true);
   }
 
   public hide(): void {
     if (!this.widgetWindow) return;
     this.widgetWindow.window.hide();
     this.isVisible = false;
+    this.settingsService.setWidgetVisible(false);
   }
 
   public destroy(): void {
     if (this.widgetWindow) {
+      // Save final position before destroying
+      const bounds = this.widgetWindow.window.getBounds();
+      this.settingsService.setWidgetPosition(bounds.x, bounds.y);
+      this.settingsService.setWidgetVisible(false);
+
       this.widgetWindow.window.close();
       this.widgetWindow = null;
       this.isVisible = false;
@@ -219,10 +235,15 @@ export class WidgetWindowController {
     this.widgetWindow.window.on('moved', () => {
       if (this.widgetWindow) {
         const bounds = this.widgetWindow.window.getBounds();
-        console.log('Widget moved to:', bounds);
-
-        // Use the modular bounds checking method
         this.checkAndRepositionWidget();
+
+        // Save position with debouncing (wait 500ms after last move)
+        if (this.savePositionTimeout) {
+          clearTimeout(this.savePositionTimeout);
+        }
+        this.savePositionTimeout = setTimeout(() => {
+          this.settingsService.setWidgetPosition(bounds.x, bounds.y);
+        }, 500);
       }
     });
 
@@ -230,7 +251,6 @@ export class WidgetWindowController {
     this.widgetWindow.window.on('resized', () => {
       if (this.widgetWindow) {
         const bounds = this.widgetWindow.window.getBounds();
-        console.log('Widget resized to:', bounds);
       }
     });
   }
