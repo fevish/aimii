@@ -203,3 +203,74 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Current Game Section Styles */
+.current-game-section {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.current-game-section h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.8rem;
+  color: #ffffff;
+}
+
+.current-game-info {
+  text-align: center;
+}
+
+.game-detected h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.6rem;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.game-status {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.game-status.supported {
+  color: #4ade80;
+}
+
+.game-status.unsupported {
+  color: #fbbf24;
+}
+
+.widget-toggle-btn {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.widget-toggle-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.no-game p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  opacity: 0.8;
+}
+
+.help-text {
+  font-size: 0.9rem !important;
+  opacity: 0.6 !important;
+}

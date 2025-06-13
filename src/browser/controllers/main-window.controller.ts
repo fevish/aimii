@@ -10,6 +10,7 @@ import { ExclusiveHotKeyMode, OverlayInputService } from '../services/overlay-in
 import { setMainWindowForConsole } from '../index';
 import { GamesService } from '../services/games.service';
 import { SettingsService } from '../services/settings.service';
+import { CurrentGameService } from '../services/current-game.service';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
 
@@ -31,7 +32,8 @@ export class MainWindowController {
     private readonly overlayHotkeysService: OverlayHotkeysService,
     private readonly overlayInputService: OverlayInputService,
     private readonly gamesService: GamesService,
-    private readonly settingsService: SettingsService
+    private readonly settingsService: SettingsService,
+    private readonly currentGameService: CurrentGameService
   ) {
     this.registerToIpc();
 
@@ -144,6 +146,23 @@ export class MainWindowController {
 
     ipcMain.handle('settings-has-canonical', () => {
       return this.settingsService.hasCanonicalSettings();
+    });
+
+    // Current game service IPC handlers
+    ipcMain.handle('current-game-get-info', () => {
+      return this.currentGameService.getCurrentGameInfo();
+    });
+
+    ipcMain.handle('current-game-is-running', () => {
+      return this.currentGameService.isGameRunning();
+    });
+
+    ipcMain.handle('current-game-get-name', () => {
+      return this.currentGameService.getCurrentGameName();
+    });
+
+    ipcMain.handle('current-game-is-supported', () => {
+      return this.currentGameService.isCurrentGameSupported();
     });
 
     ipcMain.handle('gep-set-required-feature', async () => {

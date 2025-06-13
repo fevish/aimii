@@ -10,6 +10,7 @@ import { WidgetWindowController } from './controllers/widget-window.controller';
 import { OverlayInputService } from './services/overlay-input.service';
 import { SettingsService } from './services/settings.service';
 import { GamesService } from './services/games.service';
+import { CurrentGameService } from './services/current-game.service';
 import { BrowserWindow } from 'electron';
 
 // Simple global console override - just like a normal website
@@ -78,6 +79,7 @@ const bootstrap = (): Application => {
   const inputService = new OverlayInputService(overlayService);
   const settingsService = new SettingsService();
   const gamesService = new GamesService();
+  const currentGameService = new CurrentGameService(overlayService, gamesService);
 
   const createDemoOsrWindowControllerFactory = (): DemoOSRWindowController => {
     const controller = new DemoOSRWindowController(overlayService);
@@ -85,7 +87,7 @@ const bootstrap = (): Application => {
   }
 
   const createWidgetWindowControllerFactory = (): WidgetWindowController => {
-    const controller = new WidgetWindowController(overlayService, settingsService);
+    const controller = new WidgetWindowController(overlayService, settingsService, currentGameService);
     return controller;
   }
 
@@ -97,7 +99,8 @@ const bootstrap = (): Application => {
     overlayHotkeysService,
     inputService,
     gamesService,
-    settingsService
+    settingsService,
+    currentGameService
   );
 
   return new Application(overlayService, gepService, mainWindowController, gamesService);

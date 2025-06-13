@@ -83,3 +83,51 @@
   box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+/* Current Game Styles */
+.current-game {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.game-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.game-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.game-status {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.game-status.supported {
+  color: #4ade80;
+}
+
+.game-status.unsupported {
+  color: #fbbf24;
+}
+
+.game-status.no-game {
+  color: #f87171;
+  opacity: 0.8;
+}
+
+.game-status.loading {
+  color: #94a3b8;
+  opacity: 0.8;
+}

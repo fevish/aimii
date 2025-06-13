@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { OverwolfTerminal } from '../OverwolfTerminal/OverwolfTerminal';
 import './MyMainWindow.css';
+import { CurrentGameInfo } from '../../browser/services/current-game.service';
 
 interface GameData {
   game: string;
@@ -30,12 +31,23 @@ declare global {
       setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => Promise<boolean>;
       hasCanonicalSettings: () => Promise<boolean>;
     };
+    currentGame: {
+      getCurrentGameInfo: () => Promise<CurrentGameInfo | null>;
+      isGameRunning: () => Promise<boolean>;
+      getCurrentGameName: () => Promise<string | null>;
+      isCurrentGameSupported: () => Promise<boolean>;
+    };
+    widget: {
+      createWidget: () => Promise<void>;
+      toggleWidget: () => Promise<void>;
+    };
   }
 }
 
 export const MyMainWindow: React.FC = () => {
   const [games, setGames] = useState<GameData[]>([]);
   const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
+  const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
   const [selectedGame, setSelectedGame] = useState<string>('');
   const [sensitivity, setSensitivity] = useState<string>('');
   const [dpi, setDpi] = useState<string>('800');
@@ -45,6 +57,11 @@ export const MyMainWindow: React.FC = () => {
   useEffect(() => {
     loadGames();
     loadCanonicalSettings();
+    loadCurrentGame();
+
+    // Set up periodic refresh for current game
+    const interval = setInterval(loadCurrentGame, 3000); // Check every 3 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const loadGames = async () => {
@@ -68,6 +85,24 @@ export const MyMainWindow: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading canonical settings:', error);
+    }
+  };
+
+  const loadCurrentGame = async () => {
+    try {
+      const gameInfo = await window.currentGame.getCurrentGameInfo();
+      setCurrentGame(gameInfo);
+    } catch (error) {
+      console.error('Error loading current game:', error);
+    }
+  };
+
+  const handleToggleWidget = async () => {
+    try {
+      await window.widget.toggleWidget();
+    } catch (error) {
+      console.error('Error toggling widget:', error);
+      setMessage('Error toggling widget');
     }
   };
 
@@ -113,6 +148,28 @@ export const MyMainWindow: React.FC = () => {
       </header>
 
       <main className="app-content">
+        <section className="current-game-section">
+          <h2>Current Game Status</h2>
+          <div className="current-game-info">
+            {currentGame ? (
+              <div className="game-detected">
+                <h3>{currentGame.name}</h3>
+                <p className={`game-status ${currentGame.isSupported ? 'supported' : 'unsupported'}`}>
+                  {currentGame.isSupported ? '✓ Supported' : '⚠ Not Supported'}
+                </p>
+                <button onClick={handleToggleWidget} className="widget-toggle-btn">
+                  Toggle Widget (Ctrl+Shift+W)
+                </button>
+              </div>
+            ) : (
+              <div className="no-game">
+                <p>No supported game detected</p>
+                <p className="help-text">Launch a supported game to see sensitivity conversion options</p>
+              </div>
+            )}
+          </div>
+        </section>
+
         <section className="canonical-settings-section">
           <h2>Canonical Game Settings</h2>
           <p>Set your preferred game, sensitivity, and DPI as your baseline for conversions.</p>
