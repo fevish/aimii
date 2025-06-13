@@ -117,4 +117,16 @@ contextBridge.exposeInMainWorld('widget', {
   }
 });
 
+contextBridge.exposeInMainWorld('sensitivityConverter', {
+  getSuggestedForCurrentGame: () => {
+    return ipcRenderer.invoke('sensitivity-get-suggested-for-current-game');
+  },
+  getAllConversions: () => {
+    return ipcRenderer.invoke('sensitivity-get-all-conversions');
+  },
+  convert: (fromGame: string, toGame: string, sensitivity: number, dpi: number) => {
+    return ipcRenderer.invoke('sensitivity-convert', fromGame, toGame, sensitivity, dpi);
+  }
+});
+
 

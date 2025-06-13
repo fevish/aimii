@@ -138,3 +138,47 @@
   color: #6c757d;
   opacity: 0.8;
 }
+
+/* Sensitivity Suggestion Styles */
+.sensitivity-suggestion {
+  background: #181a20;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #3a3f47;
+}
+
+.sensitivity-suggestion h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffb347;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.suggestion-details {
+  text-align: center;
+}
+
+.suggested-value {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #e0e0e0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.conversion-info {
+  margin: 0 0 4px 0;
+  font-size: 11px;
+  color: #b0b0b0;
+  opacity: 0.8;
+}
+
+.cm360-info {
+  margin: 0;
+  font-size: 10px;
+  color: #6c757d;
+  opacity: 0.7;
+}
