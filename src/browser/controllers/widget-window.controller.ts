@@ -52,6 +52,8 @@ export class WidgetWindowController {
       path.join(__dirname, '../widget/widget.html')
     );
 
+    console.log('overlayApi:', this.overlayService.overlayApi);
+
     this.registerWindowEvents();
   }
 
@@ -133,6 +135,34 @@ export class WidgetWindowController {
     this.widgetWindow.window.on('closed', () => {
       this.widgetWindow = null;
       this.isVisible = false;
+    });
+
+    // Log window move events to track positioning
+    this.widgetWindow.window.on('moved', () => {
+      if (this.widgetWindow) {
+        const bounds = this.widgetWindow.window.getBounds();
+        console.log('Widget moved to:', bounds);
+
+        // Check if widget is within game bounds
+        const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
+        const gameWindowInfo = activeGame?.gameWindowInfo;
+        if (gameWindowInfo) {
+          const isWithinBounds = bounds.x >= 0 &&
+                                bounds.y >= 0 &&
+                                bounds.x + bounds.width <= gameWindowInfo.size.width &&
+                                bounds.y + bounds.height <= gameWindowInfo.size.height;
+          console.log('Widget within game bounds:', isWithinBounds);
+          console.log('Game bounds:', gameWindowInfo.size);
+        }
+      }
+    });
+
+    // Log resize events
+    this.widgetWindow.window.on('resized', () => {
+      if (this.widgetWindow) {
+        const bounds = this.widgetWindow.window.getBounds();
+        console.log('Widget resized to:', bounds);
+      }
     });
   }
 }
