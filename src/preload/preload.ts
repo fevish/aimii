@@ -93,4 +93,28 @@ contextBridge.exposeInMainWorld('settings', {
   }
 });
 
+contextBridge.exposeInMainWorld('currentGame', {
+  getCurrentGameInfo: () => {
+    return ipcRenderer.invoke('current-game-get-info');
+  },
+  isGameRunning: () => {
+    return ipcRenderer.invoke('current-game-is-running');
+  },
+  getCurrentGameName: () => {
+    return ipcRenderer.invoke('current-game-get-name');
+  },
+  isCurrentGameSupported: () => {
+    return ipcRenderer.invoke('current-game-is-supported');
+  }
+});
+
+contextBridge.exposeInMainWorld('widget', {
+  createWidget: () => {
+    return ipcRenderer.invoke('createWidget');
+  },
+  toggleWidget: () => {
+    return ipcRenderer.invoke('toggleWidget');
+  }
+});
+
 

@@ -2,6 +2,8 @@ import path from "path";
 import { OverlayService } from "../services/overlay.service";
 import { OverlayBrowserWindow, OverlayWindowOptions, PassthroughType, ZOrderType } from "@overwolf/ow-electron-packages-types";
 import { SettingsService } from "../services/settings.service";
+import { CurrentGameService } from "../services/current-game.service";
+import { ipcMain } from "electron";
 
 export class WidgetWindowController {
   private widgetWindow: OverlayBrowserWindow | null = null;
@@ -10,13 +12,26 @@ export class WidgetWindowController {
 
   constructor(
     private readonly overlayService: OverlayService,
-    private readonly settingsService: SettingsService
+    private readonly settingsService: SettingsService,
+    private readonly currentGameService: CurrentGameService
   ) {
     this.registerHotkey();
+    this.registerWidgetIpc();
   }
 
   public get overlayBrowserWindow(): OverlayBrowserWindow | null {
     return this.widgetWindow;
+  }
+
+  private registerWidgetIpc(): void {
+    // Widget-specific IPC handlers
+    ipcMain.handle('widget-get-current-game', () => {
+      return this.currentGameService.getCurrentGameInfo();
+    });
+
+    ipcMain.handle('widget-get-canonical-settings', () => {
+      return this.settingsService.getCanonicalSettings();
+    });
   }
 
   public async createWidget(): Promise<void> {
