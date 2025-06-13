@@ -2,6 +2,7 @@ import { app as electronApp, ipcMain, BrowserWindow } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
 import { DemoOSRWindowController } from './demo-osr-window.controller';
+import { WidgetWindowController } from './widget-window.controller';
 import { OverlayService } from '../services/overlay.service';
 import { overwolf } from '@overwolf/ow-electron';
 import { OverlayHotkeysService } from '../services/overlay-hotkeys.service';
@@ -22,6 +23,7 @@ export class MainWindowController {
     private readonly gepService: GameEventsService,
     private readonly overlayService: OverlayService,
     private readonly createDemoOsrWinController: () => DemoOSRWindowController,
+    private readonly createWidgetWinController: () => WidgetWindowController,
     private readonly overlayHotkeysService: OverlayHotkeysService,
     private readonly overlayInputService: OverlayInputService
   ) {
@@ -94,6 +96,10 @@ export class MainWindowController {
    */
   private registerToIpc() {
     ipcMain.handle('createOSR', async () => await this.createOSRDemoWindow());
+
+    ipcMain.handle('createWidget', async () => await this.createWidget());
+
+    ipcMain.handle('toggleWidget', async () => await this.toggleWidget());
 
     ipcMain.handle('gep-set-required-feature', async () => {
       await this.gepService.setRequiredFeaturesForAllSupportedGames();
@@ -194,5 +200,27 @@ export class MainWindowController {
     controller.overlayBrowserWindow?.window.on('closed', () => {
       this.printLogMessage('osr window closed');
     });
+  }
+
+  /**
+   * Public method to create widget (called from Application)
+   */
+  public async createWidgetWindow(): Promise<void> {
+    await this.createWidget();
+  }
+
+  private async createWidget(): Promise<void> {
+    const controller = this.createWidgetWinController();
+
+    await controller.createWidget();
+
+    controller.overlayBrowserWindow?.window.on('closed', () => {
+      this.printLogMessage('widget window closed');
+    });
+  }
+
+  private async toggleWidget(): Promise<void> {
+    const controller = this.createWidgetWinController();
+    controller.toggleVisibility();
   }
 }
