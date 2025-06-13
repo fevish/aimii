@@ -22,7 +22,7 @@ export enum ExclusiveHotKeyMode {
 }
 
 export class OverlayInputService {
-  private exclusiveModeBackgroundWindow: OverlayBrowserWindow = null;
+  private exclusiveModeBackgroundWindow: OverlayBrowserWindow | null = null;
 
   private inputOptions: ExclusiveInputOptions = {
     backgroundColor: 'rgba(12, 12, 12, 0.5)',
@@ -133,10 +133,14 @@ export class OverlayInputService {
   }
 
   private registerToIpc() {
+    if (!this.exclusiveModeBackgroundWindow) return;
+
     const windowIpc = this.exclusiveModeBackgroundWindow.window.webContents.ipc;
 
     windowIpc.on('HIDE_EXCLUSIVE', (e) => {
-      this.exclusiveModeBackgroundWindow.window.hide();
+      if (this.exclusiveModeBackgroundWindow) {
+        this.exclusiveModeBackgroundWindow.window.hide();
+      }
     });
   }
 

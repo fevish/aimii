@@ -1,4 +1,3 @@
-
 console.log('** preload **')
 const { contextBridge, ipcRenderer  } = require('electron');
 
@@ -18,8 +17,8 @@ contextBridge.exposeInMainWorld('app', {
 });
 
 contextBridge.exposeInMainWorld('gep', {
-  onMessage: (func) =>{
-    ipcRenderer.on('console-message',(e, ...args)=>{
+  onMessage: (func: (...args: any[]) => void) => {
+    ipcRenderer.on('console-message',(e: any, ...args: any[]) => {
       func(...args);
     });
   },
@@ -46,13 +45,13 @@ contextBridge.exposeInMainWorld('osr', {
 });
 
 contextBridge.exposeInMainWorld('overlay', {
-  setExclusiveModeType: (mode) => {
+  setExclusiveModeType: (mode: any) => {
     return ipcRenderer.invoke('EXCLUSIVE_TYPE', mode);
   },
-  setExclusiveModeHotkeyBehavior: (behavior) => {
+  setExclusiveModeHotkeyBehavior: (behavior: any) => {
     return ipcRenderer.invoke('EXCLUSIVE_BEHAVIOR',behavior );
   },
-  updateExclusiveOptions: (options) => {
+  updateExclusiveOptions: (options: any) => {
     return ipcRenderer.invoke('updateExclusiveOptions', options);
   }
 });

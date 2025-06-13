@@ -13,7 +13,7 @@ const owElectronApp = electronApp as overwolf.OverwolfApp;
  *
  */
 export class MainWindowController {
-  private browserWindow: BrowserWindow = null;
+  private browserWindow: BrowserWindow | null = null;
 
   /**
    *
@@ -32,7 +32,7 @@ export class MainWindowController {
 
     overlayHotkeysService.on('log', this.printLogMessage.bind(this));
 
-    owElectronApp.overwolf.packages.on('crashed', (e, ...args) => {
+    owElectronApp.overwolf.packages.on('crashed', (e: any, ...args: any[]) => {
       this.printLogMessage('package crashed', ...args);
       // ow-electron package manager crashed (will be auto relaunch)
       // e.preventDefault();
@@ -50,14 +50,14 @@ export class MainWindowController {
    *
    */
   public printLogMessage(message: String, ...args: any[]) {
-    if (this.browserWindow?.isDestroyed() ?? true) {
+    if (!this.browserWindow || (this.browserWindow?.isDestroyed() ?? true)) {
       return;
     }
     this.browserWindow?.webContents?.send('console-message', message, ...args);
   }
 
   //----------------------------------------------------------------------------
-  private logPackageManagerErrors(e, packageName, ...args: any[]) {
+  private logPackageManagerErrors(e: any, packageName: any, ...args: any[]) {
     this.printLogMessage(
       'Overwolf Package Manager error!',
       packageName,
@@ -104,7 +104,7 @@ export class MainWindowController {
     });
 
     ipcMain.handle('toggleOSRVisibility', async () => {
-      this.overlayService?.overlayApi?.getAllWindows().forEach(e => {
+      this.overlayService?.overlayApi?.getAllWindows().forEach((e: any) => {
         e.window.show();
       })
     });
@@ -113,11 +113,11 @@ export class MainWindowController {
       this.overlayHotkeysService?.updateHotkey();
     });
 
-    ipcMain.handle('updateExclusiveOptions', async (sender, options) => {
+    ipcMain.handle('updateExclusiveOptions', async (sender: any, options: any) => {
       this.overlayInputService?.updateExclusiveModeOptions(options);
     });
 
-    ipcMain.handle('EXCLUSIVE_TYPE', async (sender, type) => {
+    ipcMain.handle('EXCLUSIVE_TYPE', async (sender: any, type: any) => {
       if (!this.overlayInputService) {
         return;
       }
@@ -130,7 +130,7 @@ export class MainWindowController {
       }
     });
 
-    ipcMain.handle('EXCLUSIVE_BEHAVIOR', async (sender, behavior) => {
+    ipcMain.handle('EXCLUSIVE_BEHAVIOR', async (sender: any, behavior: any) => {
       if (!this.overlayInputService) {
         return;
       }
@@ -154,7 +154,7 @@ export class MainWindowController {
     const showDevTools = true;
     await controller.createAndShow(showDevTools);
 
-    controller.overlayBrowserWindow.window.on('closed', () => {
+    controller.overlayBrowserWindow?.window.on('closed', () => {
       this.printLogMessage('osr window closed');
     });
   }

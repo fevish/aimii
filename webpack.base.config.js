@@ -12,10 +12,15 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
+      // CSS loader for external CSS files
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
     ],
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.json', '.js'],
+    extensions: ['.ts', '.tsx', '.json', '.js', '.css'],
   },
 
   output: {

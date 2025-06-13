@@ -1,8 +1,8 @@
 import { ipcRenderer } from 'electron';
 
-var hideTimeout = null;
+let hideTimeout: NodeJS.Timeout | null = null;
 
-function exclusiveModeUpdated(info) {
+function exclusiveModeUpdated(info: any) {
   console.log('exclusive mode updates', info);
 
   if (info.eventName === 'enter') {
@@ -11,26 +11,25 @@ function exclusiveModeUpdated(info) {
       hideTimeout = null;
     }
 
-    document.querySelector('.notification-text').classList.add('hide');
-    //$(".notification-text").addClass("hide");
+    const notificationText = document.querySelector('.notification-text');
+    if (notificationText) {
+      notificationText.classList.add('hide');
+    }
 
     _updateHotkeyHtml(info);
 
     document.body.classList.add('active');
-    //$('body').addClass('active');
   }
   if (info.eventName === 'exit') {
-    //$('body').removeClass('active');
     document.body.classList.remove('active');
 
     hideTimeout = setTimeout(() => {
       ipcRenderer.send('HIDE_EXCLUSIVE');
-      ///overwolf.windows.hide("index",function(){});
     }, 1000);
   }
 }
 
-function _updateHotkeyHtml(info) {
+function _updateHotkeyHtml(info: any) {
   let className = '.notification-text-dock';
   let label = '<h1>to return to the game (owe)</h1>';
   let html = '';
@@ -45,11 +44,10 @@ function _updateHotkeyHtml(info) {
     html = label;
   }
   const classElement = document.querySelector(className);
-  classElement.innerHTML = html;
-  classElement.classList.remove('hide');
-  // $(className).empty();
-  // $(className).html(html);
-  //$(className).removeClass("hide");
+  if (classElement) {
+    classElement.innerHTML = html;
+    classElement.classList.remove('hide');
+  }
 }
 
 // Define a function to handle visibility changes
