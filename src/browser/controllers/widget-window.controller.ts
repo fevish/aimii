@@ -10,6 +10,19 @@ export class WidgetWindowController {
   private isVisible: boolean = false;
   private savePositionTimeout: NodeJS.Timeout | null = null;
 
+  // Centralized hotkey configuration
+  private readonly WIDGET_HOTKEY = {
+    keyCode: 77, // M key
+    modifiers: { ctrl: true, shift: true, alt: false },
+    name: "toggleWidget"
+  };
+
+  private readonly DEV_TOOLS_HOTKEY = {
+    keyCode: 73, // I key
+    modifiers: { ctrl: true, shift: true, alt: false },
+    name: "openWidgetDevTools"
+  };
+
   constructor(
     private readonly overlayService: OverlayService,
     private readonly settingsService: SettingsService,
@@ -225,16 +238,38 @@ export class WidgetWindowController {
     this.widgetWindow.window.webContents.openDevTools({ mode: 'detach' });
   }
 
+  public getHotkeyInfo(): { keyCode: number; modifiers: { ctrl: boolean; shift: boolean; alt: boolean }; displayText: string } {
+    // Return the current hotkey configuration
+    const { keyCode, modifiers } = this.WIDGET_HOTKEY;
+
+    // Convert keyCode to readable key name
+    const keyName = String.fromCharCode(keyCode);
+
+    // Build display text
+    const modifierParts = [];
+    if (modifiers.ctrl) modifierParts.push('Ctrl');
+    if (modifiers.shift) modifierParts.push('Shift');
+    if (modifiers.alt) modifierParts.push('Alt');
+
+    const displayText = `${modifierParts.join('+')}+${keyName}`;
+
+    return {
+      keyCode,
+      modifiers,
+      displayText
+    };
+  }
+
   private registerHotkey(): void {
     // We'll register the hotkey through the overlay service
-    // The hotkey will be: Ctrl+Shift+W
     if (this.overlayService.overlayApi) {
+      // Register widget toggle hotkey
       this.overlayService.overlayApi.hotkeys.register({
-        name: "toggleWidget",
-        keyCode: 87, // W key
+        name: this.WIDGET_HOTKEY.name,
+        keyCode: this.WIDGET_HOTKEY.keyCode,
         modifiers: {
-          ctrl: true,
-          shift: true
+          ctrl: this.WIDGET_HOTKEY.modifiers.ctrl,
+          shift: this.WIDGET_HOTKEY.modifiers.shift
         },
         passthrough: true
       }, (hotkey, state) => {
@@ -243,13 +278,13 @@ export class WidgetWindowController {
         }
       });
 
-      // Add hotkey for dev tools: Ctrl+Shift+I
+      // Register dev tools hotkey
       this.overlayService.overlayApi.hotkeys.register({
-        name: "openWidgetDevTools",
-        keyCode: 73, // I key
+        name: this.DEV_TOOLS_HOTKEY.name,
+        keyCode: this.DEV_TOOLS_HOTKEY.keyCode,
         modifiers: {
-          ctrl: true,
-          shift: true
+          ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
+          shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
         },
         passthrough: true
       }, (hotkey, state) => {

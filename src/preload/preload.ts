@@ -122,6 +122,9 @@ contextBridge.exposeInMainWorld('widget', {
   },
   toggleWidget: () => {
     return ipcRenderer.invoke('toggleWidget');
+  },
+  getHotkeyInfo: () => {
+    return ipcRenderer.invoke('widget-get-hotkey-info');
   }
 });
 
