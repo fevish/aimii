@@ -139,7 +139,7 @@ export class OverlayInputService {
 
     windowIpc.on('HIDE_EXCLUSIVE', (e) => {
       if (this.exclusiveModeBackgroundWindow) {
-        this.exclusiveModeBackgroundWindow.window.hide();
+      this.exclusiveModeBackgroundWindow.window.hide();
       }
     });
   }
