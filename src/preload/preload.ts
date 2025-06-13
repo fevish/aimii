@@ -60,4 +60,10 @@ contextBridge.exposeInMainWorld('overlay', {
   }
 });
 
+contextBridge.exposeInMainWorld('electronAPI', {
+  openWidgetDevTools: () => {
+    return ipcRenderer.invoke('openWidgetDevTools');
+  }
+});
+
 

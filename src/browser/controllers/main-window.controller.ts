@@ -15,6 +15,7 @@ const owElectronApp = electronApp as overwolf.OverwolfApp;
  */
 export class MainWindowController {
   private browserWindow: BrowserWindow | null = null;
+  private widgetController: WidgetWindowController | null = null;
 
   /**
    *
@@ -100,6 +101,10 @@ export class MainWindowController {
     ipcMain.handle('createWidget', async () => await this.createWidget());
 
     ipcMain.handle('toggleWidget', async () => await this.toggleWidget());
+
+    ipcMain.handle('openWidgetDevTools', () => {
+      this.openWidgetDevTools();
+    });
 
     ipcMain.handle('gep-set-required-feature', async () => {
       await this.gepService.setRequiredFeaturesForAllSupportedGames();
@@ -211,16 +216,31 @@ export class MainWindowController {
 
   private async createWidget(): Promise<void> {
     const controller = this.createWidgetWinController();
+    this.widgetController = controller; // Store reference
 
     await controller.createWidget();
 
     controller.overlayBrowserWindow?.window.on('closed', () => {
       this.printLogMessage('widget window closed');
+      this.widgetController = null; // Clear reference
     });
   }
 
   private async toggleWidget(): Promise<void> {
-    const controller = this.createWidgetWinController();
-    controller.toggleVisibility();
+    if (!this.widgetController) {
+      // Create widget if it doesn't exist
+      await this.createWidget();
+    } else {
+      this.widgetController.toggleVisibility();
+    }
+  }
+
+  private openWidgetDevTools() {
+    if (this.widgetController) {
+      this.widgetController.openDevTools();
+      this.printLogMessage('Opening widget dev tools...');
+    } else {
+      this.printLogMessage('Widget not created yet. Create widget first.');
+    }
   }
 }
