@@ -7,6 +7,7 @@ import { OverlayService } from '../services/overlay.service';
 import { overwolf } from '@overwolf/ow-electron';
 import { OverlayHotkeysService } from '../services/overlay-hotkeys.service';
 import { ExclusiveHotKeyMode, OverlayInputService } from '../services/overlay-input.service';
+import { setMainWindowForConsole } from '../index';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
 
@@ -88,6 +89,9 @@ export class MainWindowController {
         preload: path.join(__dirname, '../preload/preload.js'),
       },
     });
+
+    // Set up console logging to Chrome dev tools
+    setMainWindowForConsole(this.browserWindow);
 
     this.browserWindow.loadFile(path.join(__dirname, '../my-main.html'));
   }
