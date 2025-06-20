@@ -1,4 +1,4 @@
-import { app as electronApp, ipcMain, BrowserWindow } from 'electron';
+import { app as electronApp, ipcMain, BrowserWindow, Menu } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
 import { DemoOSRWindowController } from './demo-osr-window.controller';
@@ -104,9 +104,10 @@ export class MainWindowController {
   public createAndShow(showDevTools: boolean) {
     this.browserWindow = new BrowserWindow({
       width: 900,
-      height: 900,
+      height: 500,
       title: 'AIMII - Mouse Sensitivity Converter',
       show: true,
+      resizable: false, // Disable window resizing
       webPreferences: {
         // NOTE: nodeIntegration and contextIsolation are only required for this
         // specific demo app, they are not a neceassry requirement for any other
@@ -117,6 +118,17 @@ export class MainWindowController {
         // relative to root folder of the project
         preload: path.join(__dirname, '../preload/preload.js'),
       },
+    });
+
+
+    // Hide the menu bar but keep the default menu and all default hotkeys
+    this.browserWindow.setMenuBarVisibility(false);
+
+    // Block F11 only (allow F5, Ctrl+R, DevTools hotkeys)
+    this.browserWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F11') {
+        event.preventDefault();
+      }
     });
 
     // Set up console logging to Chrome dev tools
