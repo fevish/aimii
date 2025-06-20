@@ -12,6 +12,7 @@ export interface CurrentGameInfo {
 
 export class CurrentGameService extends EventEmitter {
   private currentGameInfo: CurrentGameInfo | null = null;
+  private gepService: any = null; // We'll inject this later
 
   constructor(
     private readonly overlayService: OverlayService,
@@ -38,15 +39,14 @@ export class CurrentGameService extends EventEmitter {
 
     // Listen for game injection (when overlay connects to a game)
     this.overlayService.overlayApi.on('game-injected', (gameInfo) => {
-      console.log('Game injected event received:', gameInfo);
       this.updateCurrentGame();
     });
 
     // Listen for game launch events
     this.overlayService.overlayApi.on('game-launched', (event, gameInfo) => {
-      console.log('Game launched event received:', gameInfo);
-      // Auto-inject for supported games
-      if (this.gamesService.getGameByOwId(gameInfo.classId?.toString())) {
+      // Auto-inject for supported games using normalized game ID
+      const normalizedGameId = this.normalizeGameId(gameInfo.classId || '');
+      if (this.gamesService.getGameByOwId(normalizedGameId)) {
         event.inject();
       }
       this.updateCurrentGame();
@@ -55,7 +55,6 @@ export class CurrentGameService extends EventEmitter {
     // Listen for game focus changes (might indicate game switch)
     this.overlayService.overlayApi.on('game-focus-changed', (window, game, focus) => {
       if (focus) {
-        console.log('Game focus changed:', game);
         this.updateCurrentGame();
       }
     });
@@ -81,29 +80,17 @@ export class CurrentGameService extends EventEmitter {
   public getCurrentGameInfo(): CurrentGameInfo | null {
     const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
     if (!activeGame) {
-      return null;
+      // Try GEP service as fallback
+      console.log('Game detection: Using GEP fallback (overlay not available)');
+      return this.getCurrentGameInfoFromGep();
     }
 
-    const overwolfGameId = activeGame.gameInfo.classId?.toString() || '';
+    console.log('Game detection: Using overlay detection for game:', activeGame.gameInfo.name);
+    const overwolfGameId = this.normalizeGameId(activeGame.gameInfo.classId || '');
     const overwolfGameName = activeGame.gameInfo.name || 'Unknown Game';
-    // const owGameData = activeGame.gameInfo;
-    // console.log('Overwolf Game Data:', owGameData);
 
     // Try to get game data from our games.json
     const gameData = this.gamesService.getGameByOwId(overwolfGameId);
-
-    console.log('Found game data:', gameData ? gameData.game : 'NOT FOUND');
-
-    if (!gameData) {
-      // Let's also check all available games to see what IDs we have
-      const allGames = this.gamesService.getAllGames();
-      console.log('Available games in games.json:');
-      allGames.forEach(game => {
-        console.log(`- ${game.game}: owGameId="${game.owGameId}"`);
-      });
-    }
-
-    console.log('===============================');
 
     return {
       id: activeGame.gameInfo.classId,
@@ -112,6 +99,33 @@ export class CurrentGameService extends EventEmitter {
       isSupported: !!gameData,
       gameData: gameData || null
     };
+  }
+
+  private getCurrentGameInfoFromGep(): CurrentGameInfo | null {
+    if (!this.gepService) {
+      return null;
+    }
+
+    // Check if GEP has an active game
+    if (this.gepService.activeGame === 0) {
+      return null;
+    }
+
+    // Use the active game ID from GEP - normalize to Overwolf's official format
+    const normalizedGameId = this.normalizeGameId(this.gepService.activeGame);
+    const gameData = this.gamesService.getGameByOwId(normalizedGameId);
+
+    if (gameData) {
+      return {
+        id: this.gepService.activeGame, // Keep as number for compatibility
+        name: gameData.game,
+        owGameName: gameData.owGameName,
+        isSupported: true,
+        gameData: gameData
+      };
+    }
+
+    return null;
   }
 
   public isGameRunning(): boolean {
@@ -131,5 +145,26 @@ export class CurrentGameService extends EventEmitter {
   // Method to manually trigger an update (for initial load)
   public refreshCurrentGame(): void {
     this.updateCurrentGame();
+  }
+
+  // Method to inject GEP service for fallback detection
+  public setGepService(gepService: any): void {
+    this.gepService = gepService;
+
+    // Listen for GEP game detection events
+    if (gepService) {
+      gepService.on('game-detected', () => {
+        this.updateCurrentGame();
+      });
+    }
+  }
+
+  /**
+   * Centralized method to normalize game IDs to Overwolf's official format
+   * Ensures consistency across GEP, Overlay, and games.json
+   */
+  private normalizeGameId(gameId: number | string): string {
+    // Convert to string and ensure it matches Overwolf's format
+    return gameId.toString();
   }
 }
