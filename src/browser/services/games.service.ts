@@ -48,7 +48,7 @@ export class GamesService {
       if (fs.existsSync(this.gamesPath)) {
         const data = fs.readFileSync(this.gamesPath, 'utf8');
         this.games = JSON.parse(data);
-        console.log(`Loaded ${this.games.length} games from games.json at: ${this.gamesPath}`);
+        console.log(`Loaded ${this.games.length} games from games.json`);
       } else {
         console.error('games.json not found at:', this.gamesPath);
         // Provide fallback data for development

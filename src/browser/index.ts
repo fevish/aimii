@@ -82,6 +82,10 @@ const bootstrap = (): Application => {
   const settingsService = new SettingsService();
   const gamesService = new GamesService();
   const currentGameService = new CurrentGameService(overlayService, gamesService);
+
+  // Inject GEP service into current game service for fallback detection
+  currentGameService.setGepService(gepService);
+
   const sensitivityConverterService = new SensitivityConverterService(gamesService, settingsService, currentGameService);
   const windowStateService = new WindowStateService();
 

@@ -11,7 +11,7 @@ const app = electronApp as overwolf.OverwolfApp;
  */
 export class GameEventsService extends EventEmitter {
   private gepApi!: overwolf.packages.OverwolfGameEventPackage;
-  private activeGame = 0;
+  public activeGame = 0;
   private gepGamesId: number[] = [];
 
   constructor() {
@@ -101,8 +101,9 @@ export class GameEventsService extends EventEmitter {
       // }
 
       this.emit('log', 'gep: register game-detected', gameId, name, gameInfo);
+      this.activeGame = gameId; // Set active game first
+      this.emit('game-detected', gameId, name, gameInfo); // Then emit event
       e.enable();
-      this.activeGame = gameId;
 
       // in order to start receiving event/info
       // setRequiredFeatures should be set
@@ -112,7 +113,7 @@ export class GameEventsService extends EventEmitter {
     // from the gep api
     //@ts-ignore
     this.gepApi.on('game-exit',(e, gameId, processName, pid) => {
-      console.log('gep game exit', gameId, processName, pid);
+      // Game exit event
     });
 
     // If a game is detected running in elevated mode
