@@ -1,0 +1,10 @@
+{
+  "watch": ["dist/browser/"],
+  "ext": "js",
+  "ignore": ["dist/renderer/", "dist/exclusive/", "dist/my-main.html", "dist/widget/"],
+  "exec": "ow-electron .",
+  "delay": "500",
+  "restartable": "rs",
+  "colours": true,
+  "verbose": true
+}
