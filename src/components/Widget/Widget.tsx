@@ -11,6 +11,12 @@ interface CanonicalSettings {
   dpi: number;
 }
 
+interface HotkeyInfo {
+  keyCode: number;
+  modifiers: { ctrl: boolean; shift: boolean; alt: boolean };
+  displayText: string;
+}
+
 // Type declaration for window object
 declare global {
   interface Window {
@@ -24,6 +30,7 @@ const Widget: React.FC = () => {
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
   const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
   const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
+  const [hotkeyInfo, setHotkeyInfo] = useState<HotkeyInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrentGame = async () => {
@@ -69,6 +76,26 @@ const Widget: React.FC = () => {
     }
   };
 
+  const fetchHotkeyInfo = async () => {
+    try {
+      const { ipcRenderer } = require('electron');
+      const hotkey = await ipcRenderer.invoke('hotkeys-get-info', 'widget-toggle');
+
+      // Only update if hotkey info has actually changed
+      setHotkeyInfo(prevHotkey => {
+        if (!prevHotkey && !hotkey) return prevHotkey;
+        if (!prevHotkey || !hotkey) return hotkey;
+        if (prevHotkey.displayText === hotkey.displayText) {
+          return prevHotkey; // No change, keep previous state
+        }
+        return hotkey;
+      });
+    } catch (error) {
+      console.error('Failed to fetch hotkey info:', error);
+      setHotkeyInfo(null);
+    }
+  };
+
   const fetchSuggestedSensitivity = async () => {
     try {
       const { ipcRenderer } = require('electron');
@@ -92,7 +119,7 @@ const Widget: React.FC = () => {
   };
 
   const fetchData = async () => {
-    await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchSuggestedSensitivity()]);
+    await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchHotkeyInfo(), fetchSuggestedSensitivity()]);
   };
 
   // Check if current game matches canonical game
@@ -192,6 +219,11 @@ const Widget: React.FC = () => {
           {!currentGame?.isSupported && currentGame && (
             <p>Game not supported for conversion</p>
           )}
+        </div>
+
+        <div className="hotkey-info">
+          <p>Toggle Widget</p>
+          <p>{hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
         </div>
       </div>
     </div>
