@@ -12,6 +12,7 @@ import { GamesService } from '../services/games.service';
 import { SettingsService } from '../services/settings.service';
 import { CurrentGameService } from '../services/current-game.service';
 import { SensitivityConverterService } from '../services/sensitivity-converter.service';
+import { WindowStateService } from '../services/window-state.service';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
 
@@ -35,7 +36,8 @@ export class MainWindowController {
     private readonly gamesService: GamesService,
     private readonly settingsService: SettingsService,
     private readonly currentGameService: CurrentGameService,
-    private readonly sensitivityConverterService: SensitivityConverterService
+    private readonly sensitivityConverterService: SensitivityConverterService,
+    private readonly windowStateService: WindowStateService
   ) {
     this.registerToIpc();
     this.setupGameChangeListener();
@@ -102,11 +104,16 @@ export class MainWindowController {
    *
    */
   public createAndShow(showDevTools: boolean) {
+    // Load saved window state
+    const savedState = this.windowStateService.loadWindowState();
+
     this.browserWindow = new BrowserWindow({
-      width: 900,
-      height: 500,
+      width: savedState.width,
+      height: savedState.height,
+      x: savedState.x,
+      y: savedState.y,
       title: 'AIMII - Mouse Sensitivity Converter',
-      show: true,
+      show: false, // Don't show until we've set up the state
       resizable: false, // Disable window resizing
       webPreferences: {
         // NOTE: nodeIntegration and contextIsolation are only required for this
@@ -114,12 +121,17 @@ export class MainWindowController {
         // ow-electron applications
         nodeIntegration: true,
         contextIsolation: true,
-        devTools: showDevTools,
+        devTools: showDevTools || savedState.devToolsOpen,
         // relative to root folder of the project
         preload: path.join(__dirname, '../preload/preload.js'),
       },
     });
 
+    // Apply saved window state
+    this.windowStateService.applyWindowState(this.browserWindow);
+
+    // Set up automatic state saving
+    this.windowStateService.setupStateSaving(this.browserWindow);
 
     // Hide the menu bar but keep the default menu and all default hotkeys
     this.browserWindow.setMenuBarVisibility(false);
@@ -135,6 +147,11 @@ export class MainWindowController {
     setMainWindowForConsole(this.browserWindow);
 
     this.browserWindow.loadFile(path.join(__dirname, '../my-main.html'));
+
+    // Show the window after it's loaded
+    this.browserWindow.once('ready-to-show', () => {
+      this.browserWindow?.show();
+    });
   }
 
   /**
