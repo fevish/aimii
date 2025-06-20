@@ -13,6 +13,7 @@ export class GameEventsService extends EventEmitter {
   private gepApi!: overwolf.packages.OverwolfGameEventPackage;
   public activeGame = 0;
   private gepGamesId: number[] = [];
+  private gepGamesSet: Set<number> = new Set(); // For O(1) lookups
 
   constructor() {
     super();
@@ -27,16 +28,30 @@ export class GameEventsService extends EventEmitter {
   public registerGames(gepGamesId: number[]) {
     this.emit('log', `register to game events for `, gepGamesId);
     this.gepGamesId = gepGamesId;
+    this.gepGamesSet = new Set(gepGamesId); // Create Set for O(1) lookups
   }
 
   /**
-   *
+   * Set required features for all supported games
    */
   public async setRequiredFeaturesForAllSupportedGames() {
+    // Use Promise.all for parallel execution instead of sequential
     await Promise.all(this.gepGamesId.map(async (gameId) => {
       this.emit('log', `set-required-feature for: ${gameId}`);
       await this.gepApi.setRequiredFeatures(gameId, undefined);
     }));
+  }
+
+  /**
+   * Set required features for a specific game (for immediate setup)
+   */
+  private async setRequiredFeaturesForGame(gameId: number) {
+    try {
+      await this.gepApi.setRequiredFeatures(gameId, undefined);
+      this.emit('log', `set-required-feature for: ${gameId} (immediate)`);
+    } catch (error) {
+      this.emit('log', `error setting features for ${gameId}:`, error);
+    }
   }
 
   /**
@@ -88,8 +103,7 @@ export class GameEventsService extends EventEmitter {
     // To check if the game is running in elevated mode, use `gameInfo.isElevate`
     this.gepApi.on('game-detected', (e, gameId, name, gameInfo) => {
       // If the game isn't in our tracking list
-
-      if (!this.gepGamesId.includes(gameId)) {
+      if (!this.gepGamesSet.has(gameId)) {
         // Stops the GEP Package from connecting to the game
         this.emit('log', 'gep: skip game-detected', gameId, name, gameInfo.pid);
         return;
@@ -105,15 +119,20 @@ export class GameEventsService extends EventEmitter {
       this.emit('game-detected', gameId, name, gameInfo); // Then emit event
       e.enable();
 
-      // in order to start receiving event/info
-      // setRequiredFeatures should be set
+      // Automatically set required features for immediate event detection
+      this.setRequiredFeaturesForGame(gameId);
     });
 
-    // undocumented (will add it fir next version) event to track game-exit
-    // from the gep api
+    // Handle game exit for faster cleanup and detection
     //@ts-ignore
-    this.gepApi.on('game-exit',(e, gameId, processName, pid) => {
-      // Game exit event
+    this.gepApi.on('game-exit', (e, gameId, processName, pid) => {
+      this.emit('log', 'gep: game-exit', gameId, processName, pid);
+
+      // Clear active game if this was the active one
+      if (this.activeGame === gameId) {
+        this.activeGame = 0;
+        this.emit('game-exit', gameId, processName, pid);
+      }
     });
 
     // If a game is detected running in elevated mode
