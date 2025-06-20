@@ -9,6 +9,7 @@ export class WidgetWindowController {
   private widgetWindow: OverlayBrowserWindow | null = null;
   private isVisible: boolean = false;
   private savePositionTimeout: NodeJS.Timeout | null = null;
+  private hotkeysRegistered: boolean = false; // Prevent duplicate registrations
 
   // Centralized hotkey configuration
   private readonly WIDGET_HOTKEY = {
@@ -129,7 +130,6 @@ export class WidgetWindowController {
     // Listen for game window changes (resolution changes, etc.)
     if (this.overlayService.overlayApi) {
       this.overlayService.overlayApi.on('game-window-changed', (windowInfo: any, gameInfo: any, reason: any) => {
-        console.log('Game window changed, checking widget bounds...');
         this.checkAndRepositionWidget(windowInfo);
       });
     }
@@ -236,6 +236,12 @@ export class WidgetWindowController {
       this.settingsService.setWidgetPosition(bounds.x, bounds.y);
       this.settingsService.setWidgetVisible(false);
 
+      // Clear any pending timeouts
+      if (this.savePositionTimeout) {
+        clearTimeout(this.savePositionTimeout);
+        this.savePositionTimeout = null;
+      }
+
       this.widgetWindow.window.close();
       this.widgetWindow = null;
       this.isVisible = false;
@@ -270,43 +276,45 @@ export class WidgetWindowController {
   }
 
   private registerHotkey(): void {
-    // We'll register the hotkey through the overlay service
-    if (this.overlayService.overlayApi) {
-      // console.log('Registering widget hotkey: Ctrl+Shift+M');
-
-      // Register widget toggle hotkey
-      this.overlayService.overlayApi.hotkeys.register({
-        name: this.WIDGET_HOTKEY.name,
-        keyCode: this.WIDGET_HOTKEY.keyCode,
-        modifiers: {
-          ctrl: this.WIDGET_HOTKEY.modifiers.ctrl,
-          shift: this.WIDGET_HOTKEY.modifiers.shift
-        },
-        passthrough: true
-      }, (hotkey, state) => {
-        // console.log('Widget hotkey pressed:', hotkey.name, state);
-        if (state === 'pressed') {
-          this.toggleVisibility();
-        }
-      });
-
-      // Register dev tools hotkey
-      this.overlayService.overlayApi.hotkeys.register({
-        name: this.DEV_TOOLS_HOTKEY.name,
-        keyCode: this.DEV_TOOLS_HOTKEY.keyCode,
-        modifiers: {
-          ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
-          shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
-        },
-        passthrough: true
-      }, (hotkey, state) => {
-        if (state === 'pressed') {
-          this.openDevTools();
-        }
-      });
-    } else {
-      console.log('Overlay API not available for hotkey registration');
+    // Prevent duplicate registrations
+    if (this.hotkeysRegistered || !this.overlayService.overlayApi) {
+      return;
     }
+
+    // console.log('Registering widget hotkey: Ctrl+Shift+M');
+
+    // Register widget toggle hotkey
+    this.overlayService.overlayApi.hotkeys.register({
+      name: this.WIDGET_HOTKEY.name,
+      keyCode: this.WIDGET_HOTKEY.keyCode,
+      modifiers: {
+        ctrl: this.WIDGET_HOTKEY.modifiers.ctrl,
+        shift: this.WIDGET_HOTKEY.modifiers.shift
+      },
+      passthrough: true
+    }, (hotkey, state) => {
+      // console.log('Widget hotkey pressed:', hotkey.name, state);
+      if (state === 'pressed') {
+        this.toggleVisibility();
+      }
+    });
+
+    // Register dev tools hotkey
+    this.overlayService.overlayApi.hotkeys.register({
+      name: this.DEV_TOOLS_HOTKEY.name,
+      keyCode: this.DEV_TOOLS_HOTKEY.keyCode,
+      modifiers: {
+        ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
+        shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
+      },
+      passthrough: true
+    }, (hotkey, state) => {
+      if (state === 'pressed') {
+        this.openDevTools();
+      }
+    });
+
+    this.hotkeysRegistered = true;
   }
 
   private registerWindowEvents(): void {
