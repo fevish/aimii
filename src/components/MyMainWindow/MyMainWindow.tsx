@@ -224,8 +224,7 @@ export const MyMainWindow: React.FC = () => {
   return (
     <div className="my-main-window">
       <header className="app-header">
-        <h1>AIMII - Mouse Sensitivity Converter</h1>
-        <p>Convert your mouse sensitivity between different games and devices</p>
+        <h1>AIMII</h1>
       </header>
 
       <main className="app-content">
