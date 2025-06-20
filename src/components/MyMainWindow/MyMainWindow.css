@@ -11,7 +11,7 @@ html {
 
 body {
   overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: Arial;
   color: #e0e0e0;
 }
 
@@ -77,6 +77,57 @@ header {
   background: rgba(0, 0, 0, 0.4);
   padding: calc(0.5 * var(--spacing)) var(--spacing);
   border-bottom: 1px solid rgba(255, 179, 71, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-color);
+}
+
+.tab-navigation {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-button {
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: normal;
+  align-self: auto;
+}
+
+.tab-button:hover {
+  background: rgba(255, 179, 71, 0.1);
+  color: var(--brand-color);
+  border-color: var(--brand-color);
+  transform: none;
+  box-shadow: none;
+}
+
+.tab-button.active {
+  background: var(--brand-color);
+  color: var(--bg-primary);
+  border-color: var(--brand-color);
+  font-weight: 600;
+}
+
+.tab-button.active:hover {
+  background: #ff9500;
+  transform: none;
+  box-shadow: none;
 }
 
 main {
@@ -171,7 +222,7 @@ input::placeholder {
 
 /* Buttons */
 button {
-  padding: var(--spacing) calc(2 * var(--spacing));
+  padding: 0.5rem 1rem;
   background: linear-gradient(135deg, var(--brand-color) 0%, #ff9500 100%);
   color: var(--bg-primary);
   border: none;
