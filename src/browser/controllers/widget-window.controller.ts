@@ -11,7 +11,19 @@ export class WidgetWindowController {
   private isVisible: boolean = false;
   private savePositionTimeout: NodeJS.Timeout | null = null;
   private hotkeysRegistered: boolean = false; // Prevent duplicate registrations
-  private static ipcHandlersRegistered: boolean = false; // Static flag to prevent duplicate IPC handler registrations across all instances
+
+  // Centralized hotkey configuration
+  private readonly WIDGET_HOTKEY = {
+    keyCode: 77, // M key
+    modifiers: { ctrl: true, shift: true, alt: false },
+    name: "toggleWidget"
+  };
+
+  private readonly DEV_TOOLS_HOTKEY = {
+    keyCode: 73, // I key
+    modifiers: { ctrl: true, shift: true, alt: false },
+    name: "openWidgetDevTools"
+  };
 
   constructor(
     private readonly overlayService: OverlayService,
@@ -23,15 +35,43 @@ export class WidgetWindowController {
 
     // Listen for overlay service to be ready before registering hotkeys
     this.overlayService.on('ready', () => {
-      console.log('[WidgetWindowController] Overlay service ready, registering hotkeys');
       this.registerHotkey();
     });
 
-    // Listen for hotkey changes
-    this.hotkeyService.on('hotkey-changed', (id: string, hotkey: any) => {
+    // If overlay is already ready, register immediately
+    if (this.overlayService.overlayApi) {
+      this.registerHotkey();
+    }
+
+    // Listen for hotkey changes from settings
+    this.hotkeyService.on('hotkey-changed', (id: string, updatedHotkey: any) => {
       if (id === 'widget-toggle') {
-        console.log('[WidgetWindowController] Widget toggle hotkey changed, re-registering');
-        this.reregisterHotkeys();
+        console.log('[WidgetWindowController] Widget hotkey changed, re-registering...');
+        this.hotkeysRegistered = false; // Reset registration flag
+        this.registerHotkey(); // Re-register with new hotkey
+
+        // Notify widget about hotkey change
+        if (this.widgetWindow) {
+          console.log('[WidgetWindowController] Notifying widget about hotkey change:', id);
+          this.widgetWindow.window.webContents.send('hotkey-changed', id, updatedHotkey);
+        } else {
+          console.log('[WidgetWindowController] Widget window not available, cannot notify about hotkey change');
+        }
+      }
+    });
+
+    // Listen for hotkey reset
+    this.hotkeyService.on('hotkeys-reset', () => {
+      console.log('[WidgetWindowController] Hotkeys reset, re-registering widget hotkey...');
+      this.hotkeysRegistered = false; // Reset registration flag
+      this.registerHotkey(); // Re-register with default hotkey
+
+      // Notify widget about hotkey reset
+      if (this.widgetWindow) {
+        console.log('[WidgetWindowController] Notifying widget about hotkeys reset');
+        this.widgetWindow.window.webContents.send('hotkeys-reset');
+      } else {
+        console.log('[WidgetWindowController] Widget window not available, cannot notify about hotkeys reset');
       }
     });
   }
@@ -41,11 +81,6 @@ export class WidgetWindowController {
   }
 
   private registerWidgetIpc(): void {
-    // Prevent duplicate registrations
-    if (WidgetWindowController.ipcHandlersRegistered) {
-      return;
-    }
-
     // Widget-specific IPC handlers
     ipcMain.handle('widget-get-current-game', () => {
       return this.currentGameService.getCurrentGameInfo();
@@ -76,14 +111,10 @@ export class WidgetWindowController {
         currentGame
       };
     });
-
-    WidgetWindowController.ipcHandlersRegistered = true;
   }
 
   public async createWidget(): Promise<void> {
-    console.log('[WidgetWindowController] createWidget called');
     if (this.widgetWindow) {
-      console.log('[WidgetWindowController] Widget window already exists');
       return; // Widget already exists
     }
 
@@ -124,24 +155,11 @@ export class WidgetWindowController {
       options.y = savedPosition.y;
     }
 
-    console.log('[WidgetWindowController] Creating overlay window with options:', options);
-    try {
-      this.widgetWindow = await this.overlayService.createNewOsrWindow(options);
-      console.log('[WidgetWindowController] Widget window created:', !!this.widgetWindow);
-    } catch (error) {
-      console.error('[WidgetWindowController] Failed to create overlay window:', error);
-      throw error;
-    }
+    this.widgetWindow = await this.overlayService.createNewOsrWindow(options);
 
-    try {
-      await this.widgetWindow.window.loadFile(
-        path.join(__dirname, '../widget/widget.html')
-      );
-      console.log('[WidgetWindowController] Widget HTML loaded');
-    } catch (error) {
-      console.error('[WidgetWindowController] Failed to load widget HTML:', error);
-      throw error;
-    }
+    await this.widgetWindow.window.loadFile(
+      path.join(__dirname, '../widget/widget.html')
+    );
 
     // Listen for game window changes (resolution changes, etc.)
     if (this.overlayService.overlayApi) {
@@ -157,11 +175,6 @@ export class WidgetWindowController {
     }
 
     this.registerWindowEvents();
-
-    // Ensure hotkeys are registered when widget is created
-    this.registerHotkey();
-
-    console.log('[WidgetWindowController] createWidget completed, widgetWindow exists:', !!this.widgetWindow);
   }
 
   private checkAndRepositionWidget(windowInfo?: any): void {
@@ -224,37 +237,15 @@ export class WidgetWindowController {
                           bounds.y + bounds.height <= gameHeight;
   }
 
-  public async toggleVisibility(): Promise<void> {
-    console.log('[WidgetWindowController] toggleVisibility called. isVisible:', this.isVisible, 'widgetWindow exists:', !!this.widgetWindow);
-
-    // If widget window doesn't exist, create it first
-    if (!this.widgetWindow) {
-      console.log('[WidgetWindowController] Widget window not created, creating it first');
-      try {
-        await this.createWidget();
-        // After creation, show the widget
-        const widgetWindow = this.widgetWindow;
-        if (widgetWindow && widgetWindow.window) {
-          widgetWindow.window.show();
-          this.isVisible = true;
-          console.log('[WidgetWindowController] Widget created and shown');
-        } else {
-          console.error('[WidgetWindowController] Widget window still null after creation');
-        }
-      } catch (error) {
-        console.error('[WidgetWindowController] Failed to create widget:', error);
-      }
-      return;
-    }
+  public toggleVisibility(): void {
+    if (!this.widgetWindow) return;
 
     if (this.isVisible) {
       this.widgetWindow.window.hide();
       this.isVisible = false;
-      console.log('[WidgetWindowController] Widget hidden');
     } else {
       this.widgetWindow.window.show();
       this.isVisible = true;
-      console.log('[WidgetWindowController] Widget shown');
     }
   }
 
@@ -297,62 +288,73 @@ export class WidgetWindowController {
   }
 
   public getHotkeyInfo(): { keyCode: number; modifiers: { ctrl: boolean; shift: boolean; alt: boolean }; displayText: string } {
-    // Get widget hotkey info from the hotkey service
+    // Get hotkey info from the HotkeyService
     const hotkeyInfo = this.hotkeyService.getHotkeyInfo('widget-toggle');
-    if (!hotkeyInfo) {
-      // Fallback to default values if hotkey not found
-      return {
-        keyCode: 77, // M key
-        modifiers: { ctrl: true, shift: true, alt: false },
-        displayText: 'Ctrl+Shift+M'
-      };
+
+    if (hotkeyInfo) {
+      return hotkeyInfo;
     }
-    return hotkeyInfo;
+
+    // Fallback to default configuration if hotkey service doesn't have it
+    const { keyCode, modifiers } = this.WIDGET_HOTKEY;
+
+    // Convert keyCode to readable key name
+    const keyName = String.fromCharCode(keyCode);
+
+    // Build display text
+    const modifierParts = [];
+    if (modifiers.ctrl) modifierParts.push('Ctrl');
+    if (modifiers.shift) modifierParts.push('Shift');
+    if (modifiers.alt) modifierParts.push('Alt');
+
+    const displayText = `${modifierParts.join('+')}+${keyName}`;
+
+    return {
+      keyCode,
+      modifiers,
+      displayText
+    };
   }
 
   private registerHotkey(): void {
     // Prevent duplicate registrations
     if (this.hotkeysRegistered || !this.overlayService.overlayApi) {
-      console.log('[WidgetWindowController] registerHotkey: Already registered or overlayApi not ready');
       return;
     }
 
-    // Get widget toggle hotkey from service
-    const widgetHotkey = this.hotkeyService.getHotkey('widget-toggle');
-    console.log('[WidgetWindowController] registerHotkey: Registering widget toggle hotkey', widgetHotkey);
-
-    if (!widgetHotkey) {
-      console.error('[WidgetWindowController] Widget toggle hotkey not found');
+    // Get current widget hotkey configuration from HotkeyService
+    const widgetHotkeyInfo = this.hotkeyService.getHotkeyInfo('widget-toggle');
+    if (!widgetHotkeyInfo) {
+      console.log('[WidgetWindowController] No widget hotkey configured, skipping registration');
       return;
     }
 
-    // Register widget toggle hotkey
+    console.log('[WidgetWindowController] Registering widget hotkey:', widgetHotkeyInfo.displayText);
+
+    // Register widget toggle hotkey with current configuration
     this.overlayService.overlayApi.hotkeys.register({
-      name: 'widget-toggle',
-      keyCode: widgetHotkey.keyCode,
+      name: this.WIDGET_HOTKEY.name,
+      keyCode: widgetHotkeyInfo.keyCode,
       modifiers: {
-        ctrl: widgetHotkey.modifiers.ctrl,
-        shift: widgetHotkey.modifiers.shift,
-        alt: widgetHotkey.modifiers.alt
+        ctrl: widgetHotkeyInfo.modifiers.ctrl,
+        shift: widgetHotkeyInfo.modifiers.shift,
+        alt: widgetHotkeyInfo.modifiers.alt
       },
       passthrough: true
     }, (hotkey, state) => {
-      console.log('[WidgetWindowController] Hotkey callback:', hotkey, state);
+      console.log('[WidgetWindowController] Widget hotkey pressed:', hotkey.name, state);
       if (state === 'pressed') {
-        this.toggleVisibility().catch(error => {
-          console.error('[WidgetWindowController] Hotkey toggle failed:', error);
-        });
+        this.toggleVisibility();
       }
     });
 
-    // Register dev tools hotkey (hardcoded as Ctrl+Shift+I)
+    // Register dev tools hotkey (keep this as is since it's not configurable)
     this.overlayService.overlayApi.hotkeys.register({
-      name: 'widget-dev-tools',
-      keyCode: 73, // I key
+      name: this.DEV_TOOLS_HOTKEY.name,
+      keyCode: this.DEV_TOOLS_HOTKEY.keyCode,
       modifiers: {
-        ctrl: true,
-        shift: true,
-        alt: false
+        ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
+        shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
       },
       passthrough: true
     }, (hotkey, state) => {
@@ -362,13 +364,7 @@ export class WidgetWindowController {
     });
 
     this.hotkeysRegistered = true;
-    console.log('[WidgetWindowController] registerHotkey: Registration complete');
-  }
-
-  private reregisterHotkeys(): void {
-    console.log('[WidgetWindowController] Re-registering hotkeys');
-    this.hotkeysRegistered = false;
-    this.registerHotkey();
+    console.log('[WidgetWindowController] Widget hotkeys registered successfully');
   }
 
   private registerWindowEvents(): void {
