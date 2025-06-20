@@ -1,6 +1,10 @@
 ---
 description: Project context and rules for overwolf-electron sample and custom app development.
 globs:
+alwaysApply: true
+---
+description: Project context and rules for overwolf-electron sample and custom app development.
+globs:
   - "**/*"
 alwaysApply: true
 - This project is based on the overwolf-electron sample app (NOT Overwolf Native).
@@ -141,5 +145,17 @@ src/
 - IPC handlers should be centralized in MainWindowController
 - Always use gameInfo.classId for game identification
 - Maintain the event-driven architecture pattern
+
+### Commit Message Guidelines
+- Keep commit messages concise and under 50 characters
+- State what changes you made as short as possible
+- Focus on the main change, not implementation details
+- Examples:
+  - `optimize order of operation and app performance`
+  - `fix hotkey registration issue`
+  - `add game detection fallback`
+  - `simplify CSS structure`
+  - `update README`
+- Avoid verbose descriptions - the code should be self-documenting
 
 

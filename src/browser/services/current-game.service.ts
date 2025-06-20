@@ -173,7 +173,12 @@ export class CurrentGameService extends EventEmitter {
     // Listen for GEP game detection events
     if (gepService) {
       gepService.on('game-detected', () => {
-        this.updateCurrentGame();
+        this.scheduleUpdate();
+      });
+
+      // Listen for GEP game exit events for faster cleanup
+      gepService.on('game-exit', () => {
+        this.scheduleUpdate();
       });
     }
   }
