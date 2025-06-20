@@ -135,6 +135,16 @@ const Widget: React.FC = () => {
     // Listen for game change events from main process
     ipcRenderer.on('current-game-changed', handleGameChanged);
 
+    // Listen for canonical settings changes
+    const handleCanonicalSettingsChanged = (settings: any) => {
+      console.log('[Widget] Canonical settings changed event received:', settings);
+      fetchCanonicalSettings(); // Refresh canonical settings when they change
+      fetchSuggestedSensitivity(); // Also refresh sensitivity suggestions since they depend on canonical settings
+    };
+
+    // Listen for canonical settings change events from main process
+    ipcRenderer.on('canonical-settings-changed', handleCanonicalSettingsChanged);
+
     // Listen for hotkey change events
     const handleHotkeyChanged = (id: string, updatedHotkey: any) => {
       console.log('[Widget] Hotkey changed event received:', id, updatedHotkey);
@@ -178,6 +188,7 @@ const Widget: React.FC = () => {
 
     return () => {
       ipcRenderer.removeListener('current-game-changed', handleGameChanged);
+      ipcRenderer.removeListener('canonical-settings-changed', handleCanonicalSettingsChanged);
       ipcRenderer.removeListener('hotkey-changed', handleHotkeyChanged);
       ipcRenderer.removeListener('hotkeys-reset', handleHotkeysReset);
       clearInterval(settingsInterval);

@@ -195,6 +195,17 @@ export class MainWindowController {
     ipcMain.handle('settings-set-canonical', (event, game: string, sensitivity: number, dpi: number) => {
       this.settingsService.setCanonicalSettings(game, sensitivity, dpi);
       this.printLogMessage(`Canonical settings saved: ${game}, sensitivity: ${sensitivity}, DPI: ${dpi}`);
+
+      // Notify main window about settings change
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send('canonical-settings-changed', { game, sensitivity, dpi });
+      }
+
+      // Notify widget about settings change
+      if (this.widgetController?.overlayBrowserWindow) {
+        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', { game, sensitivity, dpi });
+      }
+
       return true;
     });
 
