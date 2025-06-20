@@ -349,6 +349,11 @@ export class MainWindowController {
     ipcMain.handle('hotkeys-get-info', (event, id: string) => {
       return this.hotkeyService.getHotkeyInfo(id);
     });
+
+    // Widget-specific hotkey info handler
+    ipcMain.handle('widget-get-hotkey-info', () => {
+      return this.hotkeyService.getHotkeyInfo('widget-toggle');
+    });
   }
 
   /**
