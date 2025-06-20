@@ -43,12 +43,10 @@ export class OverlayService extends EventEmitter {
   }
 
   /**
-   *
-   *
+   * Register games for overlay injection
    */
   public async registerToGames(gameIds: number[]): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
+    // Removed 2-second delay - this was causing slow injection
     this.log('registering to game ids:', gameIds);
 
     const filter: GamesFilter = {
