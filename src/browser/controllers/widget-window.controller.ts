@@ -28,8 +28,17 @@ export class WidgetWindowController {
     private readonly settingsService: SettingsService,
     private readonly currentGameService: CurrentGameService
   ) {
-    this.registerHotkey();
     this.registerWidgetIpc();
+
+    // Listen for overlay service to be ready before registering hotkeys
+    this.overlayService.on('ready', () => {
+      this.registerHotkey();
+    });
+
+    // If overlay is already ready, register immediately
+    if (this.overlayService.overlayApi) {
+      this.registerHotkey();
+    }
   }
 
   public get overlayBrowserWindow(): OverlayBrowserWindow | null {
@@ -263,6 +272,8 @@ export class WidgetWindowController {
   private registerHotkey(): void {
     // We'll register the hotkey through the overlay service
     if (this.overlayService.overlayApi) {
+      // console.log('Registering widget hotkey: Ctrl+Shift+M');
+
       // Register widget toggle hotkey
       this.overlayService.overlayApi.hotkeys.register({
         name: this.WIDGET_HOTKEY.name,
@@ -273,6 +284,7 @@ export class WidgetWindowController {
         },
         passthrough: true
       }, (hotkey, state) => {
+        // console.log('Widget hotkey pressed:', hotkey.name, state);
         if (state === 'pressed') {
           this.toggleVisibility();
         }
@@ -292,6 +304,8 @@ export class WidgetWindowController {
           this.openDevTools();
         }
       });
+    } else {
+      console.log('Overlay API not available for hotkey registration');
     }
   }
 
