@@ -18,16 +18,24 @@ alwaysApply: true
 ## AIMII Mouse Sensitivity Converter App
 
 ### Project Overview
-AIMII is a complete overwolf-electron mouse sensitivity converter application with real-time game detection, event-driven architecture, and both main window and overlay widget interfaces.
+AIMII is a complete overwolf-electron mouse sensitivity converter application with real-time game detection, event-driven architecture, and both main window and overlay widget interfaces. The app is optimized for maximum performance with minimal latency.
 
 ### Core Architecture
 
 #### Services Layer (`src/browser/services/`)
-- **CurrentGameService**: Event-driven game detection using Overwolf events (`game-injected`, `game-launched`, `game-focus-changed`)
+- **CurrentGameService**: Event-driven game detection with GEP-overlay coordination
   - Extends EventEmitter for real-time notifications
   - Uses `gameInfo.classId` (NOT `gameInfo.id`) for game matching - this is critical
+  - Prioritizes GEP detection over overlay for faster response
+  - Implements 500ms debouncing to prevent excessive updates
   - Auto-injects overlay for supported games
   - Eliminates polling overhead with pure event-driven detection
+
+- **GameEventsService (GEP)**: High-performance game detection service
+  - Uses O(1) Set lookups for game ID matching (optimized from O(n) array.includes)
+  - Automatically sets required features on game detection for immediate events
+  - Proper game exit handling to prevent stale detection states
+  - Parallel feature setting with Promise.all for faster initialization
 
 - **SensitivityConverterService**: Cross-game sensitivity calculations
   - Uses existing GamesService conversion methods for accuracy
@@ -37,30 +45,41 @@ AIMII is a complete overwolf-electron mouse sensitivity converter application wi
 - **GamesService**: Game configuration management from `games.json`
   - Maps Overwolf game IDs to internal game data
   - Provides conversion factors and game metadata
+  - Supports special conversion formulas for complex games
 
 - **SettingsService**: Persistent canonical settings storage
   - User's preferred game, sensitivity, and DPI as conversion baseline
   - Widget position and visibility state persistence
+  - Debounced position saving to prevent excessive writes
 
-- **OverlayService**: Overwolf overlay API management
+- **OverlayService**: Optimized Overwolf overlay API management
+  - Removed 2-second delay from game registration for faster injection
   - Game injection and overlay window creation
   - Event registration and management
+  - Coordinates with GEP for immediate injection attempts
 
 #### Controllers Layer (`src/browser/controllers/`)
 - **MainWindowController**: Central coordination hub
   - Manages all service dependencies and IPC handlers
   - Listens for game changes and broadcasts to UI components via IPC
   - Handles widget creation and management
+  - Centralized logging and error handling
 
 - **WidgetWindowController**: Overlay widget management
   - Centralized hotkey configuration (Ctrl+Shift+M for toggle, Ctrl+Shift+I for dev tools)
-  - Position persistence and bounds checking
+  - Prevents duplicate hotkey registrations with hotkeysRegistered flag
+  - Position persistence and bounds checking with debounced saving
   - Overlay window lifecycle management
+  - Proper timeout cleanup to prevent memory leaks
 
 #### UI Components
-- **MyMainWindow** (`src/components/MyMainWindow/`): Main application interface
-  - Canonical settings configuration
-  - Real-time game status display
+- **MyMainWindow** (`src/components/MyMainWindow/`): Optimized main application interface
+  - Consolidated data loading with Promise.all for parallel execution
+  - React.useMemo() for expensive calculations to prevent unnecessary recalculations
+  - Smart state change detection to avoid redundant re-renders
+  - Reduced polling frequency from 15s to 30s for settings sync
+  - Canonical settings configuration with real-time validation
+  - Real-time game status display with immediate updates
   - Sensitivity suggestions for current game
   - Dark theme with glassmorphism effects
 
@@ -68,11 +87,13 @@ AIMII is a complete overwolf-electron mouse sensitivity converter application wi
   - Compact game info display
   - Real-time sensitivity suggestions
   - Minimal, non-intrusive design
+  - Position persistence and bounds checking
 
 ### Event-Driven Architecture
 - **Game Detection**: Pure event-driven using Overwolf events (no polling)
+- **GEP-Overlay Coordination**: GEP detection immediately triggers overlay injection attempts
 - **UI Updates**: IPC events (`current-game-changed`) for instant UI refresh
-- **Settings Sync**: Minimal polling (10-15s) only for settings changes
+- **Settings Sync**: Minimal polling (30s) only for settings changes
 - **Performance**: Smart state updates prevent unnecessary re-renders
 
 ### Key Technical Patterns
@@ -100,10 +121,50 @@ const wrongId = activeGame.gameInfo.id; // This changes per game launch
 
 The `owGameId` field in `games.json` corresponds to Overwolf's `gameInfo.classId`.
 
+#### GEP-Overlay Coordination System
+**CRITICAL**: The app uses a coordinated detection system for maximum performance:
+
+- **GEP Detection**: Primary detection method using `gameInfo.classId` with O(1) Set lookups
+- **Overlay Detection**: Secondary method with automatic injection for supported games
+- **Fallback System**: If overlay fails (elevated privileges, anti-cheat), GEP provides detection
+- **Normalized IDs**: All game IDs are normalized to strings matching Overwolf's official format
+- **Immediate Injection**: GEP detection triggers overlay injection attempts immediately
+
+```typescript
+// Normalized game ID handling (used throughout the app)
+private normalizeGameId(gameId: number | string): string {
+  return gameId.toString(); // Ensures consistency across GEP, Overlay, and games.json
+}
+
+// GEP-Overlay coordination in Application class
+gepService.on('game-detected', (gameId, name, gameInfo) => {
+  // Trigger immediate overlay injection attempt
+  if (overlayService.overlayApi) {
+    const activeGame = overlayService.overlayApi.getActiveGameInfo();
+    if (activeGame && activeGame.gameInfo.classId === gameId) {
+      // Game already detected by overlay, create widget
+    }
+  }
+});
+```
+
+#### Game Detection Flow
+1. **GEP detects game** → Normalizes game ID → Checks if supported → Sets features automatically
+2. **Overlay attempts injection** → Uses same normalized game ID → Injects if supported
+3. **CurrentGameService** → Prioritizes GEP detection → Falls back to overlay if needed
+4. **UI updates** → Immediate via IPC events → No polling required
+
+**Key Benefits**:
+- **Faster detection**: GEP detection is immediate, overlay injection starts right away
+- **Reliable fallback**: If overlay fails, GEP still provides game detection
+- **Consistent IDs**: Normalized game IDs prevent matching issues
+- **No polling**: Pure event-driven architecture eliminates delays
+
 #### State Management
 - Functional setState with change detection to prevent unnecessary renders
 - Smart comparison of key properties before state updates
 - Proper cleanup of event listeners and intervals
+- Debounced operations to prevent excessive calls
 
 ### Styling System
 - Dark theme: `#23272e` backgrounds, `#181a20` darker areas, `#e0e0e0` text
@@ -118,13 +179,23 @@ The `owGameId` field in `games.json` corresponds to Overwolf's `gameInfo.classId
 - Modular service architecture with dependency injection
 - Event-driven communication over polling
 - Centralized configuration (hotkeys, themes, etc.)
+- Performance-first approach with debouncing and memoization
 
 ### File Structure
 ```
 src/
 ├── browser/
 │   ├── services/          # Core business logic
+│   │   ├── current-game.service.ts      # Game detection with GEP-overlay coordination
+│   │   ├── gep.service.ts               # High-performance game events provider
+│   │   ├── overlay.service.ts           # Optimized overlay API management
+│   │   ├── sensitivity-converter.service.ts # Cross-game calculations
+│   │   ├── games.service.ts             # Game configuration management
+│   │   ├── settings.service.ts          # Persistent settings storage
+│   │   └── overlay-hotkeys.service.ts   # Hotkey management
 │   ├── controllers/       # IPC and window management
+│   │   ├── main-window.controller.ts    # Central coordination hub
+│   │   └── widget-window.controller.ts  # Overlay widget management
 │   └── index.ts          # Dependency injection setup
 ├── components/
 │   ├── MyMainWindow/     # Main application UI
@@ -133,11 +204,17 @@ src/
 └── games.json           # Game configuration data
 ```
 
-### Performance Optimizations
-- Event-driven game detection (eliminated 2-5s polling)
-- Smart state updates with change detection
-- Debounced position saving
-- Minimal polling only where necessary (settings sync)
+### Performance Optimizations (Recent)
+- **Removed 2-second delay** from overlay registration for faster injection
+- **GEP-Overlay coordination** for immediate injection attempts when GEP detects games
+- **O(1) game ID lookups** using Set instead of array.includes for faster matching
+- **Automatic feature setting** on GEP game detection for immediate events
+- **Consolidated data loading** with Promise.all for parallel execution
+- **React memoization** for expensive calculations
+- **Smart state updates** with change detection to prevent unnecessary re-renders
+- **Debounced operations** (500ms for game updates, 30s for settings sync)
+- **Proper cleanup** of timeouts and intervals to prevent memory leaks
+- **Prioritized GEP detection** over overlay for faster state updates
 
 ### Future Development Notes
 - All game-related logic should use CurrentGameService events
@@ -145,6 +222,9 @@ src/
 - IPC handlers should be centralized in MainWindowController
 - Always use gameInfo.classId for game identification
 - Maintain the event-driven architecture pattern
+- Prioritize performance with debouncing and memoization
+- Use O(1) data structures for lookups when possible
+- Implement proper cleanup for all timeouts and intervals
 
 ### Commit Message Guidelines
 - Keep commit messages concise and under 50 characters
@@ -157,5 +237,25 @@ src/
   - `simplify CSS structure`
   - `update README`
 - Avoid verbose descriptions - the code should be self-documenting
+
+### Rules Maintenance
+**CRITICAL**: This rules file must be updated whenever significant changes are made to the codebase:
+
+- **Architecture changes**: New services, controllers, or major refactoring
+- **Performance optimizations**: New optimization patterns or techniques
+- **API changes**: Modified service interfaces or IPC handlers
+- **File structure changes**: New files, renamed files, or moved functionality
+- **Detection system changes**: GEP, Overlay, or game detection modifications
+- **UI component changes**: New components or major UI updates
+- **Configuration changes**: New settings, hotkeys, or app behavior
+
+**Update Process**:
+1. Identify what changed in the codebase
+2. Update relevant sections in this rules file
+3. Add new patterns, remove deprecated ones
+4. Ensure examples and code snippets are current
+5. Update file structure and service descriptions if needed
+
+This ensures the rules remain accurate and helpful for future development.
 
 

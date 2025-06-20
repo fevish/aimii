@@ -99,10 +99,16 @@ export class CurrentGameService extends EventEmitter {
   }
 
   public getCurrentGameInfo(): CurrentGameInfo | null {
+    // Prioritize GEP detection for faster response
+    const gepGameInfo = this.getCurrentGameInfoFromGep();
+    if (gepGameInfo) {
+      return gepGameInfo;
+    }
+
+    // Fallback to overlay detection
     const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
     if (!activeGame) {
-      // Try GEP service as fallback
-      return this.getCurrentGameInfoFromGep();
+      return null;
     }
 
     const overwolfGameId = this.normalizeGameId(activeGame.gameInfo.classId || '');
