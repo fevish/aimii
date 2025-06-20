@@ -103,16 +103,13 @@ export class OverlayService extends EventEmitter {
 
     this.overlayApi.on('game-launched', (event, gameInfo) => {
       this.log('game launched', gameInfo);
-      console.log('Overlay: Game launched - checking overlay support for:', gameInfo.name, 'ID:', gameInfo.classId);
 
       if (gameInfo.processInfo?.isElevated) {
-        console.log('Overlay: Game is elevated - cannot inject overlay');
         // ToDo: emit to log and notify user- we can't inject to elevated games
         // if the application is not eleveted.
         return;
       }
 
-      console.log('Overlay: Attempting to inject overlay into game');
       // pass the decision to the application
       this.emit('injection-decision-handling', event, gameInfo);
 
@@ -122,12 +119,10 @@ export class OverlayService extends EventEmitter {
 
     this.overlayApi.on('game-injection-error', (gameInfo, error) => {
       this.log('game-injection-error', error, gameInfo);
-      console.log('Overlay: Injection failed for game:', gameInfo.name, 'Error:', error);
     });
 
     this.overlayApi.on('game-injected', (gameInfo) => {
       this.log('new game injected!', gameInfo);
-      console.log('Overlay: Successfully injected into game:', gameInfo.name, 'ID:', gameInfo.classId);
     });
 
     this.overlayApi.on('game-focus-changed', (window, game, focus) => {

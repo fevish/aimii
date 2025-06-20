@@ -71,65 +71,29 @@ export const MyMainWindow: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
 
-  useEffect(() => {
-    loadGames();
-    loadCanonicalSettings();
-    loadCurrentGameData();
-    loadHotkeyInfo();
+  // Memoized values to prevent unnecessary recalculations
+  const isPlayingCanonicalGame = React.useMemo(() =>
+    currentGame && canonicalSettings &&
+    currentGame.name === canonicalSettings.game && currentGame.isSupported,
+    [currentGame, canonicalSettings]
+  );
 
-    // Set up listener for game change events using the preload API
-    const handleGameChanged = (gameInfo: any) => {
-      console.log('Game changed event received in main window:', gameInfo);
-      loadCurrentGameData(); // Refresh game data when game changes
-    };
-
-    // Listen for game change events using the preload exposed API
-    if (window.currentGame && window.currentGame.onGameChanged) {
-      window.currentGame.onGameChanged(handleGameChanged);
-    }
-
-    // Fallback: reduced frequency polling for canonical settings changes
-    // (since settings changes don't have events and we want to detect external changes)
-    const settingsInterval = setInterval(loadCanonicalSettings, 15000); // Check settings every 15 seconds
-
-    return () => {
-      // Clean up game change listener
-      if (window.currentGame && window.currentGame.removeGameChangedListener) {
-        window.currentGame.removeGameChangedListener();
-      }
-      clearInterval(settingsInterval);
-    };
-  }, []);
-
-  const loadGames = async () => {
+  // Consolidated data loading function
+  const loadAllData = React.useCallback(async () => {
     try {
-      const enabledGames = await window.games.getEnabledGames();
-      setGames(enabledGames.sort((a, b) => a.game.localeCompare(b.game)));
-    } catch (error) {
-      console.error('Error loading games:', error);
-      setMessage('Error loading games data');
-    }
-  };
+      // Load all data in parallel for better performance
+      const [gamesData, settings, gameInfo, hotkey] = await Promise.all([
+        window.games.getAllGames(),
+        window.settings.getCanonicalSettings(),
+        window.currentGame.getCurrentGameInfo(),
+        window.widget.getHotkeyInfo()
+      ]);
 
-  const loadCanonicalSettings = async () => {
-    try {
-      const settings = await window.settings.getCanonicalSettings();
-      if (settings) {
-        setCanonicalSettings(settings);
-        setSelectedGame(settings.game);
-        setSensitivity(settings.sensitivity.toString());
-        setDpi(settings.dpi.toString());
-      }
-    } catch (error) {
-      console.error('Error loading canonical settings:', error);
-    }
-  };
+      setGames(gamesData);
+      setCanonicalSettings(settings);
+      setHotkeyInfo(hotkey);
 
-  const loadCurrentGameData = async () => {
-    try {
-      const gameInfo = await window.currentGame.getCurrentGameInfo();
-
-      // Only update if the game info has actually changed
+      // Only update current game if it actually changed
       setCurrentGame(prevGame => {
         if (!prevGame && !gameInfo) return prevGame;
         if (!prevGame || !gameInfo) return gameInfo;
@@ -139,38 +103,87 @@ export const MyMainWindow: React.FC = () => {
         return gameInfo;
       });
 
-      if (window.sensitivityConverter) {
+      // Load sensitivity suggestion only if we have both settings and game info
+      if (settings && gameInfo && window.sensitivityConverter) {
         const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
+        setSuggestedSensitivity(suggestion);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  }, []);
 
-        // Only update if suggestion has actually changed
+  useEffect(() => {
+    // Initial data load
+    loadAllData();
+
+    // Set up listener for game change events
+    const handleGameChanged = (gameInfo: any) => {
+      console.log('Game changed event received in main window:', gameInfo);
+      // Only reload game-specific data, not everything
+      loadGameSpecificData(gameInfo);
+    };
+
+    if (window.currentGame && window.currentGame.onGameChanged) {
+      window.currentGame.onGameChanged(handleGameChanged);
+    }
+
+    // Reduced polling frequency for settings changes
+    const settingsInterval = setInterval(async () => {
+      try {
+        const settings = await window.settings.getCanonicalSettings();
+        setCanonicalSettings(prev => {
+          if (!prev || !settings) return settings;
+          if (prev.game === settings.game && prev.sensitivity === settings.sensitivity && prev.dpi === settings.dpi) {
+            return prev; // No change
+          }
+          return settings;
+        });
+      } catch (error) {
+        console.error('Error checking settings:', error);
+      }
+    }, 30000); // Check every 30 seconds instead of 15
+
+    return () => {
+      if (window.currentGame && window.currentGame.removeGameChangedListener) {
+        window.currentGame.removeGameChangedListener();
+      }
+      clearInterval(settingsInterval);
+    };
+  }, [loadAllData]);
+
+  // Separate function for game-specific data updates
+  const loadGameSpecificData = React.useCallback(async (gameInfo?: any) => {
+    try {
+      const currentGameInfo = gameInfo || await window.currentGame.getCurrentGameInfo();
+
+      setCurrentGame(prevGame => {
+        if (!prevGame && !currentGameInfo) return prevGame;
+        if (!prevGame || !currentGameInfo) return currentGameInfo;
+        if (prevGame.id === currentGameInfo.id && prevGame.name === currentGameInfo.name && prevGame.isSupported === currentGameInfo.isSupported) {
+          return prevGame; // No change
+        }
+        return currentGameInfo;
+      });
+
+      // Update sensitivity suggestion if we have canonical settings
+      if (canonicalSettings && currentGameInfo && window.sensitivityConverter) {
+        const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
         setSuggestedSensitivity(prevSuggestion => {
           if (!prevSuggestion && !suggestion) return prevSuggestion;
           if (!prevSuggestion || !suggestion) return suggestion;
           if (prevSuggestion.fromGame === suggestion.fromGame &&
               prevSuggestion.toGame === suggestion.toGame &&
               prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
-            return prevSuggestion; // No change, keep previous state
+            return prevSuggestion; // No change
           }
           return suggestion;
         });
       }
     } catch (error) {
-      console.error('Error loading current game data:', error);
+      console.error('Error loading game data:', error);
     }
-  };
-
-  const loadHotkeyInfo = async () => {
-    try {
-      const hotkey = await window.widget.getHotkeyInfo();
-      setHotkeyInfo(hotkey);
-    } catch (error) {
-      console.error('Error loading hotkey info:', error);
-    }
-  };
-
-  // Check if current game matches canonical game
-  const isPlayingCanonicalGame = currentGame && canonicalSettings &&
-    currentGame.name === canonicalSettings.game && currentGame.isSupported;
+  }, [canonicalSettings]);
 
   const handleToggleWidget = async () => {
     try {
@@ -212,7 +225,7 @@ export const MyMainWindow: React.FC = () => {
       setMessage('Canonical settings saved successfully!');
 
       // Refresh current game data to update suggestions
-      loadCurrentGameData();
+      loadGameSpecificData();
     } catch (error) {
       console.error('Error saving canonical settings:', error);
       setMessage('Error saving settings');
@@ -310,7 +323,7 @@ export const MyMainWindow: React.FC = () => {
                   {currentGame.isSupported ? '✓ Supported' : '⚠ Not Supported'}
                 </p>
 
-                {isPlayingCanonicalGame ? (
+                {isPlayingCanonicalGame && canonicalSettings ? (
                   <div className="current-settings-display">
                     <h4>Your Current Settings</h4>
                     <div className="settings-grid">

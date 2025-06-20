@@ -13,6 +13,9 @@ export interface CurrentGameInfo {
 export class CurrentGameService extends EventEmitter {
   private currentGameInfo: CurrentGameInfo | null = null;
   private gepService: any = null; // We'll inject this later
+  private updateTimeout: NodeJS.Timeout | null = null;
+  private lastUpdateTime: number = 0;
+  private readonly UPDATE_DEBOUNCE_MS = 500; // Debounce updates to 500ms
 
   constructor(
     private readonly overlayService: OverlayService,
@@ -39,7 +42,7 @@ export class CurrentGameService extends EventEmitter {
 
     // Listen for game injection (when overlay connects to a game)
     this.overlayService.overlayApi.on('game-injected', (gameInfo) => {
-      this.updateCurrentGame();
+      this.scheduleUpdate();
     });
 
     // Listen for game launch events
@@ -49,18 +52,35 @@ export class CurrentGameService extends EventEmitter {
       if (this.gamesService.getGameByOwId(normalizedGameId)) {
         event.inject();
       }
-      this.updateCurrentGame();
+      this.scheduleUpdate();
     });
 
     // Listen for game focus changes (might indicate game switch)
     this.overlayService.overlayApi.on('game-focus-changed', (window, game, focus) => {
       if (focus) {
-        this.updateCurrentGame();
+        this.scheduleUpdate();
       }
     });
   }
 
+  private scheduleUpdate(): void {
+    // Clear existing timeout
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+    }
+
+    // Debounce updates to prevent excessive calls
+    this.updateTimeout = setTimeout(() => {
+      this.updateCurrentGame();
+    }, this.UPDATE_DEBOUNCE_MS);
+  }
+
   private updateCurrentGame(): void {
+    const now = Date.now();
+    if (now - this.lastUpdateTime < this.UPDATE_DEBOUNCE_MS) {
+      return; // Skip if too soon since last update
+    }
+
     const newGameInfo = this.getCurrentGameInfo();
 
     // Check if the game has actually changed
@@ -72,6 +92,7 @@ export class CurrentGameService extends EventEmitter {
 
     if (hasChanged) {
       this.currentGameInfo = newGameInfo;
+      this.lastUpdateTime = now;
       console.log('Current game changed:', newGameInfo);
       this.emit('game-changed', newGameInfo);
     }
@@ -81,11 +102,9 @@ export class CurrentGameService extends EventEmitter {
     const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
     if (!activeGame) {
       // Try GEP service as fallback
-      console.log('Game detection: Using GEP fallback (overlay not available)');
       return this.getCurrentGameInfoFromGep();
     }
 
-    console.log('Game detection: Using overlay detection for game:', activeGame.gameInfo.name);
     const overwolfGameId = this.normalizeGameId(activeGame.gameInfo.classId || '');
     const overwolfGameName = activeGame.gameInfo.name || 'Unknown Game';
 
@@ -166,5 +185,15 @@ export class CurrentGameService extends EventEmitter {
   private normalizeGameId(gameId: number | string): string {
     // Convert to string and ensure it matches Overwolf's format
     return gameId.toString();
+  }
+
+  /**
+   * Cleanup method to clear timeouts and prevent memory leaks
+   */
+  public cleanup(): void {
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+      this.updateTimeout = null;
+    }
   }
 }

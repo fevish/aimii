@@ -26,28 +26,19 @@ export class SensitivityConverterService {
     const canonicalSettings = this.settingsService.getCanonicalSettings();
     const currentGame = this.currentGameService.getCurrentGameInfo();
 
-    // console.log('Canonical settings:', canonicalSettings);
-    // console.log('Current game:', currentGame);
-
     if (!canonicalSettings || !currentGame || !currentGame.isSupported) {
-      console.log('Missing data - no conversion possible');
       return null;
     }
 
     // Don't suggest conversion if we're already in the canonical game
     if (canonicalSettings.game === currentGame.name) {
-      console.log('Already in canonical game - no conversion needed');
       return null;
     }
 
     const fromGameData = this.gamesService.getGameByName(canonicalSettings.game);
     const toGameData = currentGame.gameData;
 
-    // console.log('From game data:', fromGameData);
-    // console.log('To game data:', toGameData);
-
     if (!fromGameData || !toGameData) {
-      console.log('Game data not found');
       return null;
     }
 
@@ -57,8 +48,6 @@ export class SensitivityConverterService {
       canonicalSettings.sensitivity,
       canonicalSettings.dpi
     );
-
-    // console.log('Conversion result:', result);
 
     return result;
   }
