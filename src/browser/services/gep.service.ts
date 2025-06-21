@@ -130,8 +130,11 @@ export class GameEventsService extends EventEmitter {
 
       // Clear active game if this was the active one
       if (this.activeGame === gameId) {
+        this.emit('log', 'gep: clearing active game due to exit', gameId);
         this.activeGame = 0;
         this.emit('game-exit', gameId, processName, pid);
+      } else {
+        this.emit('log', 'gep: game exit for non-active game', gameId, 'active:', this.activeGame);
       }
     });
 
@@ -143,6 +146,12 @@ export class GameEventsService extends EventEmitter {
         gameId,
         ...args
       );
+
+      // Clear active game if elevated privileges are required but not available
+      if (this.activeGame === gameId) {
+        this.emit('log', 'gep: clearing active game due to elevated privileges', gameId);
+        this.activeGame = 0;
+      }
 
       // TODO Handle case of Game running in elevated mode (meaning that the app also needs to run in elevated mode in order to detect events)
     });
@@ -161,7 +170,11 @@ export class GameEventsService extends EventEmitter {
     this.gepApi.on('error', (e, gameId, error, ...args) => {
       this.emit('log', 'gep-error', gameId, error, ...args);
 
-      this.activeGame = 0;
+      // Clear active game on error
+      if (this.activeGame === gameId) {
+        this.emit('log', 'gep: clearing active game due to error', gameId);
+        this.activeGame = 0;
+      }
     });
   }
 }
