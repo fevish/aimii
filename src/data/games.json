@@ -40,6 +40,14 @@
     "enable_for_app": true
   },
   {
+    "game": "Fortnite",
+    "sensitivityScalingFactor": 0.00555500005,
+    "owGameId": "21216",
+    "owConstant": "Fortnite",
+    "owGameName": "Fortnite",
+    "enable_for_app": true
+  },
+  {
     "game": "Minecraft: Java Edition",
     "sensitivityScalingFactor": 1.0,
     "specialConversion": true,
