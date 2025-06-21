@@ -138,6 +138,12 @@ export class OverlayService extends EventEmitter {
     this.overlayApi.on('game-input-exclusive-mode-changed', (info) => {
       this.log('overlay input exclusive mode changed', info);
     });
+
+    // Add game exit event listener for better cleanup
+    this.overlayApi.on('game-exit', (gameInfo) => {
+      this.log('game exit detected', gameInfo);
+      this.emit('game-exit', gameInfo);
+    });
   }
 
   /** */

@@ -199,7 +199,7 @@ export class MainWindowController {
 
       // Notify main window about settings change
       if (this.browserWindow && !this.browserWindow.isDestroyed()) {
-        this.browserWindow.webContents.send('canonical-settings-changed', { game, sensitivity, dpi });
+        this.browserWindow.webContents.send('canonical-settings-changed');
       }
 
       // Notify widget about settings change
