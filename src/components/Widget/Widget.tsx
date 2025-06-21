@@ -124,6 +124,18 @@ const Widget: React.FC = () => {
     setIsLoading(true);
     fetchData().finally(() => setIsLoading(false));
 
+    // Initialize theme
+    const initializeTheme = async () => {
+      try {
+        const { ipcRenderer } = require('electron');
+        const theme = await ipcRenderer.invoke('settings-get-theme');
+        applyTheme(theme);
+      } catch (error) {
+        console.error('Error loading theme:', error);
+      }
+    };
+    initializeTheme();
+
     // Set up IPC listener for game change events
     const { ipcRenderer } = require('electron');
 
@@ -144,6 +156,15 @@ const Widget: React.FC = () => {
 
     // Listen for canonical settings change events from main process
     ipcRenderer.on('canonical-settings-changed', handleCanonicalSettingsChanged);
+
+    // Listen for theme changes
+    const handleThemeChanged = (event: any, theme: string) => {
+      console.log('[Widget] Theme changed event received:', theme);
+      applyTheme(theme);
+    };
+
+    // Listen for theme change events from main process
+    ipcRenderer.on('theme-changed', handleThemeChanged);
 
     // Listen for hotkey change events
     const handleHotkeyChanged = (id: string, updatedHotkey: any) => {
@@ -189,6 +210,7 @@ const Widget: React.FC = () => {
     return () => {
       ipcRenderer.removeListener('current-game-changed', handleGameChanged);
       ipcRenderer.removeListener('canonical-settings-changed', handleCanonicalSettingsChanged);
+      ipcRenderer.removeListener('theme-changed', handleThemeChanged);
       ipcRenderer.removeListener('hotkey-changed', handleHotkeyChanged);
       ipcRenderer.removeListener('hotkeys-reset', handleHotkeysReset);
       clearInterval(settingsInterval);
@@ -196,6 +218,19 @@ const Widget: React.FC = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  // Theme application function
+  const applyTheme = (theme: string) => {
+    const htmlElement = document.documentElement;
+
+    // Remove all theme classes
+    htmlElement.classList.remove('default', 'neon');
+
+    // Add the selected theme class
+    if (theme !== 'default') {
+      htmlElement.classList.add(theme);
+    }
+  };
 
   return (
     <div className="widget-container">

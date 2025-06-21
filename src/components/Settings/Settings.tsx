@@ -26,6 +26,12 @@ interface CapturedKeys {
   displayText: string;
 }
 
+interface CanonicalSettings {
+  game: string;
+  sensitivity: number;
+  dpi: number;
+}
+
 declare global {
   interface Window {
     hotkeys: {
@@ -36,6 +42,15 @@ declare global {
       onHotkeyChanged: (callback: (id: string, updates: any) => void) => void;
       onHotkeysReset: (callback: () => void) => void;
       removeHotkeyListeners: () => void;
+    };
+    settings: {
+      getCanonicalSettings: () => Promise<CanonicalSettings | null>;
+      setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => Promise<boolean>;
+      hasCanonicalSettings: () => Promise<boolean>;
+      getTheme: () => Promise<string>;
+      setTheme: (theme: string) => Promise<boolean>;
+      onThemeChanged: (callback: (theme: string) => void) => void;
+      removeThemeListener: () => void;
     };
   }
 }
@@ -48,10 +63,18 @@ const Settings: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const [modifierState, setModifierState] = useState({ ctrl: false, shift: false, alt: false });
   const [modifierDisplay, setModifierDisplay] = useState<string>('');
+  const [currentTheme, setCurrentTheme] = useState<string>('default');
   const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Available themes
+  const availableThemes = [
+    { value: 'default', label: 'Default (Monochrome)' },
+    { value: 'neon', label: 'Neon (Green)' }
+  ];
 
   useEffect(() => {
     loadHotkeys();
+    loadTheme();
   }, []);
 
   useEffect(() => {
@@ -59,6 +82,55 @@ const Settings: React.FC = () => {
       overlayRef.current.focus();
     }
   }, [editingHotkey]);
+
+  // Theme change listener
+  useEffect(() => {
+    window.settings.onThemeChanged((theme: string) => {
+      setCurrentTheme(theme);
+      applyTheme(theme);
+    });
+
+    return () => {
+      window.settings.removeThemeListener();
+    };
+  }, []);
+
+  const loadTheme = async () => {
+    try {
+      const theme = await window.settings.getTheme();
+      setCurrentTheme(theme);
+      applyTheme(theme);
+    } catch (error) {
+      console.error('Failed to load theme:', error);
+    }
+  };
+
+  const applyTheme = (theme: string) => {
+    const htmlElement = document.documentElement;
+
+    // Remove all theme classes
+    htmlElement.classList.remove('default', 'neon');
+
+    // Add the selected theme class
+    if (theme !== 'default') {
+      htmlElement.classList.add(theme);
+    }
+  };
+
+  const handleThemeChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newTheme = event.target.value;
+    try {
+      await window.settings.setTheme(newTheme);
+      setCurrentTheme(newTheme);
+      applyTheme(newTheme);
+      setMessage(`Theme changed to ${availableThemes.find(t => t.value === newTheme)?.label}`);
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      console.error('Failed to change theme:', error);
+      setMessage('Failed to change theme');
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
 
   useEffect(() => {
     // Global key event listeners for real-time capture
@@ -424,6 +496,29 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="theme-section">
+          <div className="section-header">
+            <h3>Theme</h3>
+          </div>
+
+          <div className="theme-controls">
+            <div className="form-group">
+              <label htmlFor="theme-select">Select Theme</label>
+              <select
+                id="theme-select"
+                value={currentTheme}
+                onChange={handleThemeChange}
+              >
+                {availableThemes.map(theme => (
+                  <option key={theme.value} value={theme.value}>
+                    {theme.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </section>
       </div>

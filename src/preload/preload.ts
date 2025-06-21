@@ -90,6 +90,20 @@ contextBridge.exposeInMainWorld('settings', {
   },
   hasCanonicalSettings: () => {
     return ipcRenderer.invoke('settings-has-canonical');
+  },
+  getTheme: () => {
+    return ipcRenderer.invoke('settings-get-theme');
+  },
+  setTheme: (theme: string) => {
+    return ipcRenderer.invoke('settings-set-theme', theme);
+  },
+  onThemeChanged: (callback: (theme: string) => void) => {
+    ipcRenderer.on('theme-changed', (event: any, theme: string) => {
+      callback(theme);
+    });
+  },
+  removeThemeListener: () => {
+    ipcRenderer.removeAllListeners('theme-changed');
   }
 });
 

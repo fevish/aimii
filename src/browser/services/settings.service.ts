@@ -28,6 +28,7 @@ export interface UserSettings {
   };
   canonical: CanonicalGameSettings | null;
   hotkeys: HotkeyConfig[];
+  theme: string;
   // Add more settings categories as needed
   // ui: { theme: string; fontSize: number };
   // game: { autoStart: boolean; hotkeys: any };
@@ -53,7 +54,8 @@ export class SettingsService {
         visible: false
       },
       canonical: null,
-      hotkeys: []
+      hotkeys: [],
+      theme: 'default'
     };
   }
 
@@ -138,6 +140,16 @@ export class SettingsService {
 
   public removeHotkey(id: string): void {
     this.settings.hotkeys = this.settings.hotkeys.filter(h => h.id !== id);
+    this.saveSettings();
+  }
+
+  // Theme methods
+  public getTheme(): string {
+    return this.settings.theme;
+  }
+
+  public setTheme(theme: string): void {
+    this.settings.theme = theme;
     this.saveSettings();
   }
 
