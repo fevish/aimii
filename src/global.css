@@ -1,0 +1,203 @@
+/* Global Design Tokens - Theme System */
+
+/* Font imports */
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('./assets/fonts/RobotoMono-VariableFont_wght.ttf') format('truetype-variations');
+  font-weight: 100 700;
+  font-style: normal;
+}
+
+/* Default Theme - Minimalistic Typewriter */
+html:root {
+  /* Colors - Monochrome */
+  --primary: #ffffff;      /* Pure white */
+  --secondary: #888888;    /* Medium gray */
+  --dark: #000000;         /* Pure black background */
+  --light: #ffffff;        /* White text */
+  --gray: #666666;         /* Dark gray */
+  --light-gray: #cccccc;   /* Light gray */
+
+  /* Spacing - Condensed */
+  --spacing: 0.5rem;
+
+  /* Border Radius - Minimal */
+  --radius: 2px;
+}
+
+/* Neon Theme */
+html.neon:root {
+  --primary: #00ff88;      /* Neon green */
+  --secondary: #44aa66;    /* Dark green */
+  --dark: #001122;         /* Dark blue-black */
+  --light: #00ff88;        /* Neon green text */
+  --gray: #225544;         /* Dark green-gray */
+  --light-gray: #66cc88;   /* Light green */
+}
+
+/* Base styles */
+html {
+  box-sizing: border-box;
+}
+
+*:not(p, h1, h2, h3, h4, h5, h6) {
+  user-select: none;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+  overflow: hidden;
+  font-family: 'Roboto Mono', 'Courier New', 'Monaco', 'Menlo', 'Consolas', monospace;
+  color: var(--light);
+  background: var(--dark);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+/* Global Element Styles */
+h1 {
+  font-weight: normal;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+h2 {
+  margin: 0 0 var(--spacing) 0;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  font-weight: normal;
+}
+
+h3 {
+  margin: 0 0 var(--spacing) 0;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  font-weight: normal;
+}
+
+h4 {
+  margin: 0 0 var(--spacing) 0;
+  font-weight: normal;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+p {
+  margin: calc(0.25 * var(--spacing)) 0;
+  color: var(--light);
+}
+
+/* Form Elements */
+label {
+  font-weight: normal;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+select,
+input {
+  padding: calc(0.25 * var(--spacing));
+  border: 1px solid var(--secondary);
+  border-radius: var(--radius);
+  background: var(--dark);
+  color: var(--light);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+select:focus,
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--dark);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+select option {
+  background: var(--dark);
+  color: var(--light);
+}
+
+input::placeholder {
+  color: var(--secondary);
+}
+
+/* Buttons */
+button {
+  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
+  background: var(--dark);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  font-weight: normal;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: normal;
+  align-self: flex-start;
+  font-family: inherit;
+}
+
+button:hover:not(:disabled) {
+  background: var(--primary);
+  color: var(--dark);
+  transform: none;
+  box-shadow: none;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  background: var(--dark);
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+/* Messages */
+.message {
+  padding: calc(0.5 * var(--spacing));
+  border-radius: var(--radius);
+  font-weight: normal;
+  margin-top: var(--spacing);
+}
+
+.message.success {
+  background: var(--dark);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+.message.error {
+  background: var(--dark);
+  border: 1px solid var(--secondary);
+  color: var(--secondary);
+}
+
+/* Utility classes */
+.typewriter-text {
+  font-family: 'Roboto Mono', 'Courier New', 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-weight: normal;
+  letter-spacing: 0.5px;
+}
+
+.border-minimal {
+  border: 1px solid var(--secondary);
+}
+
+.bg-minimal {
+  background: var(--dark);
+}
+
+.text-muted {
+  color: var(--secondary);
+}

@@ -213,6 +213,28 @@ export class MainWindowController {
       return this.settingsService.hasCanonicalSettings();
     });
 
+    // Theme settings IPC handlers
+    ipcMain.handle('settings-get-theme', () => {
+      return this.settingsService.getTheme();
+    });
+
+    ipcMain.handle('settings-set-theme', (event, theme: string) => {
+      this.settingsService.setTheme(theme);
+      this.printLogMessage(`Theme changed to: ${theme}`);
+
+      // Notify main window about theme change
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send('theme-changed', theme);
+      }
+
+      // Notify widget about theme change
+      if (this.widgetController?.overlayBrowserWindow) {
+        this.widgetController.overlayBrowserWindow.window.webContents.send('theme-changed', theme);
+      }
+
+      return true;
+    });
+
     // Current game service IPC handlers
     ipcMain.handle('current-game-get-info', () => {
       return this.currentGameService.getCurrentGameInfo();

@@ -45,6 +45,10 @@ declare global {
       getCanonicalSettings: () => Promise<CanonicalSettings | null>;
       setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => Promise<boolean>;
       hasCanonicalSettings: () => Promise<boolean>;
+      getTheme: () => Promise<string>;
+      setTheme: (theme: string) => Promise<boolean>;
+      onThemeChanged: (callback: (theme: string) => void) => void;
+      removeThemeListener: () => void;
     };
     currentGame: {
       getCurrentGameInfo: () => Promise<CurrentGameInfo | null>;
@@ -126,6 +130,26 @@ export const MyMainWindow: React.FC = () => {
     // Initial data load
     loadAllData();
 
+    // Initialize theme
+    const initializeTheme = async () => {
+      try {
+        const theme = await window.settings.getTheme();
+        applyTheme(theme);
+      } catch (error) {
+        console.error('Error loading theme:', error);
+      }
+    };
+    initializeTheme();
+
+    // Set up theme change listener
+    const handleThemeChanged = (theme: string) => {
+      applyTheme(theme);
+    };
+
+    if (window.settings && window.settings.onThemeChanged) {
+      window.settings.onThemeChanged(handleThemeChanged);
+    }
+
     // Set up listener for game change events
     const handleGameChanged = (gameInfo: any) => {
       console.log('Game changed event received in main window:', gameInfo);
@@ -187,6 +211,9 @@ export const MyMainWindow: React.FC = () => {
     return () => {
       if (window.currentGame && window.currentGame.removeGameChangedListener) {
         window.currentGame.removeGameChangedListener();
+      }
+      if (window.settings && window.settings.removeThemeListener) {
+        window.settings.removeThemeListener();
       }
       clearInterval(settingsInterval);
 
@@ -276,6 +303,19 @@ export const MyMainWindow: React.FC = () => {
       setMessage('Error saving settings');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Theme application function
+  const applyTheme = (theme: string) => {
+    const htmlElement = document.documentElement;
+
+    // Remove all theme classes
+    htmlElement.classList.remove('default', 'neon');
+
+    // Add the selected theme class
+    if (theme !== 'default') {
+      htmlElement.classList.add(theme);
     }
   };
 
