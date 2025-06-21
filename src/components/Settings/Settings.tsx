@@ -472,15 +472,6 @@ const Settings: React.FC = () => {
                 </div>
 
                 <div className="hotkey-controls">
-                  <label className="enabled-toggle">
-                    <input
-                      type="checkbox"
-                      checked={hotkey.enabled}
-                      onChange={(e) => handleHotkeyUpdate(hotkey.id, { enabled: e.target.checked })}
-                    />
-                    <span className="toggle-label">Enabled</span>
-                  </label>
-
                   <div className="hotkey-display">
                     <button
                       onClick={() => handleKeyCapture(hotkey)}

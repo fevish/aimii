@@ -235,7 +235,19 @@ const Widget: React.FC = () => {
   return (
     <div className="widget-container">
       <div className="widget-header">
-        <h3>AIMII Widget</h3>
+        <div className="hotkey-info">
+          <p><b>Show/Hide</b> {hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
+        </div>
+        <button
+          className="window-control-btn close-btn"
+          title="Close Widget"
+          onClick={() => {
+            const { ipcRenderer } = require('electron');
+            ipcRenderer.invoke('toggleWidget');
+          }}
+        >
+          ✕
+        </button>
       </div>
       <div className="widget-content">
         <div className="current-game">
@@ -264,31 +276,13 @@ const Widget: React.FC = () => {
           </div>
         ) : suggestedSensitivity ? (
           <div className="sensitivity-suggestion">
-            <h4>Suggested Sensitivity</h4>
+            <h4>{currentGame ? currentGame.name : 'Suggested'} Sensitivity</h4>
             <div className="suggestion-details">
               <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-              <p className="conversion-info">
-                From {suggestedSensitivity.fromGame}: {suggestedSensitivity.fromSensitivity}
-              </p>
-              <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p>
+              <p className="cm360-info">{suggestedSensitivity.cm360}cm / 360°</p>
             </div>
           </div>
         ) : null}
-
-        <div className="widget-placeholder">
-          <p>Mouse Sensitivity Converter</p>
-          {!isPlayingCanonicalGame && !suggestedSensitivity && currentGame?.isSupported && (
-            <p>Set canonical settings to see suggestions</p>
-          )}
-          {!currentGame?.isSupported && currentGame && (
-            <p>Game not supported for conversion</p>
-          )}
-        </div>
-
-        <div className="hotkey-info">
-          <p>Toggle Widget</p>
-          <p>{hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
-        </div>
       </div>
     </div>
   );

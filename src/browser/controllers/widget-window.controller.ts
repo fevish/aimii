@@ -120,7 +120,7 @@ export class WidgetWindowController {
 
     const options: OverlayWindowOptions = {
       name: 'aimii-widget',
-      height: 500,
+      height: 200,
       width: 300,
       title: 'AIMII Widget',
       show: false, // Start hidden
