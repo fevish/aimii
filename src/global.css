@@ -19,7 +19,7 @@ html:root {
   --light-gray: #cccccc;   /* Light gray */
 
   /* Spacing - Condensed */
-  --spacing: 0.5rem;
+  --spacing: 0.75rem;
 
   /* Border Radius - Minimal */
   --radius: 2px;
@@ -87,7 +87,6 @@ h4 {
   color: var(--primary);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  text-align: center;
 }
 
 p {
