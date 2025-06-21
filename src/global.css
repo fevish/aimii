@@ -82,7 +82,7 @@ h3 {
 }
 
 h4 {
-  margin: 0 0 var(--spacing) 0;
+  margin: var(--spacing) 0;
   font-weight: normal;
   color: var(--primary);
   letter-spacing: 0.5px;
