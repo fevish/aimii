@@ -15,7 +15,7 @@ rendererConfig.entry = {
 
 rendererConfig.plugins.push(new HtmlWebpackPlugin({
   template: './src/renderer/index.html',
-  filename: path.join(__dirname, './dist/renderer/index.html'),
+  filename: 'renderer/index.html',
   chunks: ['renderer'],
   publicPath: '',
   inject: false
@@ -23,27 +23,27 @@ rendererConfig.plugins.push(new HtmlWebpackPlugin({
 
 rendererConfig.plugins.push(new HtmlWebpackPlugin({
   template: './src/renderer/osr.html',
-  filename: path.join(__dirname, './dist/renderer/osr.html'),
+  filename: 'renderer/osr.html',
   inject: false
 }));
 
 rendererConfig.plugins.push(new HtmlWebpackPlugin({
   template: './src/renderer/exclusive.html',
-  filename: path.join(__dirname, './dist/exclusive/exclusive.html'),
+  filename: 'exclusive/exclusive.html',
   chunks: ['exclusive'],
   inject: false
 }));
 
 rendererConfig.plugins.push(new HtmlWebpackPlugin({
   template: './public/my-main.html',
-  filename: path.join(__dirname, './dist/my-main.html'),
+  filename: 'my-main.html',
   chunks: ['my-main'],
   inject: true
 }));
 
 rendererConfig.plugins.push(new HtmlWebpackPlugin({
   template: './public/widget.html',
-  filename: path.join(__dirname, './dist/widget/widget.html'),
+  filename: 'widget/widget.html',
   chunks: ['widget'],
   inject: true
 }));
