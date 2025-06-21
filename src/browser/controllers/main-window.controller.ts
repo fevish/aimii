@@ -146,7 +146,7 @@ export class MainWindowController {
     // Set up console logging to Chrome dev tools
     setMainWindowForConsole(this.browserWindow);
 
-    this.browserWindow.loadFile(path.join(__dirname, '../my-main.html'));
+    this.browserWindow.loadFile(path.join(__dirname, '..', 'my-main.html'));
 
     // Show the window after it's loaded
     this.browserWindow.once('ready-to-show', () => {
