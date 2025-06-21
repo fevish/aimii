@@ -68,6 +68,10 @@ declare global {
       getAllConversions: () => Promise<SensitivityConversion[]>;
       convert: (fromGame: string, toGame: string, sensitivity: number, dpi: number) => Promise<SensitivityConversion | null>;
     };
+    windowControls: {
+      minimize: () => void;
+      close: () => void;
+    };
   }
 }
 
@@ -83,6 +87,14 @@ export const MyMainWindow: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'main' | 'settings'>('main');
+
+  const handleMinimize = () => {
+    window.windowControls.minimize();
+  };
+
+  const handleClose = () => {
+    window.windowControls.close();
+  };
 
   // Memoized values to prevent unnecessary recalculations
   const isPlayingCanonicalGame = React.useMemo(() =>
@@ -323,20 +335,26 @@ export const MyMainWindow: React.FC = () => {
     <div className="my-main-window">
       <header className="app-header">
         <h1>AIMII</h1>
-        <nav className="tab-navigation">
-          <button
-            className={`tab-button ${activeTab === 'main' ? 'active' : ''}`}
-            onClick={() => setActiveTab('main')}
-          >
-            Main
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('settings')}
-          >
-            Settings
-          </button>
-        </nav>
+        <div className="header-controls">
+          <nav className="tab-navigation">
+            <button
+              className={`tab-button ${activeTab === 'main' ? 'active' : ''}`}
+              onClick={() => setActiveTab('main')}
+            >
+              Main
+            </button>
+            <button
+              className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
+              onClick={() => setActiveTab('settings')}
+            >
+              Settings
+            </button>
+          </nav>
+          <div className="window-controls">
+            <button onClick={handleMinimize} className="window-control-btn minimize-btn">_</button>
+            <button onClick={handleClose} className="window-control-btn close-btn">✕</button>
+          </div>
+        </div>
       </header>
 
       <main className="app-content">

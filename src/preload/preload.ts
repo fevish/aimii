@@ -183,4 +183,9 @@ contextBridge.exposeInMainWorld('hotkeys', {
   }
 });
 
+contextBridge.exposeInMainWorld('windowControls', {
+  minimize: () => ipcRenderer.invoke('minimize-window'),
+  close: () => ipcRenderer.invoke('close-window')
+});
+
 

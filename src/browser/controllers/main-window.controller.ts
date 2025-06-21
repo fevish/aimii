@@ -114,6 +114,7 @@ export class MainWindowController {
       height: savedState.height,
       x: savedState.x,
       y: savedState.y,
+      frame: false, // Hide the default window frame
       title: 'AIMII - Mouse Sensitivity Converter',
       show: false, // Don't show until we've set up the state
       resizable: false, // Disable window resizing
@@ -381,6 +382,15 @@ export class MainWindowController {
 
     ipcMain.handle('hotkeys-get-info', (event, id: string) => {
       return this.hotkeyService.getHotkeyInfo(id);
+    });
+
+    // Window controls
+    ipcMain.handle('minimize-window', () => {
+      this.browserWindow?.minimize();
+    });
+
+    ipcMain.handle('close-window', () => {
+      this.browserWindow?.close();
     });
 
     // Widget-specific hotkey info handler
