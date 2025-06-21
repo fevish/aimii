@@ -3,6 +3,7 @@ import { OverlayService } from "../services/overlay.service";
 import { OverlayBrowserWindow, OverlayWindowOptions, PassthroughType, ZOrderType } from "@overwolf/ow-electron-packages-types";
 import { SettingsService } from "../services/settings.service";
 import { CurrentGameService } from "../services/current-game.service";
+import { HotkeyService } from "../services/hotkey.service";
 import { ipcMain } from "electron";
 
 export class WidgetWindowController {
@@ -27,7 +28,8 @@ export class WidgetWindowController {
   constructor(
     private readonly overlayService: OverlayService,
     private readonly settingsService: SettingsService,
-    private readonly currentGameService: CurrentGameService
+    private readonly currentGameService: CurrentGameService,
+    private readonly hotkeyService: HotkeyService
   ) {
     this.registerWidgetIpc();
 
@@ -40,6 +42,38 @@ export class WidgetWindowController {
     if (this.overlayService.overlayApi) {
       this.registerHotkey();
     }
+
+    // Listen for hotkey changes from settings
+    this.hotkeyService.on('hotkey-changed', (id: string, updatedHotkey: any) => {
+      if (id === 'widget-toggle') {
+        console.log('[WidgetWindowController] Widget hotkey changed, re-registering...');
+        this.hotkeysRegistered = false; // Reset registration flag
+        this.registerHotkey(); // Re-register with new hotkey
+
+        // Notify widget about hotkey change
+        if (this.widgetWindow) {
+          console.log('[WidgetWindowController] Notifying widget about hotkey change:', id);
+          this.widgetWindow.window.webContents.send('hotkey-changed', id, updatedHotkey);
+        } else {
+          console.log('[WidgetWindowController] Widget window not available, cannot notify about hotkey change');
+        }
+      }
+    });
+
+    // Listen for hotkey reset
+    this.hotkeyService.on('hotkeys-reset', () => {
+      console.log('[WidgetWindowController] Hotkeys reset, re-registering widget hotkey...');
+      this.hotkeysRegistered = false; // Reset registration flag
+      this.registerHotkey(); // Re-register with default hotkey
+
+      // Notify widget about hotkey reset
+      if (this.widgetWindow) {
+        console.log('[WidgetWindowController] Notifying widget about hotkeys reset');
+        this.widgetWindow.window.webContents.send('hotkeys-reset');
+      } else {
+        console.log('[WidgetWindowController] Widget window not available, cannot notify about hotkeys reset');
+      }
+    });
   }
 
   public get overlayBrowserWindow(): OverlayBrowserWindow | null {
@@ -86,7 +120,7 @@ export class WidgetWindowController {
 
     const options: OverlayWindowOptions = {
       name: 'aimii-widget',
-      height: 500,
+      height: 200,
       width: 300,
       title: 'AIMII Widget',
       show: false, // Start hidden
@@ -254,7 +288,14 @@ export class WidgetWindowController {
   }
 
   public getHotkeyInfo(): { keyCode: number; modifiers: { ctrl: boolean; shift: boolean; alt: boolean }; displayText: string } {
-    // Return the current hotkey configuration
+    // Get hotkey info from the HotkeyService
+    const hotkeyInfo = this.hotkeyService.getHotkeyInfo('widget-toggle');
+
+    if (hotkeyInfo) {
+      return hotkeyInfo;
+    }
+
+    // Fallback to default configuration if hotkey service doesn't have it
     const { keyCode, modifiers } = this.WIDGET_HOTKEY;
 
     // Convert keyCode to readable key name
@@ -281,25 +322,33 @@ export class WidgetWindowController {
       return;
     }
 
-    // console.log('Registering widget hotkey: Ctrl+Shift+M');
+    // Get current widget hotkey configuration from HotkeyService
+    const widgetHotkeyInfo = this.hotkeyService.getHotkeyInfo('widget-toggle');
+    if (!widgetHotkeyInfo) {
+      console.log('[WidgetWindowController] No widget hotkey configured, skipping registration');
+      return;
+    }
 
-    // Register widget toggle hotkey
+    console.log('[WidgetWindowController] Registering widget hotkey:', widgetHotkeyInfo.displayText);
+
+    // Register widget toggle hotkey with current configuration
     this.overlayService.overlayApi.hotkeys.register({
       name: this.WIDGET_HOTKEY.name,
-      keyCode: this.WIDGET_HOTKEY.keyCode,
+      keyCode: widgetHotkeyInfo.keyCode,
       modifiers: {
-        ctrl: this.WIDGET_HOTKEY.modifiers.ctrl,
-        shift: this.WIDGET_HOTKEY.modifiers.shift
+        ctrl: widgetHotkeyInfo.modifiers.ctrl,
+        shift: widgetHotkeyInfo.modifiers.shift,
+        alt: widgetHotkeyInfo.modifiers.alt
       },
       passthrough: true
     }, (hotkey, state) => {
-      // console.log('Widget hotkey pressed:', hotkey.name, state);
+      console.log('[WidgetWindowController] Widget hotkey pressed:', hotkey.name, state);
       if (state === 'pressed') {
         this.toggleVisibility();
       }
     });
 
-    // Register dev tools hotkey
+    // Register dev tools hotkey (keep this as is since it's not configurable)
     this.overlayService.overlayApi.hotkeys.register({
       name: this.DEV_TOOLS_HOTKEY.name,
       keyCode: this.DEV_TOOLS_HOTKEY.keyCode,
@@ -315,6 +364,7 @@ export class WidgetWindowController {
     });
 
     this.hotkeysRegistered = true;
+    console.log('[WidgetWindowController] Widget hotkeys registered successfully');
   }
 
   private registerWindowEvents(): void {

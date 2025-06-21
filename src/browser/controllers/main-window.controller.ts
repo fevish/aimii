@@ -13,6 +13,7 @@ import { SettingsService } from '../services/settings.service';
 import { CurrentGameService } from '../services/current-game.service';
 import { SensitivityConverterService } from '../services/sensitivity-converter.service';
 import { WindowStateService } from '../services/window-state.service';
+import { HotkeyService } from '../services/hotkey.service';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
 
@@ -37,7 +38,8 @@ export class MainWindowController {
     private readonly settingsService: SettingsService,
     private readonly currentGameService: CurrentGameService,
     private readonly sensitivityConverterService: SensitivityConverterService,
-    private readonly windowStateService: WindowStateService
+    private readonly windowStateService: WindowStateService,
+    private readonly hotkeyService: HotkeyService
   ) {
     this.registerToIpc();
     this.setupGameChangeListener();
@@ -112,6 +114,7 @@ export class MainWindowController {
       height: savedState.height,
       x: savedState.x,
       y: savedState.y,
+      frame: false, // Hide the default window frame
       title: 'AIMII - Mouse Sensitivity Converter',
       show: false, // Don't show until we've set up the state
       resizable: false, // Disable window resizing
@@ -193,11 +196,44 @@ export class MainWindowController {
     ipcMain.handle('settings-set-canonical', (event, game: string, sensitivity: number, dpi: number) => {
       this.settingsService.setCanonicalSettings(game, sensitivity, dpi);
       this.printLogMessage(`Canonical settings saved: ${game}, sensitivity: ${sensitivity}, DPI: ${dpi}`);
+
+      // Notify main window about settings change
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send('canonical-settings-changed', { game, sensitivity, dpi });
+      }
+
+      // Notify widget about settings change
+      if (this.widgetController?.overlayBrowserWindow) {
+        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', { game, sensitivity, dpi });
+      }
+
       return true;
     });
 
     ipcMain.handle('settings-has-canonical', () => {
       return this.settingsService.hasCanonicalSettings();
+    });
+
+    // Theme settings IPC handlers
+    ipcMain.handle('settings-get-theme', () => {
+      return this.settingsService.getTheme();
+    });
+
+    ipcMain.handle('settings-set-theme', (event, theme: string) => {
+      this.settingsService.setTheme(theme);
+      this.printLogMessage(`Theme changed to: ${theme}`);
+
+      // Notify main window about theme change
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send('theme-changed', theme);
+      }
+
+      // Notify widget about theme change
+      if (this.widgetController?.overlayBrowserWindow) {
+        this.widgetController.overlayBrowserWindow.window.webContents.send('theme-changed', theme);
+      }
+
+      return true;
     });
 
     // Current game service IPC handlers
@@ -317,9 +353,49 @@ export class MainWindowController {
       }
     });
 
-    // Widget hotkey info handler
+    // Hotkey service IPC handlers
+    ipcMain.handle('hotkeys-get-all', () => {
+      return this.hotkeyService.getAllHotkeys();
+    });
+
+    ipcMain.handle('hotkeys-update', (event, id: string, updates: any) => {
+      const result = this.hotkeyService.updateHotkey(id, updates);
+
+      // Notify main window about hotkey changes
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send('hotkey-changed', id, updates);
+      }
+
+      return result;
+    });
+
+    ipcMain.handle('hotkeys-reset', () => {
+      this.hotkeyService.resetToDefaults();
+
+      // Notify main window about hotkey reset
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send('hotkeys-reset');
+      }
+
+      return true;
+    });
+
+    ipcMain.handle('hotkeys-get-info', (event, id: string) => {
+      return this.hotkeyService.getHotkeyInfo(id);
+    });
+
+    // Window controls
+    ipcMain.handle('minimize-window', () => {
+      this.browserWindow?.minimize();
+    });
+
+    ipcMain.handle('close-window', () => {
+      this.browserWindow?.close();
+    });
+
+    // Widget-specific hotkey info handler
     ipcMain.handle('widget-get-hotkey-info', () => {
-      return this.getWidgetHotkeyInfo();
+      return this.hotkeyService.getHotkeyInfo('widget-toggle');
     });
   }
 
@@ -345,10 +421,13 @@ export class MainWindowController {
   }
 
   private async createWidget(): Promise<void> {
+    console.log('[MainWindowController] createWidget called');
     const controller = this.createWidgetWinController();
     this.widgetController = controller; // Store reference
+    console.log('[MainWindowController] Widget controller created:', !!this.widgetController);
 
     await controller.createWidget();
+    console.log('[MainWindowController] Widget created, window exists:', !!this.widgetController?.overlayBrowserWindow);
 
     controller.overlayBrowserWindow?.window.on('closed', () => {
       this.printLogMessage('widget window closed');
@@ -357,11 +436,18 @@ export class MainWindowController {
   }
 
   private async toggleWidget(): Promise<void> {
+    console.log('[MainWindowController] toggleWidget called');
+    console.log('[MainWindowController] widgetController exists:', !!this.widgetController);
+    console.log('[MainWindowController] widgetController overlayBrowserWindow exists:', !!this.widgetController?.overlayBrowserWindow);
+
     if (!this.widgetController) {
       // Create widget if it doesn't exist
+      console.log('[MainWindowController] Creating widget controller');
       await this.createWidget();
     } else {
-      this.widgetController.toggleVisibility();
+      console.log('[MainWindowController] Calling widget controller toggleVisibility');
+      await this.widgetController.toggleVisibility();
+      console.log('[MainWindowController] Widget toggled');
     }
   }
 
@@ -372,28 +458,5 @@ export class MainWindowController {
     } else {
       this.printLogMessage('Widget not created yet. Create widget first.');
     }
-  }
-
-  private getWidgetHotkeyInfo(): { keyCode: number; modifiers: { ctrl: boolean; shift: boolean; alt: boolean }; displayText: string } {
-    // Widget hotkey configuration - should match the one in WidgetWindowController
-    const keyCode = 77; // M key
-    const modifiers = { ctrl: true, shift: true, alt: false };
-
-    // Convert keyCode to readable key name
-    const keyName = String.fromCharCode(keyCode);
-
-    // Build display text
-    const modifierParts = [];
-    if (modifiers.ctrl) modifierParts.push('Ctrl');
-    if (modifiers.shift) modifierParts.push('Shift');
-    if (modifiers.alt) modifierParts.push('Alt');
-
-    const displayText = `${modifierParts.join('+')}+${keyName}`;
-
-    return {
-      keyCode,
-      modifiers,
-      displayText
-    };
   }
 }

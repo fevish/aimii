@@ -11,6 +11,12 @@ interface CanonicalSettings {
   dpi: number;
 }
 
+interface HotkeyInfo {
+  keyCode: number;
+  modifiers: { ctrl: boolean; shift: boolean; alt: boolean };
+  displayText: string;
+}
+
 // Type declaration for window object
 declare global {
   interface Window {
@@ -24,6 +30,7 @@ const Widget: React.FC = () => {
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
   const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
   const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
+  const [hotkeyInfo, setHotkeyInfo] = useState<HotkeyInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrentGame = async () => {
@@ -69,6 +76,19 @@ const Widget: React.FC = () => {
     }
   };
 
+  const fetchHotkeyInfo = async () => {
+    try {
+      const { ipcRenderer } = require('electron');
+      console.log('[Widget] Fetching hotkey info...');
+      const hotkey = await ipcRenderer.invoke('widget-get-hotkey-info');
+      console.log('[Widget] Received hotkey info:', hotkey);
+      setHotkeyInfo(hotkey);
+    } catch (error) {
+      console.error('[Widget] Failed to fetch hotkey info:', error);
+      setHotkeyInfo(null);
+    }
+  };
+
   const fetchSuggestedSensitivity = async () => {
     try {
       const { ipcRenderer } = require('electron');
@@ -92,7 +112,7 @@ const Widget: React.FC = () => {
   };
 
   const fetchData = async () => {
-    await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchSuggestedSensitivity()]);
+    await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchHotkeyInfo(), fetchSuggestedSensitivity()]);
   };
 
   // Check if current game matches canonical game
@@ -103,6 +123,18 @@ const Widget: React.FC = () => {
     // Fetch initial data
     setIsLoading(true);
     fetchData().finally(() => setIsLoading(false));
+
+    // Initialize theme
+    const initializeTheme = async () => {
+      try {
+        const { ipcRenderer } = require('electron');
+        const theme = await ipcRenderer.invoke('settings-get-theme');
+        applyTheme(theme);
+      } catch (error) {
+        console.error('Error loading theme:', error);
+      }
+    };
+    initializeTheme();
 
     // Set up IPC listener for game change events
     const { ipcRenderer } = require('electron');
@@ -115,9 +147,50 @@ const Widget: React.FC = () => {
     // Listen for game change events from main process
     ipcRenderer.on('current-game-changed', handleGameChanged);
 
+    // Listen for canonical settings changes
+    const handleCanonicalSettingsChanged = (settings: any) => {
+      console.log('[Widget] Canonical settings changed event received:', settings);
+      fetchCanonicalSettings(); // Refresh canonical settings when they change
+      fetchSuggestedSensitivity(); // Also refresh sensitivity suggestions since they depend on canonical settings
+    };
+
+    // Listen for canonical settings change events from main process
+    ipcRenderer.on('canonical-settings-changed', handleCanonicalSettingsChanged);
+
+    // Listen for theme changes
+    const handleThemeChanged = (event: any, theme: string) => {
+      console.log('[Widget] Theme changed event received:', theme);
+      applyTheme(theme);
+    };
+
+    // Listen for theme change events from main process
+    ipcRenderer.on('theme-changed', handleThemeChanged);
+
+    // Listen for hotkey change events
+    const handleHotkeyChanged = (id: string, updatedHotkey: any) => {
+      console.log('[Widget] Hotkey changed event received:', id, updatedHotkey);
+      if (id === 'widget-toggle') {
+        console.log('[Widget] Widget hotkey changed, refreshing display...');
+        fetchHotkeyInfo(); // Refresh hotkey info when widget hotkey changes
+      }
+    };
+
+    const handleHotkeysReset = () => {
+      console.log('[Widget] Hotkeys reset event received');
+      console.log('[Widget] Refreshing hotkey display...');
+      fetchHotkeyInfo(); // Refresh hotkey info when hotkeys are reset
+    };
+
+    // Listen for hotkey change events from main process
+    ipcRenderer.on('hotkey-changed', handleHotkeyChanged);
+    ipcRenderer.on('hotkeys-reset', handleHotkeysReset);
+
     // Fallback: reduced frequency polling for canonical settings changes
     // (since settings changes don't have events)
     const settingsInterval = setInterval(fetchCanonicalSettings, 10000); // Check settings every 10 seconds
+
+    // Fallback: poll for hotkey changes every 5 seconds (in case events don't work)
+    const hotkeyInterval = setInterval(fetchHotkeyInfo, 5000); // Check hotkey every 5 seconds
 
     // Add hotkey listeners for dev tools
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -136,15 +209,45 @@ const Widget: React.FC = () => {
 
     return () => {
       ipcRenderer.removeListener('current-game-changed', handleGameChanged);
+      ipcRenderer.removeListener('canonical-settings-changed', handleCanonicalSettingsChanged);
+      ipcRenderer.removeListener('theme-changed', handleThemeChanged);
+      ipcRenderer.removeListener('hotkey-changed', handleHotkeyChanged);
+      ipcRenderer.removeListener('hotkeys-reset', handleHotkeysReset);
       clearInterval(settingsInterval);
+      clearInterval(hotkeyInterval);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
+  // Theme application function
+  const applyTheme = (theme: string) => {
+    const htmlElement = document.documentElement;
+
+    // Remove all theme classes
+    htmlElement.classList.remove('default', 'neon');
+
+    // Add the selected theme class
+    if (theme !== 'default') {
+      htmlElement.classList.add(theme);
+    }
+  };
+
   return (
     <div className="widget-container">
       <div className="widget-header">
-        <h3>AIMII Widget</h3>
+        <div className="hotkey-info">
+          <p><b>Show/Hide</b> {hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
+        </div>
+        <button
+          className="window-control-btn close-btn"
+          title="Close Widget"
+          onClick={() => {
+            const { ipcRenderer } = require('electron');
+            ipcRenderer.invoke('toggleWidget');
+          }}
+        >
+          ✕
+        </button>
       </div>
       <div className="widget-content">
         <div className="current-game">
@@ -173,26 +276,13 @@ const Widget: React.FC = () => {
           </div>
         ) : suggestedSensitivity ? (
           <div className="sensitivity-suggestion">
-            <h4>Suggested Sensitivity</h4>
+            <h4>{currentGame ? currentGame.name : 'Suggested'} Sensitivity</h4>
             <div className="suggestion-details">
               <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-              <p className="conversion-info">
-                From {suggestedSensitivity.fromGame}: {suggestedSensitivity.fromSensitivity}
-              </p>
-              <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p>
+              <p className="cm360-info">{suggestedSensitivity.cm360}cm / 360°</p>
             </div>
           </div>
         ) : null}
-
-        <div className="widget-placeholder">
-          <p>Mouse Sensitivity Converter</p>
-          {!isPlayingCanonicalGame && !suggestedSensitivity && currentGame?.isSupported && (
-            <p>Set canonical settings to see suggestions</p>
-          )}
-          {!currentGame?.isSupported && currentGame && (
-            <p>Game not supported for conversion</p>
-          )}
-        </div>
       </div>
     </div>
   );
