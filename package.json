@@ -1,11 +1,11 @@
 {
   "name": "aimii",
-  "version": "22.3.13",
+  "version": "0.0.1",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
-    "name": "overwolf",
-    "email": "overwolf@gmail.com"
+    "name": "fevish",
+    "email": ""
   },
   "license": "MIT",
   "overwolf": {
@@ -21,7 +21,7 @@
     "overwolf": {
       "disableAdOptimization": false
     },
-    "productName": "owElectronpackageSample",
+    "productName": "aimii",
     "directories": {
       "output": "build"
     },
@@ -31,7 +31,7 @@
       "*.html",
       "*.exe"
     ],
-    "copyright": "Copyright 2023 Overwolf Ltd.",
+    "copyright": "Copyright 2025 fevish",
     "win": {
       "target": [
         {
@@ -41,9 +41,7 @@
           ]
         }
       ],
-      "artifactName": "${productName}-Setup-${version}.${ext}",
-      "publisherName": "Overwolf Ltd",
-      "legalTrademarks": "Copyright 2023 Overwolf Ltd."
+      "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -64,7 +62,7 @@
     "watch:dev": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
     "hot-reload": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"nodemon\"",
     "dev:preserve-state": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && nodemon\"",
-    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=GameEventsTester --publish=never"
+    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=aimii --publish=never"
   },
   "devDependencies": {
     "@overwolf/ow-electron": "latest",
