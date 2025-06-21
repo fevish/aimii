@@ -1,48 +1,74 @@
+/* Widget Styles - Minimalistic Typewriter Theme */
+.widget-body {
+  background: none;
+  margin: 0;
+}
+
+#widget-root {
+  height: 100vh;
+}
+
 .widget-container {
+  position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #23272e 0%, #1a1d23 100%);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  color: #e0e0e0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--background, rgba(24, 26, 32, 0.95));
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
   overflow: hidden;
+  color: var(--light);
   display: flex;
   flex-direction: column;
-  border: 1px solid #3a3f47;
+  border: 1px solid var(--secondary);
 }
 
 .widget-header {
-  padding: 16px 20px 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 179, 71, 0.3);
-  -webkit-app-region: drag; /* Makes the header draggable */
-  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.5rem 0 0.5rem;
+  background: transparent;
+  -webkit-app-region: drag;
+}
+
+.window-control-btn {
+  background: transparent;
+  border: none;
+  color: var(--secondary);
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--radius);
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.window-control-btn:hover {
+  background: var(--secondary);
+  color: var(--dark);
 }
 
 .widget-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
   text-align: center;
-  color: #ffb347;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: none;
 }
 
 .widget-content {
-  padding: 20px;
+  padding: 0.5rem 1rem 1rem 1rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: calc(0.5 * var(--spacing));
   -webkit-app-region: no-drag; /* Content area should not be draggable */
 }
 
 .widget-content > p {
   margin: 0;
-  font-size: 14px;
   text-align: center;
-  color: #b0b0b0;
+  color: var(--secondary);
   opacity: 0.9;
 }
 
@@ -52,109 +78,96 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #181a20;
-  border-radius: 8px;
-  padding: 20px;
+  background: var(--dark);
+  border-radius: var(--radius);
+  padding: calc(0.5 * var(--spacing));
   text-align: center;
-  border: 1px solid #3a3f47;
+  border: 1px solid var(--secondary);
 }
 
 .widget-placeholder p {
-  margin: 8px 0;
-  font-size: 14px;
-  color: #b0b0b0;
+  margin: 4px 0;
+  color: var(--secondary);
   opacity: 0.8;
 }
 
-.hotkey-info {
-  margin-top: 16px;
-}
-
 .hotkey-info p {
-  margin: 4px 0;
-  font-size: 0.9rem;
-  color: #b0b0b0;
+  color: var(--secondary);
   opacity: 0.9;
 }
 
 .hotkey-info p:first-child {
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #ffb347;
+  margin-bottom: 4px;
+  color: var(--primary);
   opacity: 1;
 }
 
 /* Hover effect for interactivity */
 .widget-container:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transform: none;
+  box-shadow: none;
+  transition: none;
 }
 
 /* Current Game Styles */
 .current-game {
-  background: #181a20;
-  border-radius: 8px;
-  padding: 16px;
+  background: var(--dark);
+  border-radius: var(--radius);
+  padding: calc(0.5 * var(--spacing));
   text-align: center;
-  border: 1px solid #3a3f47;
+  border: 1px solid var(--secondary);
 }
 
 .game-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .game-title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #e0e0e0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: var(--light);
+  text-shadow: none;
 }
 
 .game-status {
   margin: 0;
-  font-size: 12px;
-  font-weight: 500;
   opacity: 0.9;
 }
 
 .game-status.supported {
-  color: #28a745;
+  color: var(--primary);
 }
 
 .game-status.unsupported {
-  color: #ffc107;
+  color: var(--secondary);
 }
 
 .game-status.no-game {
-  color: #dc3545;
+  color: var(--secondary);
   opacity: 0.8;
 }
 
 .game-status.loading {
-  color: #6c757d;
+  color: var(--secondary);
   opacity: 0.8;
 }
 
 /* Sensitivity Suggestion Styles */
 .sensitivity-suggestion {
-  background: #181a20;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #3a3f47;
+  background: var(--dark);
+  border-radius: var(--radius);
+  padding: calc(0.5 * var(--spacing));
+  border: 1px solid var(--secondary);
+  flex: 1;
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
 }
 
 .sensitivity-suggestion h4 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #ffb347;
+  margin: 0 0 calc(0.5 * var(--spacing)) 0;
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .suggestion-details {
@@ -162,66 +175,55 @@
 }
 
 .suggested-value {
-  margin: 0 0 8px 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #e0e0e0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0 0 4px 0;
+  color: var(--light);
+  text-shadow: none;
 }
 
 .conversion-info {
-  margin: 0 0 4px 0;
-  font-size: 11px;
-  color: #b0b0b0;
+  margin: 0 0 2px 0;
+  color: var(--secondary);
   opacity: 0.8;
 }
 
 .cm360-info {
   margin: 0;
-  font-size: 10px;
-  color: #6c757d;
+  color: var(--secondary);
   opacity: 0.7;
 }
 
 /* Current Settings Styles */
 .current-settings {
-  background: #181a20;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #3a3f47;
+  background: var(--dark);
+  border-radius: var(--radius);
+  padding: calc(0.5 * var(--spacing));
+  border: 1px solid var(--secondary);
 }
 
 .current-settings h4 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #ffb347;
+  margin: 0 0 calc(0.5 * var(--spacing)) 0;
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .settings-details {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .setting-item {
   margin: 0;
-  font-size: 12px;
-  color: #e0e0e0;
+  color: var(--light);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .setting-item .label {
-  color: #b0b0b0;
-  font-weight: 500;
+  color: var(--secondary);
   opacity: 0.8;
 }
 
 .setting-item:first-child .label {
-  color: #ffb347;
+  color: var(--primary);
 }

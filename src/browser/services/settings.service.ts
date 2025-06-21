@@ -8,12 +8,27 @@ export interface CanonicalGameSettings {
   dpi: number;
 }
 
+export interface HotkeyConfig {
+  id: string;
+  name: string;
+  keyCode: number;
+  modifiers: {
+    ctrl: boolean;
+    shift: boolean;
+    alt: boolean;
+  };
+  description: string;
+  enabled: boolean;
+}
+
 export interface UserSettings {
   widget: {
     position: { x: number; y: number };
     visible: boolean;
   };
   canonical: CanonicalGameSettings | null;
+  hotkeys: HotkeyConfig[];
+  theme: string;
   // Add more settings categories as needed
   // ui: { theme: string; fontSize: number };
   // game: { autoStart: boolean; hotkeys: any };
@@ -38,7 +53,9 @@ export class SettingsService {
         position: { x: 100, y: 100 },
         visible: false
       },
-      canonical: null
+      canonical: null,
+      hotkeys: [],
+      theme: 'default'
     };
   }
 
@@ -103,6 +120,36 @@ export class SettingsService {
 
   public clearCanonicalSettings(): void {
     this.settings.canonical = null;
+    this.saveSettings();
+  }
+
+  // Hotkey methods
+  public getHotkeys(): HotkeyConfig[] {
+    return this.settings.hotkeys;
+  }
+
+  public setHotkeys(hotkeys: HotkeyConfig[]): void {
+    this.settings.hotkeys = hotkeys;
+    this.saveSettings();
+  }
+
+  public addHotkey(hotkey: HotkeyConfig): void {
+    this.settings.hotkeys.push(hotkey);
+    this.saveSettings();
+  }
+
+  public removeHotkey(id: string): void {
+    this.settings.hotkeys = this.settings.hotkeys.filter(h => h.id !== id);
+    this.saveSettings();
+  }
+
+  // Theme methods
+  public getTheme(): string {
+    return this.settings.theme;
+  }
+
+  public setTheme(theme: string): void {
+    this.settings.theme = theme;
     this.saveSettings();
   }
 

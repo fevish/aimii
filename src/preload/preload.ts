@@ -90,6 +90,20 @@ contextBridge.exposeInMainWorld('settings', {
   },
   hasCanonicalSettings: () => {
     return ipcRenderer.invoke('settings-has-canonical');
+  },
+  getTheme: () => {
+    return ipcRenderer.invoke('settings-get-theme');
+  },
+  setTheme: (theme: string) => {
+    return ipcRenderer.invoke('settings-set-theme', theme);
+  },
+  onThemeChanged: (callback: (theme: string) => void) => {
+    ipcRenderer.on('theme-changed', (event: any, theme: string) => {
+      callback(theme);
+    });
+  },
+  removeThemeListener: () => {
+    ipcRenderer.removeAllListeners('theme-changed');
   }
 });
 
@@ -124,7 +138,7 @@ contextBridge.exposeInMainWorld('widget', {
     return ipcRenderer.invoke('toggleWidget');
   },
   getHotkeyInfo: () => {
-    return ipcRenderer.invoke('widget-get-hotkey-info');
+    return ipcRenderer.invoke('hotkeys-get-info', 'widget-toggle');
   }
 });
 
@@ -138,6 +152,40 @@ contextBridge.exposeInMainWorld('sensitivityConverter', {
   convert: (fromGame: string, toGame: string, sensitivity: number, dpi: number) => {
     return ipcRenderer.invoke('sensitivity-convert', fromGame, toGame, sensitivity, dpi);
   }
+});
+
+contextBridge.exposeInMainWorld('hotkeys', {
+  getAllHotkeys: () => {
+    return ipcRenderer.invoke('hotkeys-get-all');
+  },
+  updateHotkey: (id: string, updates: any) => {
+    return ipcRenderer.invoke('hotkeys-update', id, updates);
+  },
+  resetToDefaults: () => {
+    return ipcRenderer.invoke('hotkeys-reset');
+  },
+  getHotkeyInfo: (id: string) => {
+    return ipcRenderer.invoke('hotkeys-get-info', id);
+  },
+  onHotkeyChanged: (callback: (id: string, updates: any) => void) => {
+    ipcRenderer.on('hotkey-changed', (event: any, id: string, updates: any) => {
+      callback(id, updates);
+    });
+  },
+  onHotkeysReset: (callback: () => void) => {
+    ipcRenderer.on('hotkeys-reset', (event: any) => {
+      callback();
+    });
+  },
+  removeHotkeyListeners: () => {
+    ipcRenderer.removeAllListeners('hotkey-changed');
+    ipcRenderer.removeAllListeners('hotkeys-reset');
+  }
+});
+
+contextBridge.exposeInMainWorld('windowControls', {
+  minimize: () => ipcRenderer.invoke('minimize-window'),
+  close: () => ipcRenderer.invoke('close-window')
 });
 
 

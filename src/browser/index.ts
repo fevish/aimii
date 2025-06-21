@@ -14,6 +14,7 @@ import { CurrentGameService } from './services/current-game.service';
 import { SensitivityConverterService } from './services/sensitivity-converter.service';
 import { BrowserWindow } from 'electron';
 import { WindowStateService } from './services/window-state.service';
+import { HotkeyService } from './services/hotkey.service';
 
 // Simple global console override - just like a normal website
 let mainWindow: BrowserWindow | null = null;
@@ -88,6 +89,7 @@ const bootstrap = (): Application => {
 
   const sensitivityConverterService = new SensitivityConverterService(gamesService, settingsService, currentGameService);
   const windowStateService = new WindowStateService();
+  const hotkeyService = new HotkeyService(settingsService);
 
   const createDemoOsrWindowControllerFactory = (): DemoOSRWindowController => {
     const controller = new DemoOSRWindowController(overlayService);
@@ -95,7 +97,7 @@ const bootstrap = (): Application => {
   }
 
   const createWidgetWindowControllerFactory = (): WidgetWindowController => {
-    const controller = new WidgetWindowController(overlayService, settingsService, currentGameService);
+    const controller = new WidgetWindowController(overlayService, settingsService, currentGameService, hotkeyService);
     return controller;
   }
 
@@ -110,7 +112,8 @@ const bootstrap = (): Application => {
     settingsService,
     currentGameService,
     sensitivityConverterService,
-    windowStateService
+    windowStateService,
+    hotkeyService
   );
 
   return new Application(overlayService, gepService, mainWindowController, gamesService);
