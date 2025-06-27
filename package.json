@@ -53,7 +53,7 @@
     "watch:main": "webpack --watch --config ./webpack.main.config.js",
     "build:renderer": "webpack --config ./webpack.renderer.config.js",
     "build:main": "webpack --config ./webpack.main.config.js",
-    "build": "webpack --mode=development && npm run build:main && npm run build:renderer",
+    "build": "webpack --mode=production",
     "build:dev": "webpack --watch --mode=development",
     "build:start": "npm run build && ow-electron . ",
     "start": "ow-electron .",
