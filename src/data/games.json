@@ -56,7 +56,7 @@
     "owGameId": "8032",
     "owConstant": "MinecraftJavaEdition",
     "owGameName": "Minecraft: Java Edition",
-    "enable_for_app": false
+    "enable_for_app": true
   },
   {
     "game": "Valorant",
