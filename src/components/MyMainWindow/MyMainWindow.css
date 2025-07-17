@@ -230,7 +230,6 @@ form {
 
 .no-game p {
   color: var(--secondary);
-  opacity: 0.8;
 }
 
 /* Canon Setting */
@@ -340,19 +339,16 @@ form {
 .conversion-info {
   margin: 0 0 calc(0.125 * var(--spacing)) 0;
   color: var(--secondary);
-  opacity: 0.8;
 }
 
 .cm360-info {
   margin: 0;
   color: var(--secondary);
-  opacity: 0.7;
 }
 
 /* Utilities */
 .help-text {
   color: var(--secondary) !important;
-  opacity: 0.8 !important;
 }
 
 .debug-section {
