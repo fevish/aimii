@@ -18,6 +18,7 @@
     "nodeGypRebuild": false,
     "appId": "app.aimii",
     "asar": true,
+    "icon": "public/icons/aimii-icon.ico",
     "overwolf": {
       "disableAdOptimization": false
     },

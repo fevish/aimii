@@ -17,14 +17,11 @@ interface HotkeyInfo {
   displayText: string;
 }
 
-// Type declaration for window object
-declare global {
-  interface Window {
-    electronAPI?: {
-      openWidgetDevTools: () => void;
-    };
-  }
-}
+// Local type for electronAPI
+type ElectronAPI = {
+  openWidgetDevTools: () => void;
+  openExternalUrl: (url: string) => Promise<boolean>;
+};
 
 const Widget: React.FC = () => {
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
@@ -198,8 +195,8 @@ const Widget: React.FC = () => {
         if (event.key === 'I' || event.key === 'C') {
           event.preventDefault();
           // Send IPC message to open dev tools
-          if (window.electronAPI) {
-            window.electronAPI.openWidgetDevTools();
+          if ((window as any).electronAPI) {
+            (window as any).electronAPI.openWidgetDevTools();
           }
         }
       }

@@ -63,6 +63,9 @@ contextBridge.exposeInMainWorld('overlay', {
 contextBridge.exposeInMainWorld('electronAPI', {
   openWidgetDevTools: () => {
     return ipcRenderer.invoke('openWidgetDevTools');
+  },
+  openExternalUrl: (url: string) => {
+    return ipcRenderer.invoke('open-external-url', url);
   }
 });
 

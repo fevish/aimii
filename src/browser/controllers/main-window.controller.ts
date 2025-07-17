@@ -1,4 +1,4 @@
-import { app as electronApp, ipcMain, BrowserWindow, Menu } from 'electron';
+import { app as electronApp, ipcMain, BrowserWindow, Menu, shell } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
 import { DemoOSRWindowController } from './demo-osr-window.controller';
@@ -116,6 +116,7 @@ export class MainWindowController {
       y: savedState.y,
       frame: false, // Hide the default window frame
       title: 'AIMII - Mouse Sensitivity Converter',
+      icon: path.join(__dirname, '../../public/icons/aimii-icon.ico'), // Set custom icon
       show: false, // Don't show until we've set up the state
       resizable: false, // Disable window resizing
       webPreferences: {
@@ -382,6 +383,17 @@ export class MainWindowController {
 
     ipcMain.handle('hotkeys-get-info', (event, id: string) => {
       return this.hotkeyService.getHotkeyInfo(id);
+    });
+
+    // External URL opening
+    ipcMain.handle('open-external-url', async (event, url: string) => {
+      try {
+        await shell.openExternal(url);
+        return true;
+      } catch (error) {
+        this.printLogMessage('Error opening external URL:', error);
+        return false;
+      }
     });
 
     // Window controls
