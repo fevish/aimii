@@ -1,0 +1,69 @@
+export const gamesData = [
+  {
+    game: "Aimlab",
+    sensitivityScalingFactor: 0.05,
+    owGameId: "21796",
+    owConstant: "Aimlab",
+    owGameName: "Aim Lab",
+    enable_for_app: true
+  },
+  {
+    game: "Apex Legends",
+    sensitivityScalingFactor: 0.02199999511,
+    owGameId: "21566",
+    owConstant: "ApexLegends",
+    owGameName: "Apex Legends",
+    enable_for_app: true
+  },
+  {
+    game: "Call of Duty: Black Ops 6",
+    sensitivityScalingFactor: 0.00660000176,
+    owGameId: "24542",
+    owConstant: "CallOfDutyBlackOps6",
+    owGameName: "Call of Duty: Black Ops 6",
+    enable_for_app: true
+  },
+  {
+    game: "Counter-Strike 2",
+    sensitivityScalingFactor: 0.02199999511,
+    owGameId: "22730",
+    owConstant: "CounterStrike2",
+    owGameName: "Counter-Strike 2",
+    enable_for_app: true
+  },
+  {
+    game: "Escape From Tarkov",
+    sensitivityScalingFactor: 0.125,
+    owGameId: "21634",
+    owConstant: "EscapeFromTarkov",
+    owGameName: "Escape From Tarkov",
+    enable_for_app: true
+  },
+  {
+    game: "Fortnite",
+    sensitivityScalingFactor: 0.00555500005,
+    owGameId: "21216",
+    owConstant: "Fortnite",
+    owGameName: "Fortnite",
+    enable_for_app: true
+  },
+  {
+    game: "Minecraft: Java Edition",
+    sensitivityScalingFactor: 1.0,
+    specialConversion: true,
+    sourceFormula: "(1.2*Math.pow(0.6*sensitivity*0.005+0.2, 3))*dpi",
+    targetFormula: "(Math.pow((360/(1.2*targetDPI*cm360/2.54)),1/3)-0.2)/0.003",
+    owGameId: "8032",
+    owConstant: "MinecraftJavaEdition",
+    owGameName: "Minecraft: Java Edition",
+    enable_for_app: true
+  },
+  {
+    game: "Valorant",
+    sensitivityScalingFactor: 0.07,
+    owGameId: "21640",
+    owConstant: "Valorant",
+    owGameName: "Valorant",
+    enable_for_app: true
+  }
+];

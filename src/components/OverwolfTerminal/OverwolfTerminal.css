@@ -1,0 +1,64 @@
+/* OverwolfTerminal Styles - Minimalistic Typewriter Theme */
+
+.overwolf-terminal {
+  margin: calc(0.5 * var(--spacing)) 0;
+  padding: calc(0.5 * var(--spacing));
+  background: var(--dark);
+  border-radius: var(--radius);
+  box-shadow: none;
+  color: var(--light);
+  max-width: 600px;
+  display: flex;
+  flex-flow: column;
+  border: 1px solid var(--secondary);
+}
+
+.overwolf-terminal h2 {
+  margin-top: 0;
+}
+
+.overwolf-terminal-textarea {
+  height: 120px;
+  background: var(--dark);
+  color: var(--light);
+  border: 1px solid var(--secondary);
+  border-radius: var(--radius);
+  padding: calc(0.25 * var(--spacing));
+  resize: none;
+  margin-bottom: calc(0.25 * var(--spacing));
+}
+
+.overwolf-terminal-buttons {
+  display: flex;
+  gap: calc(0.25 * var(--spacing));
+}
+
+.overwolf-terminal-start,
+.overwolf-terminal-clear {
+  background: var(--dark);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.overwolf-terminal-start:disabled {
+  background: var(--dark);
+  border-color: var(--secondary);
+  color: var(--secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.overwolf-terminal-clear {
+  background: var(--dark);
+  color: var(--secondary);
+  border-color: var(--secondary);
+}
+
+.overwolf-terminal-clear:hover {
+  background: var(--secondary);
+  color: var(--dark);
+}

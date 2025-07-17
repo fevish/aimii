@@ -4,6 +4,14 @@ const path = require('path');
 module.exports = {
   mode: 'development',
   devtool: 'source-map',
+  watch: true,
+  watchOptions: {
+    ignored: /node_modules/,
+    aggregateTimeout: 300,
+    poll: 1000,
+    // Disable following symlinks and restrict to project directory
+    followSymlinks: false
+  },
   module: {
     rules: [
       // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
@@ -12,10 +20,15 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
+      // CSS loader for external CSS files
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
     ],
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.json', '.js'],
+    extensions: ['.ts', '.tsx', '.json', '.js', '.css'],
   },
 
   output: {

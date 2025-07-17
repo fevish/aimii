@@ -33,8 +33,10 @@ export class OverlayHotkeysService extends EventEmitter {
     const passThrowHotKey =
       this.overlayApi.hotkeys.all().find(h => h.name == hotkey);
 
-    passThrowHotKey.passthrough = !passThrowHotKey.passthrough;
-    this.overlayApi.hotkeys.update(passThrowHotKey);
+    if (passThrowHotKey) {
+      passThrowHotKey.passthrough = !passThrowHotKey.passthrough;
+      this.overlayApi.hotkeys.update(passThrowHotKey);
+    }
   };
 
   /**

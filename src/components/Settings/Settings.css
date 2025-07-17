@@ -1,0 +1,123 @@
+/* Settings Styles - Minimalistic Typewriter Theme */
+
+.key-capture-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  cursor: pointer;
+  user-select: none;
+  backdrop-filter: blur(1px);
+}
+
+.key-capture-overlay:focus {
+  outline: none;
+}
+
+.key-capture-active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(0.5 * var(--spacing));
+  background: var(--dark);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  padding: calc(0.5 * var(--spacing));
+  box-shadow: none;
+}
+
+.captured-keys {
+  color: var(--primary);
+  text-align: center;
+  min-width: 150px;
+  padding: calc(0.5 * var(--spacing));
+  background: var(--dark);
+  border-radius: var(--radius);
+  border: 1px solid var(--secondary);
+}
+
+.capture-actions {
+  display: flex;
+  gap: calc(0.5 * var(--spacing));
+}
+
+.save-btn {
+  background: var(--dark);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: normal;
+  align-self: auto;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: var(--dark);
+  transform: none;
+  box-shadow: none;
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  background: var(--dark);
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.cancel-btn {
+  background: var(--dark);
+  border: 1px solid var(--secondary);
+  color: var(--secondary);
+  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: normal;
+  align-self: auto;
+}
+
+.cancel-btn:hover {
+  background: var(--secondary);
+  color: var(--dark);
+  transform: none;
+}
+
+.modifier-warning {
+  background: var(--dark);
+  color: var(--secondary);
+  padding: calc(0.5 * var(--spacing));
+  border-radius: var(--radius);
+  text-align: center;
+  max-width: 250px;
+  border: 1px solid var(--secondary);
+}
+
+/* Theme Section */
+.theme-section {
+  margin-top: var(--spacing);
+}
+
+.theme-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+}
+
+/* Remove the old overlay content */
+.key-capture-overlay::before,
+.key-capture-overlay::after {
+  display: none;
+}
