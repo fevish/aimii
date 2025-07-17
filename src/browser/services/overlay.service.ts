@@ -13,7 +13,7 @@ const app = electronApp as overwolf.OverwolfApp;
 export class OverlayService extends EventEmitter {
   private isOverlayReady = false;
 
-  public get overlayApi(): IOverwolfOverlayApi {
+  public get overlayApi(): IOverwolfOverlayApi | null {
     // Do not let the application access the overlay before it is ready
     if (!this.isOverlayReady) {
       return null;
@@ -35,23 +35,27 @@ export class OverlayService extends EventEmitter {
   public async createNewOsrWindow(
     options: OverlayWindowOptions
   ): Promise<OverlayBrowserWindow> {
+    if (!this.overlayApi) {
+      throw new Error('Overlay API not ready');
+    }
     const overlay = await this.overlayApi.createWindow(options);
     return overlay;
   }
 
   /**
-   *
-   *
+   * Register games for overlay injection
    */
   public async registerToGames(gameIds: number[]): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
+    // Removed 2-second delay - this was causing slow injection
     this.log('registering to game ids:', gameIds);
 
     const filter: GamesFilter = {
       gamesIds: gameIds,
     };
 
+    if (!this.overlayApi) {
+      throw new Error('Overlay API not ready');
+    }
     await this.overlayApi.registerGames(filter);
 
     this.log('overlay is registered');
@@ -89,6 +93,8 @@ export class OverlayService extends EventEmitter {
     //
     // NOTE: If you have another class listening on events, this will remove
     // their listeners as well.
+    if (!this.overlayApi) return;
+
     this.overlayApi.removeAllListeners();
 
     this.log('registering to overlay package events');
@@ -96,11 +102,12 @@ export class OverlayService extends EventEmitter {
     this.overlayApi.on('game-launched', (event, gameInfo) => {
       this.log('game launched', gameInfo);
 
-      if (gameInfo.processInfo.isElevated) {
+      if (gameInfo.processInfo?.isElevated) {
         // ToDo: emit to log and notify user- we can't inject to elevated games
         // if the application is not eleveted.
         return;
       }
+
       // pass the decision to the application
       this.emit('injection-decision-handling', event, gameInfo);
 
@@ -130,6 +137,12 @@ export class OverlayService extends EventEmitter {
 
     this.overlayApi.on('game-input-exclusive-mode-changed', (info) => {
       this.log('overlay input exclusive mode changed', info);
+    });
+
+    // Add game exit event listener for better cleanup
+    this.overlayApi.on('game-exit', (gameInfo) => {
+      this.log('game exit detected', gameInfo);
+      this.emit('game-exit', gameInfo);
     });
   }
 

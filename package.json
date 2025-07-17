@@ -1,13 +1,19 @@
 {
   "name": "aimii",
-  "version": "22.3.13",
+  "version": "0.0.1",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
-    "name": "overwolf",
-    "email": "overwolf@gmail.com"
+    "name": "fevish",
+    "email": ""
   },
   "license": "MIT",
+  "discord": "https://discord.gg/Nj2Xj3W4eY",
+  "homepage": "https://aimii.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fevish/sens"
+  },
   "overwolf": {
     "packages": [
       "gep",
@@ -16,12 +22,13 @@
   },
   "build": {
     "nodeGypRebuild": false,
-    "appId": "com.overwolf.packageSample",
+    "appId": "app.aimii",
     "asar": true,
+    "icon": "public/icons/aimii-icon.ico",
     "overwolf": {
       "disableAdOptimization": false
     },
-    "productName": "owElectronpackageSample",
+    "productName": "AIMII Mouse Sensitivity Converter",
     "directories": {
       "output": "build"
     },
@@ -31,7 +38,10 @@
       "*.html",
       "*.exe"
     ],
-    "copyright": "Copyright 2023 Overwolf Ltd.",
+    "copyright": "Copyright 2025 fevish",
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "removePackageKeywords": true,
     "win": {
       "target": [
         {
@@ -42,24 +52,41 @@
         }
       ],
       "artifactName": "${productName}-Setup-${version}.${ext}",
-      "publisherName": "Overwolf Ltd",
-      "legalTrademarks": "Copyright 2023 Overwolf Ltd."
+      "requestedExecutionLevel": "asInvoker",
+      "verifyUpdateCodeSignature": false,
+      "extraResources": [
+        {
+          "from": "public/app.manifest",
+          "to": "app.manifest"
+        }
+      ],
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AIMII Mouse Sensitivity Converter",
+      "installerIcon": "public/icons/aimii-icon.ico",
+      "uninstallerIcon": "public/icons/aimii-icon.ico"
     }
   },
   "scripts": {
     "watch:renderer": "webpack --watch --config ./webpack.renderer.config.js",
+    "watch:main": "webpack --watch --config ./webpack.main.config.js",
     "build:renderer": "webpack --config ./webpack.renderer.config.js",
     "build:main": "webpack --config ./webpack.main.config.js",
-    "build": "webpack --mode=development && npm run build:main && npm run build:renderer",
+    "build": "webpack --mode=production",
     "build:dev": "webpack --watch --mode=development",
     "build:start": "npm run build && ow-electron . ",
     "start": "ow-electron .",
-    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=GameEventsTester --publish=never",
-    "watch": "npm run watch:renderer && npm run start"
+    "dev": "concurrently \"npm run watch:main\" \"npm run watch:renderer\"",
+    "watch": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
+    "watch:dev": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
+    "hot-reload": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"nodemon\"",
+    "dev:preserve-state": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && nodemon\"",
+    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=aimii --publish=never"
   },
   "devDependencies": {
     "@overwolf/ow-electron": "latest",
@@ -68,18 +95,27 @@
     "@types/jquery": "^3.5.16",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.11.18",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "concurrently": "^9.1.2",
     "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^7.1.2",
     "electron": "21.1.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^29.3.1",
     "jest-environment-jsdom": "^29.3.1",
     "jest-junit": "^15.0.0",
     "jest-mock-extended": "^3.0.1",
+    "nodemon": "^3.0.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "reflect-metadata": "^0.1.13",
+    "style-loader": "^4.0.0",
     "ts-jest": "^29.0.3",
     "ts-loader": "^9.4.2",
     "typescript": "^4.7.4",
     "typescript-logging": "^2.0.2",
+    "wait-on": "^7.0.1",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "wrapper-webpack-plugin": "^2.1.0"

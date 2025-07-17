@@ -6,21 +6,19 @@ import { OverlayBrowserWindow, OverlayWindowOptions, PassthroughType, ZOrderType
  *
  */
 export class DemoOSRWindowController {
-  private overlayWindow: OverlayBrowserWindow = null;
-
+  private overlayWindow: OverlayBrowserWindow | null = null;
 
   /**
    *
    */
-  public get overlayBrowserWindow() : OverlayBrowserWindow {
+  public get overlayBrowserWindow(): OverlayBrowserWindow | null {
     return this.overlayWindow;
   }
 
   /**
    *
    */
-  constructor(private readonly overlayService: OverlayService) {
-  }
+  constructor(private readonly overlayService: OverlayService) {}
 
   /**
    *
@@ -42,19 +40,16 @@ export class DemoOSRWindowController {
     };
 
     // random positions
-    const activeGame = this.overlayService.overlayApi.getActiveGameInfo();
+    const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
     const gameWindowInfo = activeGame?.gameWindowInfo;
 
     const screenWidth = gameWindowInfo?.size.width || 500;
-    options.x = this.randomInteger(0, screenWidth - options.width);
+    options.x = this.randomInteger(0, screenWidth - (options.width || 500));
     options.y = 10;
 
-    this.overlayWindow = await this.overlayService.createNewOsrWindow(
-      options,
-    );
+    this.overlayWindow = await this.overlayService.createNewOsrWindow(options);
 
     this.registerToIpc();
-
     this.registerToWindowEvents();
 
     await this.overlayWindow.window.loadURL(
@@ -68,33 +63,34 @@ export class DemoOSRWindowController {
    *
    */
   private registerToIpc() {
+    if (!this.overlayWindow) return;
     const windowIpc = this.overlayWindow.window.webContents.ipc;
 
-    windowIpc.on('resizeOsrClick', (e) => {
+    windowIpc.on('resizeOsrClick', (e: any) => {
       this.handleResizeCommand();
     });
 
-    windowIpc.on('moveOsrClick', (e) => {
+    windowIpc.on('moveOsrClick', (e: any) => {
       this.handleMoveCommand();
     });
 
-    windowIpc.on('minimizeOsrClick', (e) => {
-      const window = this.overlayWindow.window;
+    windowIpc.on('minimizeOsrClick', (e: any) => {
+      const window = this.overlayWindow!.window;
       window?.minimize();
     });
 
-    windowIpc.on('setPassthrough', (e, value) => {
+    windowIpc.on('setPassthrough', (e: any, value: string) => {
       let pass = parseInt(value);
       this.setWindowPassthrough(pass);
     });
 
-    windowIpc.on('setZorder', (e, value) => {
+    windowIpc.on('setZorder', (e: any, value: string) => {
       let zOrder = parseInt(value);
       this.setWindowZorder(zOrder);
     });
 
     windowIpc.on('devtools', () => {
-      this.overlayWindow.window.webContents.openDevTools({ mode: 'detach' });
+      this.overlayWindow!.window.webContents.openDevTools({ mode: 'detach' });
     });
   }
 
@@ -102,19 +98,20 @@ export class DemoOSRWindowController {
    *
   */
   private registerToWindowEvents() {
+    if (!this.overlayWindow) return;
     const browserWindow = this.overlayWindow.window;
-    browserWindow.on('closed', () =>{
+    browserWindow.on('closed', () => {
       this.overlayWindow = null;
       console.log('osr window closed');
-    })
+    });
   }
 
   /**
    *
    */
   private handleResizeCommand() {
+    if (!this.overlayWindow) return;
     const window = this.overlayWindow.window;
-
     window?.setSize(this.randomInteger(100, 500), this.randomInteger(100, 500));
   }
 
@@ -123,12 +120,10 @@ export class DemoOSRWindowController {
    */
   private handleMoveCommand() {
     const { overlayApi } = this.overlayService;
-
-    const gameWindowInfo = overlayApi.getActiveGameInfo()?.gameWindowInfo;
-    if (!gameWindowInfo) {
+    const gameWindowInfo = overlayApi?.getActiveGameInfo()?.gameWindowInfo;
+    if (!gameWindowInfo || !this.overlayWindow) {
       return;
     }
-
     const window = this.overlayWindow.window;
     window?.setPosition(
       this.randomInteger(0, gameWindowInfo.size.width - 100),
@@ -140,6 +135,7 @@ export class DemoOSRWindowController {
    *
    */
   private setWindowPassthrough(pass: PassthroughType) {
+    if (!this.overlayWindow) return;
     this.overlayWindow.overlayOptions.passthrough = pass;
   }
 
@@ -147,13 +143,14 @@ export class DemoOSRWindowController {
    *
    */
   private setWindowZorder(zOrder: ZOrderType) {
+    if (!this.overlayWindow) return;
     this.overlayWindow.overlayOptions.zOrder = zOrder;
   }
 
   /**
    *
    */
-  private randomInteger(min, max) {
+  private randomInteger(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 }

@@ -1,0 +1,360 @@
+/* Main Window Styles - Minimalistic Typewriter Theme */
+
+/* Layout */
+.my-main-window {
+  background: var(--dark);
+  display: flex;
+  flex-flow: column;
+  width: 100%;
+  height: 100%;
+}
+
+header {
+  background: var(--dark);
+  padding: calc(0.25 * var(--spacing)) var(--spacing);
+  /* border-bottom: 1px solid var(--secondary); */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  -webkit-app-region: drag;
+
+  .app-logo {
+    display: flex;
+    align-items: flex-end;
+    gap: calc(0.5 * var(--spacing));
+
+    h1 {
+      line-height: 1;
+    }
+
+    .version {
+      font-size: 0.8em;
+      line-height: 1.25;
+    }
+  }
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing);
+  -webkit-app-region: no-drag;
+
+  .btn-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-flow: row;
+    cursor: pointer;
+    padding-left: calc(2.5 * var(--spacing));
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: calc(0.25 * var(--spacing));
+      display: block;
+      /* width: 26px;
+      height: 32px; */
+      width: calc(2* var(--spacing));
+      height: 100%;
+      background-color: var(--primary);
+      mask: center center no-repeat;
+      transition: background-color 0.3s ease-in-out;
+    }
+
+    &:hover::before {
+      background-color: var(--dark);
+    }
+
+    &.discord-btn::before {
+      mask-image: url('../../assets/images/discord.svg');
+      mask-size: 16px;
+    }
+  }
+}
+
+
+.app-header h1 {
+  margin: 0;
+}
+
+.tab-navigation {
+  display: flex;
+  gap: calc(0.5 * var(--spacing));
+}
+
+.tab-button {
+  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
+  background: var(--dark);
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: normal;
+  align-self: auto;
+}
+
+.tab-button:hover {
+  background: var(--secondary);
+  color: var(--dark);
+  border-color: var(--secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.tab-button.active {
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
+}
+
+.tab-button.active:hover {
+  background: var(--light-gray);
+  transform: none;
+  box-shadow: none;
+}
+
+.window-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.window-control-btn {
+  background: transparent;
+  border: none;
+  color: var(--secondary);
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--radius);
+}
+
+.window-control-btn:hover {
+  background: var(--secondary);
+  color: var(--dark);
+}
+
+.close-btn:hover {
+  background: #e81123;
+  /* Standard red for close button */
+  color: var(--primary);
+}
+
+main {
+  padding: var(--spacing);
+  padding-top: 0;
+  display: grid;
+  gap: var(--spacing);
+  grid-template-columns: 70% auto;
+  margin: 0 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100%;
+  width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary) var(--dark);
+}
+
+main::-webkit-scrollbar {
+  width: 6px;
+  background: var(--dark);
+}
+
+main::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: var(--radius);
+}
+
+/* Sections */
+section {
+  background: var(--dark);
+  border-radius: var(--radius);
+  padding: var(--spacing);
+  box-shadow: none;
+  display: flex;
+  flex-flow: column;
+}
+
+/* Forms */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing);
+  width: 100%;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: calc(0.25 * var(--spacing));
+  min-width: 0;
+}
+
+.widget-toggle-btn {
+  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
+}
+
+/* Game section */
+.current-game-section {
+  padding: var(--spacing);
+}
+
+.current-game-info {
+  text-align: center;
+}
+
+.game-detected h3 {
+  color: var(--light);
+  text-shadow: none;
+}
+
+.game-status {
+  margin: 0 0 var(--spacing) 0;
+}
+
+.game-status.supported {
+  color: var(--primary);
+}
+
+.game-status.unsupported {
+  color: var(--secondary);
+}
+
+.no-game p {
+  color: var(--secondary);
+  opacity: 0.8;
+}
+
+/* Canon Setting */
+.canonical-form {
+  .save-button {
+    margin-top: calc(0.5 * var(--spacing));
+    padding: calc(1.15* var(--spacing)) calc(4* var(--spacing));
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+}
+
+/* Notes Section */
+.notes-section {
+  grid-column: span 2;
+  font-size: 0.95em;
+  padding-top: 0;
+  padding-bottom: 0;
+  justify-content: flex-end;
+  h4 {
+    margin-bottom: calc(0.5 * var(--spacing));
+  }
+}
+
+/* Settings */
+.settings-container {
+  padding: var(--spacing);
+
+  .hotkeys-section {
+    .hotkey-info {
+      .hotkey-description {
+        margin-bottom: var(--spacing);
+      }
+    }
+  }
+
+  .reset-btn {
+    display: none;
+  }
+
+  .select-theme {
+    label {
+      margin-bottom: calc(0.25 * var(--spacing));
+    }
+  }
+}
+
+.current-settings,
+.current-settings-display {
+  background: var(--dark);
+  border-radius: var(--radius);
+  padding: var(--spacing);
+  margin: var(--spacing) 0;
+  border: 1px solid var(--secondary);
+}
+
+.settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: calc(0.25 * var(--spacing));
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(0.25 * var(--spacing)) 0;
+  border-bottom: 1px solid var(--secondary);
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  color: var(--secondary);
+}
+
+.setting-row:first-child .setting-label {
+  color: var(--primary);
+}
+
+.setting-value {
+  color: var(--light);
+}
+
+/* Sensitivity */
+.sensitivity-suggestion {
+  background: var(--dark);
+  border-radius: var(--radius);
+  padding: var(--spacing);
+  margin: var(--spacing) 0;
+  border: 1px solid var(--secondary);
+}
+
+.suggestion-details {
+  text-align: center;
+}
+
+.suggested-value {
+  margin: 0 0 calc(0.25 * var(--spacing)) 0;
+  color: var(--light);
+  text-shadow: none;
+}
+
+.conversion-info {
+  margin: 0 0 calc(0.125 * var(--spacing)) 0;
+  color: var(--secondary);
+  opacity: 0.8;
+}
+
+.cm360-info {
+  margin: 0;
+  color: var(--secondary);
+  opacity: 0.7;
+}
+
+/* Utilities */
+.help-text {
+  color: var(--secondary) !important;
+  opacity: 0.8 !important;
+}
+
+.debug-section {
+  display: none;
+}
