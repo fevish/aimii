@@ -18,7 +18,13 @@ import { HotkeyService } from './services/hotkey.service';
 
 // Simple global console override - just like a normal website
 let mainWindow: BrowserWindow | null = null;
+let mainWindowController: MainWindowController | null = null;
 let earlyLogs: Array<{ args: any[], timestamp: number }> = [];
+
+// Extend global type for cleanup
+declare global {
+  var mainWindowController: MainWindowController | null;
+}
 
 const safeStringify = (obj: any): string => {
   if (obj === null) return 'null';
@@ -116,6 +122,9 @@ const bootstrap = (): Application => {
     hotkeyService
   );
 
+  // Store reference for cleanup
+  global.mainWindowController = mainWindowController;
+
   return new Application(overlayService, gepService, mainWindowController, gamesService);
 }
 
@@ -126,7 +135,14 @@ ElectronApp.whenReady().then(() => {
 });
 
 ElectronApp.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    ElectronApp.quit();
+  // Don't quit the app when all windows are closed
+  // The app will continue running in the background with tray icon
+  // Users can quit via the tray menu
+});
+
+ElectronApp.on('before-quit', () => {
+  // Cleanup tray icon
+  if (global.mainWindowController) {
+    global.mainWindowController.destroy();
   }
 });
