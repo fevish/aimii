@@ -1,4 +1,4 @@
-# AIMII - Mouse Sensitivity Converter
+# aimii
 
 AIMII is a complete overwolf-electron mouse sensitivity converter application with real-time game detection, event-driven architecture, and both main window and overlay widget interfaces. The app is optimized for maximum performance with minimal latency.
 

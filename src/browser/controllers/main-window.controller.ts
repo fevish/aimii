@@ -1,4 +1,4 @@
-import { app as electronApp, ipcMain, BrowserWindow, Menu, shell } from 'electron';
+import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
 import { DemoOSRWindowController } from './demo-osr-window.controller';
@@ -23,6 +23,7 @@ const owElectronApp = electronApp as overwolf.OverwolfApp;
 export class MainWindowController {
   private browserWindow: BrowserWindow | null = null;
   private widgetController: WidgetWindowController | null = null;
+  private tray: Tray | null = null;
 
   /**
    *
@@ -109,14 +110,19 @@ export class MainWindowController {
     // Load saved window state
     const savedState = this.windowStateService.loadWindowState();
 
+    // Create native image from icon file
+    const appIcon = nativeImage.createFromPath(
+      path.join(__dirname, '../../public/icons/aimii-icon.ico')
+    );
+
     this.browserWindow = new BrowserWindow({
       width: savedState.width,
       height: savedState.height,
       x: savedState.x,
       y: savedState.y,
       frame: false, // Hide the default window frame
-      title: 'AIMII - Mouse Sensitivity Converter',
-      icon: path.join(__dirname, '../../public/icons/aimii-icon.ico'), // Set custom icon
+      title: 'aimii',
+      icon: appIcon, // Use native image for better icon handling
       show: false, // Don't show until we've set up the state
       resizable: false, // Disable window resizing
       webPreferences: {
@@ -130,6 +136,12 @@ export class MainWindowController {
         preload: path.join(__dirname, '../preload/preload.js'),
       },
     });
+
+    // Create tray icon
+    this.createTray(appIcon);
+
+    // Setup window close handler for minimize-to-tray
+    this.setupWindowCloseHandler();
 
     // Apply saved window state
     this.windowStateService.applyWindowState(this.browserWindow);
@@ -155,6 +167,75 @@ export class MainWindowController {
     // Show the window after it's loaded
     this.browserWindow.once('ready-to-show', () => {
       this.browserWindow?.show();
+    });
+  }
+
+  /**
+   * Create system tray icon
+   */
+  private createTray(icon: Electron.NativeImage): void {
+    this.tray = new Tray(icon);
+
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Show aimii',
+        click: () => {
+          if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+            this.browserWindow.show();
+            this.browserWindow.focus();
+            // Update tooltip back to normal
+            this.tray?.setToolTip('aimii');
+          }
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit aimii',
+        click: () => {
+          // Force quit the app
+          electronApp.exit(0);
+        }
+      }
+    ]);
+
+    this.tray.setContextMenu(contextMenu);
+    this.tray.setToolTip('aimii');
+
+    // Show main window when tray icon is clicked
+    this.tray.on('click', () => {
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.show();
+        this.browserWindow.focus();
+        // Update tooltip back to normal
+        this.tray?.setToolTip('aimii');
+      }
+    });
+  }
+
+    /**
+   * Handle window close event - minimize to tray instead of closing
+   */
+  private setupWindowCloseHandler(): void {
+    if (!this.browserWindow) return;
+
+    this.browserWindow.on('close', (event) => {
+      // Prevent the default close behavior
+      event.preventDefault();
+
+      // Hide the window instead of closing it
+      this.browserWindow?.hide();
+
+      // Update tray tooltip to indicate app is running in background
+      if (this.tray) {
+        this.tray.setToolTip('aimii (running in background)');
+      }
+    });
+
+    // Update tray tooltip when window is focused
+    this.browserWindow.on('focus', () => {
+      if (this.tray) {
+        this.tray.setToolTip('aimii');
+      }
     });
   }
 
@@ -469,6 +550,16 @@ export class MainWindowController {
       this.printLogMessage('Opening widget dev tools...');
     } else {
       this.printLogMessage('Widget not created yet. Create widget first.');
+    }
+  }
+
+  /**
+   * Cleanup resources when app is closing
+   */
+  public destroy(): void {
+    if (this.tray) {
+      this.tray.destroy();
+      this.tray = null;
     }
   }
 }
