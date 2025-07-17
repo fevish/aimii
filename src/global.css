@@ -22,7 +22,7 @@ html:root {
   --spacing: 0.75rem;
 
   /* Border Radius - Minimal */
-  --radius: 2px;
+  --radius: 6px;
 }
 
 /* Neon Theme */
@@ -62,7 +62,7 @@ body {
 /* Global Element Styles */
 h1 {
   font-weight: normal;
-  color: var(--primary);
+  color: currentColor;
   letter-spacing: 0.5px;
   margin: 0;
 }
@@ -79,10 +79,11 @@ h3 {
   color: var(--primary);
   letter-spacing: 0.5px;
   font-weight: normal;
+  font-size: 1.3em;
 }
 
 h4 {
-  margin: var(--spacing) 0;
+  margin: 0;
   font-weight: normal;
   color: var(--primary);
   letter-spacing: 0.5px;
@@ -92,6 +93,7 @@ h4 {
 p {
   margin: calc(0.25 * var(--spacing)) 0;
   color: var(--light);
+  opacity: 0.75;
 }
 
 /* Form Elements */
@@ -172,7 +174,6 @@ button:disabled {
 
 .message.success {
   background: var(--dark);
-  border: 1px solid var(--primary);
   color: var(--primary);
 }
 

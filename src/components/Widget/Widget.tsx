@@ -233,7 +233,7 @@ const Widget: React.FC = () => {
     <div className="widget-container">
       <div className="widget-header">
         <div className="hotkey-info">
-          <p><b>Show/Hide</b> {hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
+          <p><b>Show/Hide:</b> {hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
         </div>
         <button
           className="window-control-btn close-btn"

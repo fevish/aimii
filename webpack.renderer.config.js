@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const config = require('./webpack.base.config');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 const path = require('path');
+const packageJson = require('./package.json');
 
 const rendererConfig = { ...config };
 rendererConfig.target = 'electron-renderer';
@@ -46,6 +48,11 @@ rendererConfig.plugins.push(new HtmlWebpackPlugin({
   filename: 'widget/widget.html',
   chunks: ['widget'],
   inject: true
+}));
+
+// Add DefinePlugin to inject version from package.json
+rendererConfig.plugins.push(new webpack.DefinePlugin({
+  'process.env.APP_VERSION': JSON.stringify(packageJson.version)
 }));
 
 module.exports = rendererConfig;
