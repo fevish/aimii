@@ -8,15 +8,14 @@
   font-style: normal;
 }
 
-/* Default Theme - Minimalistic Typewriter */
 html:root {
-  /* Colors - Monochrome */
-  --primary: #ffffff;      /* Pure white */
-  --secondary: #888888;    /* Medium gray */
-  --dark: #000000;         /* Pure black background */
-  --light: #ffffff;        /* White text */
-  --gray: #666666;         /* Dark gray */
-  --light-gray: #cccccc;   /* Light gray */
+  /* Colors - Default (Monochrome) */
+  --primary: #ffffff;
+  --secondary: #969696;
+  --dark: #000000;
+  --light: #ffffff;
+  --gray: #666666;
+  --light-gray: #cccccc;
 
   /* Spacing - Condensed */
   --spacing: 0.75rem;
@@ -27,12 +26,12 @@ html:root {
 
 /* Neon Theme */
 html.neon:root {
-  --primary: #00ff88;      /* Neon green */
-  --secondary: #44aa66;    /* Dark green */
-  --dark: #001122;         /* Dark blue-black */
-  --light: #00ff88;        /* Neon green text */
-  --gray: #225544;         /* Dark green-gray */
-  --light-gray: #66cc88;   /* Light green */
+  --primary: #00ff88;
+  --secondary: #44aa66;
+  --dark: #001122;
+  --light: #00ff88;
+  --gray: #225544;
+  --light-gray: #66cc88;
 }
 
 /* Base styles */
@@ -47,7 +46,7 @@ html {
 *,
 *:before,
 *:after {
-  box-sizing: inherit;
+  box-sizing: border-box;
 }
 
 body {
@@ -56,7 +55,7 @@ body {
   color: var(--light);
   background: var(--dark);
   font-size: 12px;
-  line-height: 1.2;
+  line-height: 1;
 }
 
 /* Global Element Styles */
@@ -90,10 +89,39 @@ h4 {
   text-transform: uppercase;
 }
 
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 800;
+}
+
 p {
   margin: calc(0.25 * var(--spacing)) 0;
+  color: var(--light-gray);
+  font-weight: 300;
+  line-height: 1.15;
+}
+
+b {
+  color: var(--light-gray);
+}
+
+a,
+a:visited {
+  cursor: pointer;
   color: var(--light);
-  opacity: 0.75;
+  opacity: 1;
+  text-decoration: underline;
+  line-height: 1.15;
+}
+
+ul {
+  margin: 0;
+  display: flex;
+  flex-flow: column;
+  padding-inline-start: calc(var(--spacing) * 2);
+  gap: calc(0.15 * var(--spacing));
 }
 
 /* Form Elements */
@@ -102,6 +130,7 @@ label {
   color: var(--primary);
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  margin-bottom: calc(0.5 * var(--spacing));
 }
 
 select,

@@ -498,6 +498,25 @@ export const MyMainWindow: React.FC = () => {
               </div>
             </section>
 
+            <section className="notes-section">
+              <h4>Early Access Notes</h4>
+              <ul>
+                <li>
+                  <p>
+                    <b>In-game widget will not work in all games.</b>
+                    <br />
+                    Some of our supported games eg. Counter-Strike 2 do not support in-game overlays.
+                  </p>
+                </li>
+                <li>
+                  <p>
+                  This app is very early access, features may change or break. Please report bugs to
+                  &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
+                  </p>
+                </li>
+              </ul>
+            </section>
+
             <section className="debug-section">
               <h3>Development Console</h3>
               <OverwolfTerminal />
@@ -507,6 +526,6 @@ export const MyMainWindow: React.FC = () => {
           <Settings />
         )}
       </main>
-    </div>
+    </div >
   );
 };

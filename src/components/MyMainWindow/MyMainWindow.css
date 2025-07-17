@@ -173,6 +173,8 @@ section {
   border-radius: var(--radius);
   padding: var(--spacing);
   box-shadow: none;
+  display: flex;
+  flex-flow: column;
 }
 
 /* Forms */
@@ -234,10 +236,23 @@ form {
 /* Canon Setting */
 .canonical-form {
   .save-button {
+    margin-top: calc(0.5 * var(--spacing));
     padding: calc(1.15* var(--spacing)) calc(4* var(--spacing));
     font-size: 1.5rem;
     text-transform: uppercase;
     line-height: 1;
+  }
+}
+
+/* Notes Section */
+.notes-section {
+  grid-column: span 2;
+  font-size: 0.95em;
+  padding-top: 0;
+  padding-bottom: 0;
+  justify-content: flex-end;
+  h4 {
+    margin-bottom: calc(0.5 * var(--spacing));
   }
 }
 
