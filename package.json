@@ -33,6 +33,9 @@
       "*.exe"
     ],
     "copyright": "Copyright 2025 fevish",
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "removePackageKeywords": true,
     "win": {
       "target": [
         {
@@ -42,7 +45,15 @@
           ]
         }
       ],
-      "artifactName": "${productName}-Setup-${version}.${ext}"
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "requestedExecutionLevel": "asInvoker",
+      "verifyUpdateCodeSignature": false,
+      "extraResources": [
+        {
+          "from": "public/app.manifest",
+          "to": "app.manifest"
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
