@@ -16,15 +16,49 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  -webkit-app-region: drag; /* Make the header draggable */
+  -webkit-app-region: drag;
+  /* Make the header draggable */
 }
 
 .header-controls {
   display: flex;
   align-items: center;
   gap: var(--spacing);
-  -webkit-app-region: no-drag; /* Exclude controls from drag region */
+  -webkit-app-region: no-drag;
+
+  .btn-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-flow: row;
+    cursor: pointer;
+    padding-left: calc(2.5 * var(--spacing));
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: calc(0.25 * var(--spacing));
+      display: block;
+      /* width: 26px;
+      height: 32px; */
+      width: calc(2* var(--spacing));
+      height: 100%;
+      background-color: var(--primary);
+      mask: center center no-repeat;
+      transition: background-color 0.3s ease-in-out;
+    }
+
+    &:hover::before {
+      background-color: var(--dark);
+    }
+
+    &.discord-btn::before {
+      mask-image: url('../../assets/images/discord.svg');
+      mask-size: 16px;
+    }
+  }
 }
+
 
 .app-header h1 {
   margin: 0;
@@ -32,11 +66,11 @@ header {
 
 .tab-navigation {
   display: flex;
-  gap: 4px;
+  gap: calc(0.5 * var(--spacing));
 }
 
 .tab-button {
-  padding: 4px 8px;
+  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
   background: var(--dark);
   color: var(--secondary);
   border: 1px solid var(--secondary);
@@ -89,7 +123,8 @@ header {
 }
 
 .close-btn:hover {
-  background: #e81123; /* Standard red for close button */
+  background: #e81123;
+  /* Standard red for close button */
   color: var(--primary);
 }
 

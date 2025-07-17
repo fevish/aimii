@@ -72,6 +72,9 @@ declare global {
       minimize: () => void;
       close: () => void;
     };
+    electronAPI?: {
+      openExternalUrl: (url: string) => Promise<boolean>;
+    };
   }
 }
 
@@ -349,6 +352,7 @@ export const MyMainWindow: React.FC = () => {
             >
               Settings
             </button>
+            <button className="tab-button btn-icon discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>Discord</button>
           </nav>
           <div className="window-controls">
             <button onClick={handleMinimize} className="window-control-btn minimize-btn">_</button>
