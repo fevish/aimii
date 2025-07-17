@@ -8,6 +8,12 @@
     "email": ""
   },
   "license": "MIT",
+  "discord": "https://discord.gg/Nj2Xj3W4eY",
+  "homepage": "https://aimii.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fevish/sens"
+  },
   "overwolf": {
     "packages": [
       "gep",
@@ -53,7 +59,8 @@
           "from": "public/app.manifest",
           "to": "app.manifest"
         }
-      ]
+      ],
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,
