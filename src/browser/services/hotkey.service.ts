@@ -23,7 +23,7 @@ export class HotkeyService extends EventEmitter {
       name: 'Toggle Widget',
       keyCode: 77, // M key
       modifiers: { ctrl: true, shift: true, alt: false },
-      description: 'Toggle the AIMII widget visibility',
+      description: 'Toggles the in-game AIMII widget visibility.',
       enabled: true
     });
 

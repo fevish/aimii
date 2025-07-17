@@ -12,12 +12,26 @@
 header {
   background: var(--dark);
   padding: calc(0.25 * var(--spacing)) var(--spacing);
-  border-bottom: 1px solid var(--secondary);
+  /* border-bottom: 1px solid var(--secondary); */
   display: flex;
   justify-content: space-between;
   align-items: center;
   -webkit-app-region: drag;
-  /* Make the header draggable */
+
+  .app-logo {
+    display: flex;
+    align-items: flex-end;
+    gap: calc(0.5 * var(--spacing));
+
+    h1 {
+      line-height: 1;
+    }
+
+    .version {
+      font-size: 0.8em;
+      line-height: 1.25;
+    }
+  }
 }
 
 .header-controls {
@@ -130,6 +144,7 @@ header {
 
 main {
   padding: var(--spacing);
+  padding-top: 0;
   display: grid;
   gap: var(--spacing);
   grid-template-columns: 70% auto;
@@ -157,7 +172,6 @@ section {
   background: var(--dark);
   border-radius: var(--radius);
   padding: var(--spacing);
-  border: 1px solid var(--secondary);
   box-shadow: none;
 }
 
@@ -217,7 +231,39 @@ form {
   opacity: 0.8;
 }
 
+/* Canon Setting */
+.canonical-form {
+  .save-button {
+    padding: calc(1.15* var(--spacing)) calc(4* var(--spacing));
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+}
+
 /* Settings */
+.settings-container {
+  padding: var(--spacing);
+
+  .hotkeys-section {
+    .hotkey-info {
+      .hotkey-description {
+        margin-bottom: var(--spacing);
+      }
+    }
+  }
+
+  .reset-btn {
+    display: none;
+  }
+
+  .select-theme {
+    label {
+      margin-bottom: calc(0.25 * var(--spacing));
+    }
+  }
+}
+
 .current-settings,
 .current-settings-display {
   background: var(--dark);

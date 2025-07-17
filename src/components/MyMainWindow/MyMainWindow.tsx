@@ -34,6 +34,11 @@ interface HotkeyConfig {
 }
 
 declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      APP_VERSION: string;
+    }
+  }
   interface Window {
     games: {
       getAllGames: () => Promise<GameData[]>;
@@ -260,8 +265,8 @@ export const MyMainWindow: React.FC = () => {
           if (!prevSuggestion && !suggestion) return prevSuggestion;
           if (!prevSuggestion || !suggestion) return suggestion;
           if (prevSuggestion.fromGame === suggestion.fromGame &&
-              prevSuggestion.toGame === suggestion.toGame &&
-              prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
+            prevSuggestion.toGame === suggestion.toGame &&
+            prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
             return prevSuggestion; // No change
           }
           return suggestion;
@@ -337,7 +342,10 @@ export const MyMainWindow: React.FC = () => {
   return (
     <div className="my-main-window">
       <header className="app-header">
-        <h1>AIMII</h1>
+        <div className="app-logo">
+          <h1>AIMII</h1>
+          <span className="version">v{process.env.APP_VERSION}</span>
+        </div>
         <div className="header-controls">
           <nav className="tab-navigation">
             <button
@@ -380,14 +388,14 @@ export const MyMainWindow: React.FC = () => {
               <form onSubmit={handleSaveCanonicalSettings} className="canonical-form">
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="game-select">Preferred Game:</label>
+                    <label htmlFor="game-select">1. Preferred Game</label>
                     <select
                       id="game-select"
                       value={selectedGame}
                       onChange={(e) => setSelectedGame(e.target.value)}
                       required
                     >
-                      <option value="">Select your preferred game</option>
+                      <option value="">Select a Game</option>
                       {games.map((game) => (
                         <option key={game.game} value={game.game}>
                           {game.game}
@@ -397,7 +405,7 @@ export const MyMainWindow: React.FC = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="sensitivity-input">In-Game Sensitivity:</label>
+                    <label htmlFor="sensitivity-input">2. In-Game Sensitivity</label>
                     <input
                       id="sensitivity-input"
                       type="number"
@@ -405,27 +413,27 @@ export const MyMainWindow: React.FC = () => {
                       min="0.001"
                       value={sensitivity}
                       onChange={(e) => setSensitivity(e.target.value)}
-                      placeholder="Enter your sensitivity"
+                      placeholder="0.35"
                       required
                     />
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="dpi-input">Mouse DPI:</label>
+                    <label htmlFor="dpi-input">3.Mouse DPI</label>
                     <input
                       id="dpi-input"
                       type="number"
                       min="1"
                       value={dpi}
                       onChange={(e) => setDpi(e.target.value)}
-                      placeholder="Enter your mouse DPI"
+                      placeholder="800"
                       required
                     />
                   </div>
                 </div>
 
                 <button type="submit" disabled={isLoading} className="save-button">
-                  {isLoading ? 'Saving...' : 'Save Canonical Settings'}
+                  {isLoading ? 'Saving...' : 'Save'}
                 </button>
               </form>
 

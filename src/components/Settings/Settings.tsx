@@ -155,13 +155,13 @@ const Settings: React.FC = () => {
         // numpad operators (106-111), common keyboard characters (186-222), and modifiers
         const allowedKeyCodes = [
           // Letters A-Z
-          ...Array.from({length: 26}, (_, i) => 65 + i),
+          ...Array.from({ length: 26 }, (_, i) => 65 + i),
           // Numbers 0-9 (top row)
-          ...Array.from({length: 10}, (_, i) => 48 + i),
+          ...Array.from({ length: 10 }, (_, i) => 48 + i),
           // F1-F12
-          ...Array.from({length: 12}, (_, i) => 112 + i),
+          ...Array.from({ length: 12 }, (_, i) => 112 + i),
           // Numpad 0-9
-          ...Array.from({length: 10}, (_, i) => 96 + i),
+          ...Array.from({ length: 10 }, (_, i) => 96 + i),
           // Numpad operators
           106, 107, 109, 110, 111,
           // Common keyboard characters
@@ -458,9 +458,6 @@ const Settings: React.FC = () => {
         <section className="hotkeys-section">
           <div className="section-header">
             <h3>Hotkeys</h3>
-            <button onClick={handleResetToDefaults} className="reset-btn">
-              Reset to Defaults
-            </button>
           </div>
 
           <div className="hotkeys-list">
@@ -468,7 +465,7 @@ const Settings: React.FC = () => {
               <div key={hotkey.id} className="hotkey-item">
                 <div className="hotkey-info">
                   <h4>{hotkey.name}</h4>
-                  <p className="description">{hotkey.description}</p>
+                  <p className="hotkey-description">{hotkey.description}</p>
                 </div>
 
                 <div className="hotkey-controls">
@@ -487,6 +484,10 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             ))}
+
+            <button onClick={handleResetToDefaults} className="reset-btn">
+              Reset to Defaults
+            </button>
           </div>
         </section>
 
@@ -496,7 +497,7 @@ const Settings: React.FC = () => {
           </div>
 
           <div className="theme-controls">
-            <div className="form-group">
+            <div className="form-group select-theme">
               <label htmlFor="theme-select">Select Theme</label>
               <select
                 id="theme-select"
