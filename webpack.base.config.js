@@ -9,6 +9,8 @@ module.exports = {
     ignored: /node_modules/,
     aggregateTimeout: 300,
     poll: 1000,
+    // Disable following symlinks and restrict to project directory
+    followSymlinks: false
   },
   module: {
     rules: [
