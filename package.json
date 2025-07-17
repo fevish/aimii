@@ -16,12 +16,12 @@
   },
   "build": {
     "nodeGypRebuild": false,
-    "appId": "com.overwolf.packageSample",
+    "appId": "app.aimii",
     "asar": true,
     "overwolf": {
       "disableAdOptimization": false
     },
-    "productName": "aimii",
+    "productName": "AIMII Mouse Sensitivity Converter",
     "directories": {
       "output": "build"
     },
@@ -45,7 +45,12 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AIMII Mouse Sensitivity Converter",
+      "installerIcon": "public/icons/aimii-icon.ico",
+      "uninstallerIcon": "public/icons/aimii-icon.ico"
     }
   },
   "scripts": {
