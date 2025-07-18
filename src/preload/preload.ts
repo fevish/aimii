@@ -91,6 +91,9 @@ contextBridge.exposeInMainWorld('settings', {
   setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => {
     return ipcRenderer.invoke('settings-set-canonical', game, sensitivity, dpi);
   },
+  clearCanonicalSettings: () => {
+    return ipcRenderer.invoke('settings-clear-canonical');
+  },
   hasCanonicalSettings: () => {
     return ipcRenderer.invoke('settings-has-canonical');
   },
