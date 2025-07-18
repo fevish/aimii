@@ -3,10 +3,10 @@
   <assemblyIdentity
     version="0.0.1.0"
     processorArchitecture="*"
-    name="AIMII.MouseSensitivityConverter"
+    name="aimii.MouseSensitivityConverter"
     type="win32"
   />
-  <description>AIMII Mouse Sensitivity Converter - Cross-game sensitivity conversion tool</description>
+  <description>aimii - Mouse Sensitivity Normalizer - Cross-game sensitivity conversion tool</description>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
       <requestedPrivileges>

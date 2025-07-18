@@ -28,7 +28,7 @@
     "overwolf": {
       "disableAdOptimization": false
     },
-    "productName": "AIMII Mouse Sensitivity Converter",
+    "productName": "aimii",
     "directories": {
       "output": "build"
     },
@@ -51,13 +51,18 @@
           ]
         }
       ],
-      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "artifactName": "${productName}-${version}.${ext}",
       "requestedExecutionLevel": "asInvoker",
       "verifyUpdateCodeSignature": false,
+      "icon": "public/icons/aimii-icon.ico",
       "extraResources": [
         {
           "from": "public/app.manifest",
           "to": "app.manifest"
+        },
+        {
+          "from": "public/icons/aimii-icon.ico",
+          "to": "aimii-icon.ico"
         }
       ],
       "signAndEditExecutable": false
@@ -67,29 +72,24 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "AIMII Mouse Sensitivity Converter",
+      "shortcutName": "aimii",
       "installerIcon": "public/icons/aimii-icon.ico",
-      "uninstallerIcon": "public/icons/aimii-icon.ico"
+      "uninstallerIcon": "public/icons/aimii-icon.ico",
+      "perMachine": false,
+      "deleteAppDataOnUninstall": true
     }
   },
   "scripts": {
-    "watch:renderer": "webpack --watch --config ./webpack.renderer.config.js",
-    "watch:main": "webpack --watch --config ./webpack.main.config.js",
-    "build:renderer": "webpack --config ./webpack.renderer.config.js",
-    "build:main": "webpack --config ./webpack.main.config.js",
     "build": "webpack --mode=production",
-    "build:dev": "webpack --watch --mode=development",
-    "build:start": "npm run build && ow-electron . ",
-    "start": "ow-electron .",
-    "dev": "concurrently \"npm run watch:main\" \"npm run watch:renderer\"",
+    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=aimii --publish=never",
+    "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build && ow-electron-builder --c.extraMetadata.name=aimii --publish=never",
     "watch": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
-    "watch:dev": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
-    "hot-reload": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"nodemon\"",
-    "dev:preserve-state": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && nodemon\"",
-    "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=aimii --publish=never"
+    "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
+    "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js",
+    "start": "ow-electron ."
   },
   "devDependencies": {
-    "@overwolf/ow-electron": "latest",
+    "@overwolf/ow-electron": "^34.5.7",
     "@overwolf/ow-electron-builder": "latest",
     "@overwolf/ow-electron-packages-types": "^0.0.5",
     "@types/jquery": "^3.5.16",
