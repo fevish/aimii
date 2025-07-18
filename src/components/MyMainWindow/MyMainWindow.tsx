@@ -116,7 +116,7 @@ export const MyMainWindow: React.FC = () => {
     try {
       // Load all data in parallel for better performance
       const [gamesData, settings, gameInfo, hotkey] = await Promise.all([
-        window.games.getAllGames(),
+        window.games.getEnabledGames(), // Changed from getAllGames() to getEnabledGames()
         window.settings.getCanonicalSettings(),
         window.currentGame.getCurrentGameInfo(),
         window.widget.getHotkeyInfo()
