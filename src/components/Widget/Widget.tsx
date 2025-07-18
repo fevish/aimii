@@ -148,7 +148,15 @@ const Widget: React.FC = () => {
     const handleCanonicalSettingsChanged = (settings: any) => {
       console.log('[Widget] Canonical settings changed event received:', settings);
       fetchCanonicalSettings(); // Refresh canonical settings when they change
-      fetchSuggestedSensitivity(); // Also refresh sensitivity suggestions since they depend on canonical settings
+
+      // If settings are null (cleared), immediately clear sensitivity suggestion
+      if (!settings || !settings.game) {
+        console.log('[Widget] Canonical settings cleared, clearing sensitivity suggestion');
+        setSuggestedSensitivity(null);
+      } else {
+        // Otherwise refresh sensitivity suggestions since they depend on canonical settings
+        fetchSuggestedSensitivity();
+      }
     };
 
     // Listen for canonical settings change events from main process

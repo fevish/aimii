@@ -46,6 +46,7 @@ declare global {
     settings: {
       getCanonicalSettings: () => Promise<CanonicalSettings | null>;
       setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => Promise<boolean>;
+      clearCanonicalSettings: () => Promise<boolean>;
       hasCanonicalSettings: () => Promise<boolean>;
       getTheme: () => Promise<string>;
       setTheme: (theme: string) => Promise<boolean>;

@@ -9,8 +9,8 @@ interface GameData {
   game: string;
   sensitivityScalingFactor: number;
   owGameId: string;
-  owConstant: string;
-  owGameName: string;
+  owConstant?: string;
+  owGameName?: string;
   enable_for_app: boolean;
 }
 
@@ -49,6 +49,7 @@ declare global {
     settings: {
       getCanonicalSettings: () => Promise<CanonicalSettings | null>;
       setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => Promise<boolean>;
+      clearCanonicalSettings: () => Promise<boolean>;
       hasCanonicalSettings: () => Promise<boolean>;
       getTheme: () => Promise<string>;
       setTheme: (theme: string) => Promise<boolean>;
@@ -116,7 +117,7 @@ export const MyMainWindow: React.FC = () => {
     try {
       // Load all data in parallel for better performance
       const [gamesData, settings, gameInfo, hotkey] = await Promise.all([
-        window.games.getAllGames(),
+        window.games.getEnabledGames(), // Changed from getAllGames() to getEnabledGames()
         window.settings.getCanonicalSettings(),
         window.currentGame.getCurrentGameInfo(),
         window.widget.getHotkeyInfo()
@@ -277,6 +278,34 @@ export const MyMainWindow: React.FC = () => {
     }
   }, [canonicalSettings]);
 
+  // Separate function to update sensitivity suggestion when settings change
+  const updateSensitivitySuggestion = React.useCallback(async () => {
+    try {
+      if (canonicalSettings && currentGame && window.sensitivityConverter) {
+        const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
+        setSuggestedSensitivity(prevSuggestion => {
+          if (!prevSuggestion && !suggestion) return prevSuggestion;
+          if (!prevSuggestion || !suggestion) return suggestion;
+          if (prevSuggestion.fromGame === suggestion.fromGame &&
+            prevSuggestion.toGame === suggestion.toGame &&
+            prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
+            return prevSuggestion; // No change
+          }
+          return suggestion;
+        });
+      }
+    } catch (error) {
+      console.error('Error updating sensitivity suggestion:', error);
+    }
+  }, [canonicalSettings, currentGame]);
+
+  // Watch for canonical settings changes and update sensitivity suggestion
+  useEffect(() => {
+    if (canonicalSettings && currentGame) {
+      updateSensitivitySuggestion();
+    }
+  }, [canonicalSettings, currentGame, updateSensitivitySuggestion]);
+
   const handleToggleWidget = async () => {
     try {
       await window.widget.toggleWidget();
@@ -315,12 +344,38 @@ export const MyMainWindow: React.FC = () => {
       const newSettings = { game: selectedGame, sensitivity: sensitivityNum, dpi: dpiNum };
       setCanonicalSettings(newSettings);
       setMessage('Canonical settings saved successfully!');
-
-      // Refresh current game data to update suggestions
-      loadGameSpecificData();
     } catch (error) {
       console.error('Error saving canonical settings:', error);
       setMessage('Error saving settings');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+    const handleResetCanonicalSettings = async () => {
+    if (!canonicalSettings) {
+      setMessage('No settings to reset');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Clear the canonical settings
+      await window.settings.clearCanonicalSettings();
+
+      // Update state
+      setCanonicalSettings(null);
+      setSelectedGame('');
+      setSensitivity('');
+      setDpi('800');
+
+      // Clear the sensitivity suggestion since there's no baseline to convert from
+      setSuggestedSensitivity(null);
+
+      setMessage('Canonical settings cleared successfully!');
+    } catch (error) {
+      console.error('Error clearing canonical settings:', error);
+      setMessage('Error clearing settings');
     } finally {
       setIsLoading(false);
     }
@@ -432,9 +487,19 @@ export const MyMainWindow: React.FC = () => {
                   </div>
                 </div>
 
-                <button type="submit" disabled={isLoading} className="save-button">
-                  {isLoading ? 'Saving...' : 'Save'}
-                </button>
+                <div className="form-buttons">
+                  <button type="submit" disabled={isLoading} className="save-button">
+                    {isLoading ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isLoading || !canonicalSettings}
+                    onClick={handleResetCanonicalSettings}
+                    className="reset-button"
+                  >
+                    {isLoading ? 'Resetting...' : 'Reset'}
+                  </button>
+                </div>
               </form>
 
               {message && (

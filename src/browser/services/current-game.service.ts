@@ -5,7 +5,7 @@ import EventEmitter from 'events';
 export interface CurrentGameInfo {
   id: number;
   name: string;
-  owGameName: string;
+  owGameName?: string;
   isSupported: boolean;
   gameData: any;
 }
@@ -120,7 +120,7 @@ export class CurrentGameService extends EventEmitter {
     return {
       id: activeGame.gameInfo.classId,
       name: gameData?.game || overwolfGameName,
-      owGameName: gameData?.owGameName || overwolfGameName,
+      owGameName: gameData?.owGameName,
       isSupported: !!gameData,
       gameData: gameData || null
     };
