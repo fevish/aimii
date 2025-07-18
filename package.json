@@ -74,7 +74,9 @@
       "createStartMenuShortcut": true,
       "shortcutName": "aimii",
       "installerIcon": "public/icons/aimii-icon.ico",
-      "uninstallerIcon": "public/icons/aimii-icon.ico"
+      "uninstallerIcon": "public/icons/aimii-icon.ico",
+      "perMachine": false,
+      "deleteAppDataOnUninstall": true
     }
   },
   "scripts": {
