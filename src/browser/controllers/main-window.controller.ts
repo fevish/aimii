@@ -284,7 +284,7 @@ export class MainWindowController {
         this.browserWindow.webContents.send('canonical-settings-changed');
       }
 
-      // Notify widget about settings change
+      // Notify widget about settings change (pass the new settings)
       if (this.widgetController?.overlayBrowserWindow) {
         this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', { game, sensitivity, dpi });
       }
@@ -294,6 +294,23 @@ export class MainWindowController {
 
     ipcMain.handle('settings-has-canonical', () => {
       return this.settingsService.hasCanonicalSettings();
+    });
+
+    ipcMain.handle('settings-clear-canonical', () => {
+      this.settingsService.clearCanonicalSettings();
+      this.printLogMessage('Canonical settings cleared');
+
+      // Notify main window about settings change
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send('canonical-settings-changed');
+      }
+
+      // Notify widget about settings change (pass null to indicate cleared)
+      if (this.widgetController?.overlayBrowserWindow) {
+        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', null);
+      }
+
+      return true;
     });
 
     // Theme settings IPC handlers

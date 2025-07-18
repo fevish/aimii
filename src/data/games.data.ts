@@ -403,14 +403,14 @@ export const gamesData: GameData[] = [
     enable_for_app: false
   },
   {
-    game: "PUBG (TPP)",
+    game: "PUBG",
     scalingFactor: 1.0,
     specialConversion: true,
     conversionParams: { baseValue: 114.80, scaleFactor: 21.769 },
     owGameId: "10906",
-    owConstant: "PUBGTPP",
-    owGameName: "PlayerUnknown's Battlegrounds (Third Person)",
-    enable_for_app: false
+    owConstant: "PUBG",
+    owGameName: "PlayerUnknown's Battlegrounds",
+    enable_for_app: true
   },
   {
     game: "Quake Champions",
