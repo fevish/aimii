@@ -234,12 +234,40 @@ form {
 
 /* Canon Setting */
 .canonical-form {
-  .save-button {
+  .form-buttons {
+    display: flex;
+    gap: var(--spacing);
+    align-items: center;
     margin-top: calc(0.5 * var(--spacing));
+  }
+
+  .save-button, .reset-button {
     padding: calc(1.15* var(--spacing)) calc(4* var(--spacing));
     font-size: 1.5rem;
     text-transform: uppercase;
     line-height: 1;
+    background: var(--primary);
+    color: var(--dark);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: bold;
+  }
+
+  .reset-button {
+    background: transparent;
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .save-button:hover,
+  .reset-button:hover {
+    background: var(--light-gray);
+  }
+
+  .save-button:disabled,
+  .reset-button:disabled {
+    opacity: 0;
   }
 }
 
