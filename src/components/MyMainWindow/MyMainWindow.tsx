@@ -343,7 +343,7 @@ export const MyMainWindow: React.FC = () => {
     <div className="my-main-window">
       <header className="app-header">
         <div className="app-logo">
-          <h1>AIMII</h1>
+          <h1>aimii</h1>
           <span className="version">v{process.env.APP_VERSION}</span>
         </div>
         <div className="header-controls">

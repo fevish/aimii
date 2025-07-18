@@ -11,10 +11,10 @@ alwaysApply: true
 - Do not remove or modify the sample files unless explicitly requested; they serve as a working reference for overwolf-electron usage.
 - Never use inline styles in any code. Always use a CSS file
 
-## AIMII Mouse Sensitivity Converter App
+## aimii - Mouse Sensitivity Noramlizer App
 
 ### Project Overview
-AIMII is a complete overwolf-electron mouse sensitivity converter application with real-time game detection, event-driven architecture, and both main window and overlay widget interfaces.
+aimii is a complete overwolf-electron mouse sensitivity normalizer application with real-time game detection, event-driven architecture, and both main window and overlay widget interfaces.
 
 ### Core Architecture
 

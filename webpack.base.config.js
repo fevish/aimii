@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
   mode: 'development',
   devtool: 'source-map',
-  watch: true,
+  watch: false,
   watchOptions: {
     ignored: /node_modules/,
     aggregateTimeout: 300,

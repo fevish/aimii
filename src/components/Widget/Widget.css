@@ -68,7 +68,6 @@
   margin: 0;
   text-align: center;
   color: var(--secondary);
-  opacity: 0.9;
 }
 
 .widget-placeholder {
@@ -87,12 +86,10 @@
 .widget-placeholder p {
   margin: 4px 0;
   color: var(--secondary);
-  opacity: 0.8;
 }
 
 .hotkey-info p {
   color: var(--secondary);
-  opacity: 0.9;
 }
 
 .hotkey-info p:first-child {
@@ -131,7 +128,6 @@
 
 .game-status {
   margin: 0;
-  opacity: 0.9;
 }
 
 .game-status.supported {
@@ -144,12 +140,10 @@
 
 .game-status.no-game {
   color: var(--secondary);
-  opacity: 0.8;
 }
 
 .game-status.loading {
   color: var(--secondary);
-  opacity: 0.8;
 }
 
 /* Sensitivity Suggestion Styles */
@@ -182,13 +176,11 @@
 .conversion-info {
   margin: 0 0 2px 0;
   color: var(--secondary);
-  opacity: 0.8;
 }
 
 .cm360-info {
   margin: 0;
   color: var(--secondary);
-  opacity: 0.7;
 }
 
 /* Current Settings Styles */
@@ -220,7 +212,6 @@
 
 .setting-item .label {
   color: var(--secondary);
-  opacity: 0.8;
 }
 
 .setting-item:first-child .label {
