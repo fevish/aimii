@@ -4,7 +4,7 @@ import { OverlayBrowserWindow, OverlayWindowOptions, PassthroughType, ZOrderType
 import { SettingsService } from "../services/settings.service";
 import { CurrentGameService } from "../services/current-game.service";
 import { HotkeyService } from "../services/hotkey.service";
-import { ipcMain, nativeImage } from "electron";
+import { ipcMain } from "electron";
 
 export class WidgetWindowController {
   private widgetWindow: OverlayBrowserWindow | null = null;
@@ -117,18 +117,11 @@ export class WidgetWindowController {
     if (this.widgetWindow) {
       return; // Widget already exists
     }
-
-    // Create native image from icon file
-    const appIcon = nativeImage.createFromPath(
-      path.join(__dirname, '../../../public/icons/aimii-icon.ico')
-    );
-
     const options: OverlayWindowOptions = {
       name: 'aimii-widget',
       height: 200,
       width: 300,
       title: 'aimii In-Game Widget',
-      icon: appIcon, // Use native image for widget icon
       show: false, // Start hidden
       transparent: true, // Frameless overlay
       resizable: false, // Keep fixed size

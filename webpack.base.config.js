@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -36,10 +37,19 @@ module.exports = {
     filename: '[name]/[name].js',
   },
 
-  plugins: [],
+  plugins: [
+    // Copy icon to dist root
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'public/icons/icon.ico',
+          to: 'icon.ico'
+        }
+      ]
+    })
+  ],
   externals: {
     bufferutil: 'bufferutil',
     'utf-8-validate': 'utf-8-validate',
   },
 };
-
