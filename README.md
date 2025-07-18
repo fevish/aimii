@@ -1,166 +1,30 @@
-# aimii
+# Get Started
 
-AIMII is a complete overwolf-electron mouse sensitivity converter application with real-time game detection, event-driven architecture, and both main window and overlay widget interfaces. The app is optimized for maximum performance with minimal latency.
+1. Download and install the [latest release](https://github.com/fevish/aimii/releases)
+2. Set your "canonical sensitivity setting" in the app by choosing your preferred: game, in-game sensitivity, and mouse DPI
+3. Start a game that we support, and the app will auto-detect the game and show you the suggested sensitivity setting using game-conversion formulas.   
+4. _(Optional but appreciated <3)_ Let me know how it works for you in our [Discord](https://discord.gg/Nj2Xj3W4eY). Or just drop by to say hi!
+
+# What is aimii?
+
+aimii is a mouse sensitivity "normalizer" for games (currently FPS games specifically).
+
+### Normalizing your aim
+Almost every FPS game uses unique mathematical formulas to convert mouse and controller movement to aim, so the same in-game sensitivity number can feel completely different from one game to the next, for example:
+
+An in-game sensitivity of `0.5` in Valorant is approximately `1.591` for Counter-Strike 2.
+
+This difference breaks my muscle memory when switching games, and although I can typically manually get my sensitivity normalized to a point where it feels "pretty close", it's never perfect and is just a nuisance when trying out a new title or re-installing an existing one. 
 
 ## Features
 
-- **Real-time Game Detection**: Automatically detects when you're playing supported games
-- **Cross-Game Sensitivity Conversion**: Convert your sensitivity settings between different games
-- **Overlay Widget**: In-game overlay showing current sensitivity suggestions
-- **Canonical Settings**: Set your preferred game and sensitivity as a baseline for conversions
-- **Hotkey Support**: Toggle widget visibility with customizable hotkeys
-- **Dark Theme**: Modern, clean interface with glassmorphism effects
+- **Real-time Game Detection:** Automatically detects when you're playing supported games
+- **Cross-Game Sensitivity Conversion:** Convert your sensitivity settings between different games
+- **Overlay Widget:** In-game overlay showing current sensitivity suggestions
+- **Canonical Settings:** Set your preferred game and sensitivity as a baseline for conversions
+- **Hotkey Support:** Toggle widget visibility with customizable hotkeys
 
-## Supported Games
+<img width="961" height="546" alt="aimii-v0.0.1" src="https://github.com/user-attachments/assets/e294e805-45ef-4b23-b265-001b7723c9c7" />
 
-The app supports a wide range of popular games including:
-- Counter-Strike 2
-- Valorant
-- Apex Legends
-- Overwatch 2
-- Rainbow Six Siege
-- And many more...
 
-## Quick Start
-
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn package manager
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd aimii
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-### Development Mode
-
-For development with hot reloading:
-
-```bash
-# Start the development build with hot reloading
-npm run watch
-
-# Or run individual watch processes
-npm run dev
-```
-
-### Production Build
-
-To build the app for production:
-
-```bash
-# Build the application
-npm run build
-
-# Build the installer
-npm run build:ow-electron
-```
-
-### Running the App
-
-After building, you can run the app:
-
-```bash
-# Run the built application
-npm run start
-
-# Or run directly with ow-electron
-npm run build:start
-```
-
-## Development
-
-### Project Structure
-
-```
-src/
-├── browser/
-│   ├── services/          # Core business logic
-│   │   ├── current-game.service.ts      # Game detection
-│   │   ├── gep.service.ts               # Game events provider
-│   │   ├── overlay.service.ts           # Overlay API management
-│   │   ├── sensitivity-converter.service.ts # Cross-game calculations
-│   │   ├── games.service.ts             # Game configuration
-│   │   └── settings.service.ts          # Settings storage
-│   ├── controllers/       # IPC and window management
-│   │   ├── main-window.controller.ts    # Main window coordination
-│   │   └── widget-window.controller.ts  # Overlay widget management
-│   └── index.ts          # Dependency injection setup
-├── components/
-│   ├── MyMainWindow/     # Main application UI
-│   └── Widget/           # Overlay widget UI
-├── preload/              # Context bridge APIs
-└── games.json           # Game configuration data
-```
-
-### Key Features
-
-#### Event-Driven Architecture
-- Pure event-driven game detection using Overwolf events (no polling)
-- GEP-Overlay coordination for immediate injection attempts
-- IPC events for instant UI refresh
-- Smart state updates prevent unnecessary re-renders
-
-#### Performance Optimizations
-- O(1) game ID lookups using Set instead of array.includes
-- Automatic feature setting on game detection
-- Consolidated data loading with Promise.all
-- React memoization for expensive calculations
-- Debounced operations to prevent excessive calls
-
-#### Game Detection System
-- **GEP Detection**: Primary detection using `gameInfo.classId` with O(1) Set lookups
-- **Overlay Detection**: Secondary method with automatic injection for supported games
-- **Fallback System**: If overlay fails, GEP provides detection
-- **Immediate Injection**: GEP detection triggers overlay injection attempts immediately
-
-### Hotkeys
-
-- **Ctrl+Shift+M**: Toggle widget visibility
-- **Ctrl+Shift+I**: Open widget developer tools (development mode)
-
-### Configuration
-
-Game configurations are stored in `src/data/games.json`. Each game entry includes:
-- Conversion factors for sensitivity calculations
-- Overwolf game IDs
-- Game-specific constants and formulas
-
-## Building for Distribution
-
-The app uses electron-builder with Overwolf integration:
-
-```bash
-# Build the application
-npm run build
-
-# Create installer
-npm run build:ow-electron
-```
-
-The installer will be created in the `build` directory.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Support
-
-Join our Discord community for support and updates: [Discord Server](https://discord.gg/Nj2Xj3W4eY)
+Thanks for the support ❤️ @fevish
