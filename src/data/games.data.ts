@@ -10,6 +10,7 @@ export interface ConversionParams {
 
 export interface GameData {
   game: string;
+  processName?: string;
   scalingFactor: number;
   owGameId: string;
   owConstant?: string;
@@ -176,6 +177,7 @@ export const gamesData: GameData[] = [
   },
   {
     game: "Counter-Strike 2",
+    processName: "cs2.exe",
     scalingFactor: 0.02199999511,
     owGameId: "22730",
     owConstant: "CounterStrike2",
@@ -552,6 +554,7 @@ export const gamesData: GameData[] = [
   },
   {
     game: "Valorant",
+    processName: "VALORANT-Win64-Shipping.exe",
     scalingFactor: 0.07,
     owGameId: "21640",
     owConstant: "Valorant",

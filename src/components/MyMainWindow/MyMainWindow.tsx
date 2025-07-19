@@ -550,9 +550,12 @@ export const MyMainWindow: React.FC = () => {
                       </div>
                     ) : null}
 
-                    <button onClick={handleToggleWidget} className="widget-toggle-btn">
-                      Toggle Widget {hotkeyInfo ? `(${hotkeyInfo.displayText})` : '(Loading...)'}
-                    </button>
+                    {/* Only show widget toggle button if the game has an owGameId (supports Overwolf overlay) */}
+                    {currentGame?.gameData?.owGameId && currentGame.gameData.owGameId !== "0" && (
+                      <button onClick={handleToggleWidget} className="widget-toggle-btn">
+                        Toggle Widget {hotkeyInfo ? `(${hotkeyInfo.displayText})` : '(Loading...)'}
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="no-game">

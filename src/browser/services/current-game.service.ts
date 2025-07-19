@@ -1,5 +1,6 @@
 import { OverlayService } from "./overlay.service";
 import { GamesService } from "./games.service";
+import { CustomGameDetectorService } from "./custom-game-detector.service";
 import EventEmitter from 'events';
 
 export interface CurrentGameInfo {
@@ -13,6 +14,7 @@ export interface CurrentGameInfo {
 export class CurrentGameService extends EventEmitter {
   private currentGameInfo: CurrentGameInfo | null = null;
   private gepService: any = null; // We'll inject this later
+  private customGameDetectorService: CustomGameDetectorService | null = null;
   private updateTimeout: NodeJS.Timeout | null = null;
   private lastUpdateTime: number = 0;
   private readonly UPDATE_DEBOUNCE_MS = 500; // Debounce updates to 500ms
@@ -107,23 +109,29 @@ export class CurrentGameService extends EventEmitter {
 
     // Fallback to overlay detection
     const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
-    if (!activeGame) {
-      return null;
+    if (activeGame) {
+      const overwolfGameId = this.normalizeGameId(activeGame.gameInfo.classId || '');
+      const overwolfGameName = activeGame.gameInfo.name || 'Unknown Game';
+
+      // Try to get game data from our games.json
+      const gameData = this.gamesService.getGameByOwId(overwolfGameId);
+
+      return {
+        id: activeGame.gameInfo.classId,
+        name: gameData?.game || overwolfGameName,
+        owGameName: gameData?.owGameName,
+        isSupported: !!gameData,
+        gameData: gameData || null
+      };
     }
 
-    const overwolfGameId = this.normalizeGameId(activeGame.gameInfo.classId || '');
-    const overwolfGameName = activeGame.gameInfo.name || 'Unknown Game';
+    // Fallback to custom game detection for games not supported by Overwolf
+    const customGameInfo = this.getCurrentGameInfoFromCustomDetector();
+    if (customGameInfo) {
+      return customGameInfo;
+    }
 
-    // Try to get game data from our games.json
-    const gameData = this.gamesService.getGameByOwId(overwolfGameId);
-
-    return {
-      id: activeGame.gameInfo.classId,
-      name: gameData?.game || overwolfGameName,
-      owGameName: gameData?.owGameName,
-      isSupported: !!gameData,
-      gameData: gameData || null
-    };
+    return null;
   }
 
   private getCurrentGameInfoFromGep(): CurrentGameInfo | null {
@@ -187,6 +195,52 @@ export class CurrentGameService extends EventEmitter {
         this.scheduleUpdate();
       });
     }
+  }
+
+  // Method to inject custom game detector service
+  public setCustomGameDetectorService(customGameDetectorService: CustomGameDetectorService): void {
+    this.customGameDetectorService = customGameDetectorService;
+
+    // Listen for custom game detection events
+    if (customGameDetectorService) {
+      customGameDetectorService.on('games-detected', () => {
+        this.scheduleUpdate();
+      });
+    }
+  }
+
+    private getCurrentGameInfoFromCustomDetector(): CurrentGameInfo | null {
+    if (!this.customGameDetectorService) {
+      return null;
+    }
+
+    // Get the last detected games from the custom detector
+    const detectedGames = this.customGameDetectorService.getLastDetectedGames();
+
+    if (detectedGames.length === 0) {
+      return null;
+    }
+
+    // For now, just use the first detected game
+    // In the future, you might want to prioritize certain games or handle multiple games
+    const detectedGame = detectedGames[0];
+
+    // Find the corresponding game data from our games service
+    const gameData = this.gamesService.getAllGames().find(game =>
+      game.processName && game.processName.toLowerCase() === detectedGame.processName.toLowerCase()
+    );
+
+    if (gameData) {
+      return {
+        id: parseInt(detectedGame.pid), // Use PID as ID for custom games
+        name: gameData.game,
+        owGameName: gameData.owGameName,
+        isSupported: gameData.enable_for_app,
+        gameData: gameData
+      };
+    }
+
+    return null;
   }
 
   /**
