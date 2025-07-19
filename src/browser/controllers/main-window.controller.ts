@@ -119,7 +119,6 @@ export class MainWindowController {
       iconPath = path.join(process.resourcesPath, '../icon.ico');
     }
 
-    console.log('Loading icon from:', iconPath.replace(/\\/g, '/'));
     const appIcon = nativeImage.createFromPath(iconPath);
     return appIcon;
   }
@@ -357,6 +356,15 @@ export class MainWindowController {
     // Current game service IPC handlers
     ipcMain.handle('current-game-get-info', () => {
       return this.currentGameService.getCurrentGameInfo();
+    });
+
+    ipcMain.handle('current-game-get-all-detected', () => {
+      return this.currentGameService.getAllDetectedGames();
+    });
+
+    ipcMain.handle('current-game-set-current', (event, gameId: number) => {
+      this.currentGameService.setCurrentGame(gameId);
+      return true;
     });
 
     ipcMain.handle('current-game-is-running', () => {

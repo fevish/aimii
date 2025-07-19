@@ -12,11 +12,13 @@ const app = electronApp as overwolf.OverwolfApp;
 export class GameEventsService extends EventEmitter {
   private gepApi!: overwolf.packages.OverwolfGameEventPackage;
   public activeGame = 0;
+  public activeGames: Set<number> = new Set(); // Track all active games
   private gepGamesId: number[] = [];
   private gepGamesSet: Set<number> = new Set(); // For O(1) lookups
 
   constructor() {
     super();
+    this.emit('log', 'GEP: GameEventsService constructor called');
     this.registerOverwolfPackageManager();
   }
 
@@ -25,10 +27,17 @@ export class GameEventsService extends EventEmitter {
    *  for gep supported games goto:
    *  https://overwolf.github.io/api/electron/game-events/
    *   */
-  public registerGames(gepGamesId: number[]) {
-    this.emit('log', `register to game events for `, gepGamesId);
+  public async registerGames(gepGamesId: number[]) {
+    this.emit('log', `GEP: register to game events for `, gepGamesId);
     this.gepGamesId = gepGamesId;
     this.gepGamesSet = new Set(gepGamesId); // Create Set for O(1) lookups
+    this.emit('log', `GEP: Registered ${gepGamesId.length} games: ${gepGamesId.join(', ')}`);
+
+    // Check for already running games after registration
+    if (this.gepApi) {
+      this.emit('log', 'GEP: Checking for already running games after registration...');
+      await this.checkForAlreadyRunningGames();
+    }
   }
 
   /**
@@ -40,6 +49,56 @@ export class GameEventsService extends EventEmitter {
       this.emit('log', `set-required-feature for: ${gameId}`);
       await this.gepApi.setRequiredFeatures(gameId, undefined);
     }));
+  }
+
+    /**
+   * Check for already running games and detect them
+   */
+  public async checkForAlreadyRunningGames() {
+    if (!this.gepApi) {
+      this.emit('log', 'GEP API not ready yet, skipping initial game check');
+      return;
+    }
+
+    this.emit('log', 'Checking for already running games...');
+    this.emit('log', `Supported games to check: ${this.gepGamesId.join(', ')}`);
+
+    // Check each supported game to see if it's already running
+    for (const gameId of this.gepGamesId) {
+      this.emit('log', `Checking game ID: ${gameId}...`);
+
+      try {
+        // Try to get info for the game - if it succeeds, the game is running
+        const gameInfo = await this.gepApi.getInfo(gameId);
+
+        this.emit('log', `Game ${gameId} getInfo result:`, gameInfo);
+
+        if (gameInfo && gameInfo.gameInfo) {
+          this.emit('log', `Found already running game: ${gameId} - ${gameInfo.gameInfo.name || 'Unknown'}`);
+
+          // Add to active games set
+          this.activeGames.add(gameId);
+
+          // Set as active game if none is set
+          if (this.activeGame === 0) {
+            this.activeGame = gameId;
+          }
+
+          // Emit game-detected event to notify other services
+          this.emit('game-detected', gameId, gameInfo.gameInfo.name || 'Unknown', gameInfo.gameInfo);
+
+          // Set required features for the game
+          await this.setRequiredFeaturesForGame(gameId);
+        } else {
+          this.emit('log', `Game ${gameId} is not running (no gameInfo)`);
+        }
+      } catch (error) {
+        // Game is not running, which is expected for most games
+        this.emit('log', `Game ${gameId} is not running (error):`, error);
+      }
+    }
+
+    this.emit('log', `Initial game check complete. Active games: ${Array.from(this.activeGames).join(', ')}`);
   }
 
   /**
@@ -69,14 +128,19 @@ export class GameEventsService extends EventEmitter {
    * Register the Overwolf Package Manager events
    */
   private registerOverwolfPackageManager() {
+    this.emit('log', 'GEP: Setting up package manager listener...');
+
     // Once a package is loaded
     app.overwolf.packages.on('ready', (e, packageName, version) => {
+      this.emit('log', `GEP: Package ready event received: ${packageName} v${version}`);
+
       // If this is the GEP package (packageName serves as a UID)
       if (packageName !== 'gep') {
+        this.emit('log', `GEP: Ignoring non-GEP package: ${packageName}`);
         return;
       }
 
-      this.emit('log', `gep package is ready: ${version}`);
+      this.emit('log', `GEP: gep package is ready: ${version}`);
 
       // Prepare for Game Event handling
       this.onGameEventsPackageReady();
@@ -85,19 +149,26 @@ export class GameEventsService extends EventEmitter {
     });
   }
 
-  /**
+    /**
    * Register listeners for the GEP Package once it is ready
    *
    * @param {overwolf.packages.OverwolfGameEventPackage} gep The GEP Package instance
    */
   private async onGameEventsPackageReady() {
+    this.emit('log', 'GEP: onGameEventsPackageReady called');
+
     // Save package into private variable for later access
     this.gepApi = app.overwolf.packages.gep;
+    this.emit('log', 'GEP: GEP API saved');
 
     // Remove all existing listeners to ensure a clean slate.
     // NOTE: If you have other classes listening on gep - they'll lose their
     // bindings.
     this.gepApi.removeAllListeners();
+    this.emit('log', 'GEP: Removed all existing listeners');
+
+    // Note: Initial game check will happen after games are registered
+    this.emit('log', 'GEP: Ready for game registration');
 
     // If a game is detected by the package
     // To check if the game is running in elevated mode, use `gameInfo.isElevate`
@@ -115,7 +186,8 @@ export class GameEventsService extends EventEmitter {
       // }
 
       this.emit('log', 'gep: register game-detected', gameId, name, gameInfo);
-      this.activeGame = gameId; // Set active game first
+      this.activeGame = gameId; // Set active game first (for backward compatibility)
+      this.activeGames.add(gameId); // Add to active games set
       this.emit('game-detected', gameId, name, gameInfo); // Then emit event
       e.enable();
 
@@ -127,6 +199,9 @@ export class GameEventsService extends EventEmitter {
     //@ts-ignore
     this.gepApi.on('game-exit', (e, gameId, processName, pid) => {
       this.emit('log', 'gep: game-exit', gameId, processName, pid);
+
+      // Remove from active games set
+      this.activeGames.delete(gameId);
 
       // Clear active game if this was the active one
       if (this.activeGame === gameId) {
@@ -146,6 +221,9 @@ export class GameEventsService extends EventEmitter {
         gameId,
         ...args
       );
+
+      // Remove from active games set
+      this.activeGames.delete(gameId);
 
       // Clear active game if elevated privileges are required but not available
       if (this.activeGame === gameId) {
@@ -169,6 +247,9 @@ export class GameEventsService extends EventEmitter {
     // If GEP encounters an error
     this.gepApi.on('error', (e, gameId, error, ...args) => {
       this.emit('log', 'gep-error', gameId, error, ...args);
+
+      // Remove from active games set
+      this.activeGames.delete(gameId);
 
       // Clear active game on error
       if (this.activeGame === gameId) {

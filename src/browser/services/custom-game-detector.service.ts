@@ -12,7 +12,7 @@ export interface DetectedGame {
 export class CustomGameDetectorService extends EventEmitter {
   private isRunning: boolean = false;
   private checkInterval: NodeJS.Timeout | null = null;
-  private readonly CHECK_INTERVAL_MS = 1000; // Check every second
+  private readonly CHECK_INTERVAL_MS = 2000;
   private lastDetectedGames: DetectedGame[] = [];
 
   constructor(private readonly gamesService: GamesService) {
@@ -64,13 +64,11 @@ export class CustomGameDetectorService extends EventEmitter {
         return;
       }
 
-      // Parse the CSV tasklist output to find game processes
+            // Parse the CSV tasklist output to find game processes
       const lines = stdout.split('\n').filter(line => line.trim());
       const gameProcesses = this.findGameProcessesFromCSV(lines);
 
-      console.log(`Game processes detected:`, gameProcesses);
-
-            // Store the detected games
+      // Store the detected games
       this.lastDetectedGames = gameProcesses;
 
       // Emit the detected games
@@ -153,5 +151,34 @@ export class CustomGameDetectorService extends EventEmitter {
    */
   public getLastDetectedGames(): DetectedGame[] {
     return this.lastDetectedGames;
+  }
+
+  /**
+   * Public method to check running games (for periodic verification)
+   */
+  public async verifyRunningGames(): Promise<void> {
+    return new Promise((resolve) => {
+      exec('tasklist /FO CSV', (err, stdout) => {
+        if (err) {
+          console.error('Error running tasklist:', err);
+          resolve();
+          return;
+        }
+
+        // Parse the CSV tasklist output to find game processes
+        const lines = stdout.split('\n').filter(line => line.trim());
+        const gameProcesses = this.findGameProcessesFromCSV(lines);
+
+        // Store the detected games
+        this.lastDetectedGames = gameProcesses;
+
+        // Emit the detected games
+        if (gameProcesses.length > 0) {
+          this.emit('games-detected', gameProcesses);
+        }
+
+        resolve();
+      });
+    });
   }
 }

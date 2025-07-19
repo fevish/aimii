@@ -232,6 +232,13 @@ form {
   color: var(--secondary);
 }
 
+/* Multiple Games */
+.game-tabs {
+  display: flex;
+  gap: calc(0.5* var(--spacing));
+  flex-wrap: wrap;
+}
+
 /* Canon Setting */
 .canonical-form {
   .form-buttons {
@@ -241,7 +248,8 @@ form {
     margin-top: calc(0.5 * var(--spacing));
   }
 
-  .save-button, .reset-button {
+  .save-button,
+  .reset-button {
     padding: calc(1.15* var(--spacing)) calc(4* var(--spacing));
     font-size: 1.5rem;
     text-transform: uppercase;
@@ -278,6 +286,7 @@ form {
   padding-top: 0;
   padding-bottom: 0;
   justify-content: flex-end;
+
   h4 {
     margin-bottom: calc(0.5 * var(--spacing));
   }

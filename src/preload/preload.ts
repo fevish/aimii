@@ -117,6 +117,12 @@ contextBridge.exposeInMainWorld('currentGame', {
   getCurrentGameInfo: () => {
     return ipcRenderer.invoke('current-game-get-info');
   },
+  getAllDetectedGames: () => {
+    return ipcRenderer.invoke('current-game-get-all-detected');
+  },
+  setCurrentGame: (gameId: number) => {
+    return ipcRenderer.invoke('current-game-set-current', gameId);
+  },
   isGameRunning: () => {
     return ipcRenderer.invoke('current-game-is-running');
   },

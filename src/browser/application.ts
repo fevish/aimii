@@ -28,8 +28,8 @@ export class Application {
     // Listen for game injection to create widget
     this.setupGameInjectionHandling();
 
-    // Register games for GEP (Game Events Provider) using games.json
-    this.registerGepGames();
+    // Register games for GEP when GEP service is ready
+    gepService.on('ready', this.registerGepGames.bind(this));
 
     // Coordinate GEP and overlay for faster injection
     this.setupGepOverlayCoordination();
@@ -53,11 +53,11 @@ export class Application {
   /**
    * Register games for GEP (Game Events Provider) based on games.json
    */
-  private registerGepGames() {
+  private async registerGepGames() {
     const gepGameIds = this.gamesService.getEnabledGameIds();
 
     this.mainWindowController.printLogMessage(`Registering games for GEP: ${this.gamesService.getGameSummary()}`);
-    this.gepService.registerGames(gepGameIds);
+    await this.gepService.registerGames(gepGameIds);
   }
 
   /**
