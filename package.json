@@ -1,6 +1,6 @@
 {
   "name": "aimii",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
@@ -24,7 +24,7 @@
     "nodeGypRebuild": false,
     "appId": "app.aimii",
     "asar": true,
-    "icon": "public/icons/aimii-icon.ico",
+    "icon": "./dist/icon.ico",
     "overwolf": {
       "disableAdOptimization": false
     },
@@ -43,6 +43,18 @@
     "removePackageScripts": true,
     "removePackageKeywords": true,
     "win": {
+      "extraResources": [
+        {
+          "from": "public/app.manifest",
+          "to": "app.manifest"
+        }
+      ],
+      "extraFiles": [
+        {
+          "from": "./dist/icon.ico",
+          "to": "icon.ico"
+        }
+      ],
       "target": [
         {
           "target": "nsis",
@@ -54,17 +66,7 @@
       "artifactName": "${productName}-${version}.${ext}",
       "requestedExecutionLevel": "asInvoker",
       "verifyUpdateCodeSignature": false,
-      "icon": "public/icons/aimii-icon.ico",
-      "extraResources": [
-        {
-          "from": "public/app.manifest",
-          "to": "app.manifest"
-        },
-        {
-          "from": "public/icons/aimii-icon.ico",
-          "to": "aimii-icon.ico"
-        }
-      ],
+      "icon": "./dist/icon.ico",
       "signAndEditExecutable": false
     },
     "nsis": {
@@ -73,16 +75,17 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "aimii",
-      "installerIcon": "public/icons/aimii-icon.ico",
-      "uninstallerIcon": "public/icons/aimii-icon.ico",
+      "installerIcon": "./dist/icon.ico",
+      "uninstallerIcon": "./dist/icon.ico",
       "perMachine": false,
       "deleteAppDataOnUninstall": true
     }
   },
   "scripts": {
-    "build": "webpack --mode=production",
+    "build": "webpack --mode=development && npm run start",
+    "build:prod": "webpack --mode=production",
     "build:ow-electron": "ow-electron-builder --c.extraMetadata.name=aimii --publish=never",
-    "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build && ow-electron-builder --c.extraMetadata.name=aimii --publish=never",
+    "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build:prod && ow-electron-builder --c.extraMetadata.name=aimii --publish=never",
     "watch": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
     "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
     "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js",

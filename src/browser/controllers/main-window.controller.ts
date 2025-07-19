@@ -104,6 +104,27 @@ export class MainWindowController {
   }
 
   /**
+   * Load app icon with fallback paths
+   */
+  private loadAppIcon(): Electron.NativeImage {
+    // Check if we're in development or production
+    const isDev = process.resourcesPath.includes('node_modules');
+
+    let iconPath: string;
+    if (isDev) {
+      // Development: load from dist (copied by webpack)
+      iconPath = path.join(process.cwd(), 'dist/icon.ico');
+    } else {
+      // Production: load from app root
+      iconPath = path.join(process.resourcesPath, '../icon.ico');
+    }
+
+    console.log('Loading icon from:', iconPath.replace(/\\/g, '/'));
+    const appIcon = nativeImage.createFromPath(iconPath);
+    return appIcon;
+  }
+
+  /**
    *
    */
   public createAndShow(showDevTools: boolean) {
@@ -111,9 +132,7 @@ export class MainWindowController {
     const savedState = this.windowStateService.loadWindowState();
 
     // Create native image from icon file
-    const appIcon = nativeImage.createFromPath(
-      path.join(__dirname, '../../public/icons/aimii-icon.ico')
-    );
+    const appIcon = this.loadAppIcon();
 
     this.browserWindow = new BrowserWindow({
       width: savedState.width,
@@ -531,13 +550,10 @@ export class MainWindowController {
   }
 
   private async createWidget(): Promise<void> {
-    console.log('[MainWindowController] createWidget called');
     const controller = this.createWidgetWinController();
     this.widgetController = controller; // Store reference
-    console.log('[MainWindowController] Widget controller created:', !!this.widgetController);
 
     await controller.createWidget();
-    console.log('[MainWindowController] Widget created, window exists:', !!this.widgetController?.overlayBrowserWindow);
 
     controller.overlayBrowserWindow?.window.on('closed', () => {
       this.printLogMessage('widget window closed');
@@ -546,18 +562,11 @@ export class MainWindowController {
   }
 
   private async toggleWidget(): Promise<void> {
-    console.log('[MainWindowController] toggleWidget called');
-    console.log('[MainWindowController] widgetController exists:', !!this.widgetController);
-    console.log('[MainWindowController] widgetController overlayBrowserWindow exists:', !!this.widgetController?.overlayBrowserWindow);
-
     if (!this.widgetController) {
       // Create widget if it doesn't exist
-      console.log('[MainWindowController] Creating widget controller');
       await this.createWidget();
     } else {
-      console.log('[MainWindowController] Calling widget controller toggleVisibility');
       await this.widgetController.toggleVisibility();
-      console.log('[MainWindowController] Widget toggled');
     }
   }
 
