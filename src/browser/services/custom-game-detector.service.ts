@@ -89,9 +89,9 @@ export class CustomGameDetectorService extends EventEmitter {
   private findGameProcessesFromCSV(lines: string[]): DetectedGame[] {
     const gameProcesses: DetectedGame[] = [];
 
-    // Get all enabled games with process names
+        // Get all enabled games with process names that DON'T have an owGameId (GEP will handle those)
     const enabledGames = this.gamesService.getAllGames().filter(game =>
-      game.enable_for_app && game.processName
+      game.enable_for_app && game.processName && (!game.owGameId || game.owGameId === "0")
     );
 
 
