@@ -27,7 +27,7 @@ export const gamesData: GameData[] = [
     owGameId: "0",
     owConstant: "Aimlab",
     owGameName: "Aim Lab",
-    enable_for_app: true
+    enable_for_app: false
   },
   {
     game: "Apex Legends",
