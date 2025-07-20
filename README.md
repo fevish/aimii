@@ -1,6 +1,6 @@
 # Get Started
 
-1. Download and install the [latest release](https://github.com/fevish/aimii/releases)
+1. Download and install the [latest release](https://github.com/fevish/aimii/releases/latest)
 2. Set your "canonical sensitivity setting" in the app by choosing your preferred: game, in-game sensitivity, and mouse DPI
 3. Start a game that we support, and the app will auto-detect the game and show you the suggested sensitivity setting using game-conversion formulas.   
 4. _(Optional but appreciated <3)_ Let me know how it works for you in our [Discord](https://discord.gg/Nj2Xj3W4eY). Or just drop by to say hi!
