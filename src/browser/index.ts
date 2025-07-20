@@ -15,6 +15,7 @@ import { SensitivityConverterService } from './services/sensitivity-converter.se
 import { BrowserWindow } from 'electron';
 import { WindowStateService } from './services/window-state.service';
 import { HotkeyService } from './services/hotkey.service';
+import { CustomGameDetectorService } from './services/custom-game-detector.service';
 
 // Simple global console override - just like a normal website
 let mainWindow: BrowserWindow | null = null;
@@ -25,6 +26,9 @@ let earlyLogs: Array<{ args: any[], timestamp: number }> = [];
 declare global {
   var mainWindowController: MainWindowController | null;
 }
+
+// Global reference for cleanup
+let customGameDetectorService: CustomGameDetectorService | null = null;
 
 const safeStringify = (obj: any): string => {
   if (obj === null) return 'null';
@@ -96,6 +100,7 @@ const bootstrap = (): Application => {
   const sensitivityConverterService = new SensitivityConverterService(gamesService, settingsService, currentGameService);
   const windowStateService = new WindowStateService();
   const hotkeyService = new HotkeyService(settingsService);
+  customGameDetectorService = new CustomGameDetectorService(gamesService);
 
   const createDemoOsrWindowControllerFactory = (): DemoOSRWindowController => {
     const controller = new DemoOSRWindowController(overlayService);
@@ -122,6 +127,12 @@ const bootstrap = (): Application => {
     hotkeyService
   );
 
+  // Inject custom game detector into current game service
+  currentGameService.setCustomGameDetectorService(customGameDetectorService);
+
+  // Start custom game detector monitoring
+  customGameDetectorService.startMonitoring();
+
   // Store reference for cleanup
   global.mainWindowController = mainWindowController;
 
@@ -144,5 +155,10 @@ ElectronApp.on('before-quit', () => {
   // Cleanup tray icon
   if (global.mainWindowController) {
     global.mainWindowController.destroy();
+  }
+
+  // Stop custom game detector
+  if (customGameDetectorService) {
+    customGameDetectorService.stopMonitoring();
   }
 });

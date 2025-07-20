@@ -58,6 +58,8 @@ declare global {
     };
     currentGame: {
       getCurrentGameInfo: () => Promise<CurrentGameInfo | null>;
+      getAllDetectedGames: () => Promise<CurrentGameInfo[]>;
+      setCurrentGame: (gameId: number) => Promise<boolean>;
       isGameRunning: () => Promise<boolean>;
       getCurrentGameName: () => Promise<string | null>;
       isCurrentGameSupported: () => Promise<boolean>;
@@ -88,6 +90,7 @@ export const MyMainWindow: React.FC = () => {
   const [games, setGames] = useState<GameData[]>([]);
   const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
+  const [allDetectedGames, setAllDetectedGames] = useState<CurrentGameInfo[]>([]);
   const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
   const [hotkeyInfo, setHotkeyInfo] = useState<HotkeyInfo | null>(null);
   const [selectedGame, setSelectedGame] = useState<string>('');
@@ -116,16 +119,18 @@ export const MyMainWindow: React.FC = () => {
   const loadAllData = React.useCallback(async () => {
     try {
       // Load all data in parallel for better performance
-      const [gamesData, settings, gameInfo, hotkey] = await Promise.all([
+      const [gamesData, settings, gameInfo, allGames, hotkey] = await Promise.all([
         window.games.getEnabledGames(), // Changed from getAllGames() to getEnabledGames()
         window.settings.getCanonicalSettings(),
         window.currentGame.getCurrentGameInfo(),
+        window.currentGame.getAllDetectedGames(),
         window.widget.getHotkeyInfo()
       ]);
 
       setGames(gamesData);
       setCanonicalSettings(settings);
       setHotkeyInfo(hotkey);
+      setAllDetectedGames(allGames);
 
       // Only update current game if it actually changed
       setCurrentGame(prevGame => {
@@ -171,11 +176,11 @@ export const MyMainWindow: React.FC = () => {
       window.settings.onThemeChanged(handleThemeChanged);
     }
 
-    // Set up listener for game change events
+        // Set up listener for game change events
     const handleGameChanged = (gameInfo: any) => {
-      console.log('Game changed event received in main window:', gameInfo);
-      // Only reload game-specific data, not everything
+      // Reload both current game and all detected games
       loadGameSpecificData(gameInfo);
+      loadAllDetectedGames();
     };
 
     if (window.currentGame && window.currentGame.onGameChanged) {
@@ -184,7 +189,6 @@ export const MyMainWindow: React.FC = () => {
 
     // Set up listener for hotkey changes
     const handleHotkeyChanged = async (id: string, updates: any) => {
-      console.log('Hotkey changed event received:', id, updates);
       if (id === 'widget-toggle') {
         // Refresh hotkey info when widget toggle hotkey changes
         try {
@@ -197,7 +201,6 @@ export const MyMainWindow: React.FC = () => {
     };
 
     const handleHotkeysReset = async () => {
-      console.log('Hotkeys reset event received');
       // Refresh hotkey info when hotkeys are reset
       try {
         const hotkey = await window.widget.getHotkeyInfo();
@@ -244,6 +247,32 @@ export const MyMainWindow: React.FC = () => {
       }
     };
   }, [loadAllData]);
+
+  // Separate function to load all detected games
+  const loadAllDetectedGames = React.useCallback(async () => {
+    try {
+      const allGames = await window.currentGame.getAllDetectedGames();
+
+      // Only update state if games actually changed
+      setAllDetectedGames(prevGames => {
+        if (hasGamesChanged(prevGames, allGames)) {
+          return allGames;
+        }
+        return prevGames;
+      });
+    } catch (error) {
+      console.error('Error loading all detected games:', error);
+    }
+  }, []);
+
+  // Helper function to check if games array has changed
+  const hasGamesChanged = (prevGames: CurrentGameInfo[], newGames: CurrentGameInfo[]): boolean => {
+    if (prevGames.length !== newGames.length) return true;
+
+    const prevIds = prevGames.map(g => g.id).sort();
+    const newIds = newGames.map(g => g.id).sort();
+    return JSON.stringify(prevIds) !== JSON.stringify(newIds);
+  };
 
   // Separate function for game-specific data updates
   const loadGameSpecificData = React.useCallback(async (gameInfo?: any) => {
@@ -352,7 +381,7 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-    const handleResetCanonicalSettings = async () => {
+  const handleResetCanonicalSettings = async () => {
     if (!canonicalSettings) {
       setMessage('No settings to reset');
       return;
@@ -510,15 +539,71 @@ export const MyMainWindow: React.FC = () => {
             </section>
 
             <section className="current-game-section">
-              <h2>Current Game Status</h2>
+              {allDetectedGames.length > 1 ? (
+                <h2>Multiple games detected</h2>
+              ) : (
+                <h2>Current Game Status</h2>
+              )}
               <div className="current-game-info">
-                {currentGame ? (
+                {allDetectedGames.length > 1 ? (
+                  <div className="multiple-games-detected">
+                    <div className="game-tabs">
+                      {allDetectedGames.map((game) => (
+                        <button
+                          key={game.id}
+                          className={`game-tab ${currentGame?.id === game.id ? 'active' : ''}`}
+                          onClick={() => window.currentGame.setCurrentGame(game.id)}
+                        >
+                          {game.name}
+                        </button>
+                      ))}
+                    </div>
+
+                    {currentGame && (
+                      <div className="selected-game-info">
+                        {isPlayingCanonicalGame && canonicalSettings ? (
+                          <div className="current-settings-display">
+                            <h4>Your Current Settings</h4>
+                            <div className="settings-grid">
+                              <div className="setting-row">
+                                <span className="setting-label">Game:</span>
+                                <span className="setting-value">{canonicalSettings.game}</span>
+                              </div>
+                              <div className="setting-row">
+                                <span className="setting-label">Sensitivity:</span>
+                                <span className="setting-value">{canonicalSettings.sensitivity}</span>
+                              </div>
+                              <div className="setting-row">
+                                <span className="setting-label">DPI:</span>
+                                <span className="setting-value">{canonicalSettings.dpi}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : suggestedSensitivity ? (
+                          <div className="sensitivity-suggestion">
+                            <h4>Suggested Sensitivity</h4>
+                            <div className="suggestion-details">
+                              <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+                              {/* <p className="conversion-info">
+                                From {suggestedSensitivity.fromGame}: {suggestedSensitivity.fromSensitivity} @ {suggestedSensitivity.fromDPI} DPI
+                              </p>
+                              <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p> */}
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {/* Only show widget toggle button if the game has an owGameId (supports Overwolf overlay) */}
+                        {currentGame?.gameData?.owGameId && currentGame.gameData.owGameId !== "0" && (
+                          <button onClick={handleToggleWidget} className="widget-toggle-btn">
+                            Toggle Widget {hotkeyInfo ? `(${hotkeyInfo.displayText})` : '(Loading...)'}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : currentGame ? (
                   <div className="game-detected">
                     <h3>{currentGame.name}</h3>
-                    <p className={`game-status ${currentGame.isSupported ? 'supported' : 'unsupported'}`}>
-                      {currentGame.isSupported ? '✓ Supported' : '⚠ Not Supported'}
-                    </p>
-
                     {isPlayingCanonicalGame && canonicalSettings ? (
                       <div className="current-settings-display">
                         <h4>Your Current Settings</h4>
@@ -542,17 +627,20 @@ export const MyMainWindow: React.FC = () => {
                         <h4>Suggested Sensitivity</h4>
                         <div className="suggestion-details">
                           <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                          <p className="conversion-info">
+                          {/* <p className="conversion-info">
                             From {suggestedSensitivity.fromGame}: {suggestedSensitivity.fromSensitivity} @ {suggestedSensitivity.fromDPI} DPI
                           </p>
-                          <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p>
+                          <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p> */}
                         </div>
                       </div>
                     ) : null}
 
-                    <button onClick={handleToggleWidget} className="widget-toggle-btn">
-                      Toggle Widget {hotkeyInfo ? `(${hotkeyInfo.displayText})` : '(Loading...)'}
-                    </button>
+                    {/* Only show widget toggle button if the game has an owGameId (supports Overwolf overlay) */}
+                    {currentGame?.gameData?.owGameId && currentGame.gameData.owGameId !== "0" && (
+                      <button onClick={handleToggleWidget} className="widget-toggle-btn">
+                        Toggle Widget {hotkeyInfo ? `(${hotkeyInfo.displayText})` : '(Loading...)'}
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="no-game">
@@ -575,8 +663,8 @@ export const MyMainWindow: React.FC = () => {
                 </li>
                 <li>
                   <p>
-                  This app is very early access, features may change or break. Please report bugs to
-                  &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
+                    This app is very early access, features may change or break. Please report bugs to
+                    &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
                   </p>
                 </li>
               </ul>

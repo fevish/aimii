@@ -61,6 +61,34 @@ export class OverlayService extends EventEmitter {
     this.log('overlay is registered');
   }
 
+  /**
+   * Check for already running games and attempt injection
+   */
+  public async checkForAlreadyRunningGames(): Promise<void> {
+    if (!this.overlayApi) {
+      this.log('Overlay API not ready yet, skipping initial game check');
+      return;
+    }
+
+    this.log('Checking for already running games via overlay...');
+
+    try {
+      // Get active game info from overlay
+      const activeGame = this.overlayApi.getActiveGameInfo();
+
+      if (activeGame && activeGame.gameInfo) {
+        this.log('Found already running game via overlay:', activeGame.gameInfo.name);
+
+        // Emit game-injected event to notify other services
+        this.emit('game-injected', activeGame.gameInfo);
+      } else {
+        this.log('No active game found via overlay');
+      }
+    } catch (error) {
+      this.log('Error checking for already running games via overlay:', error);
+    }
+  }
+
   //----------------------------------------------------------------------------
   private startOverlayWhenPackageReady() {
     app.overwolf.packages.on('ready', (e, packageName, version) => {
@@ -75,7 +103,7 @@ export class OverlayService extends EventEmitter {
 
   //----------------------------------------------------------------------------
   // must be called after package is 'ready' (i.e loaded)
-  private startOverlay(version: string) {
+  private async startOverlay(version: string) {
     if (!this.overlayApi) {
       throw new Error('Attempting to access overlay before available');
     }
@@ -83,6 +111,9 @@ export class OverlayService extends EventEmitter {
     this.log(`overlay package is ready: ${version}`);
 
     this.registerOverlayEvents();
+
+    // Check for already running games
+    await this.checkForAlreadyRunningGames();
 
     this.emit('ready');
   }
