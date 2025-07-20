@@ -97,7 +97,8 @@ h4 {
 }
 
 p {
-  margin: calc(0.25 * var(--spacing)) 0;
+  margin-top: 0;
+  margin-bottom: var(--spacing);
   color: var(--light-gray);
   font-weight: 300;
   line-height: 1.15;
