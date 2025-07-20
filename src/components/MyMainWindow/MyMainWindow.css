@@ -316,7 +316,7 @@ form {
 }
 
 /* Canon Setting */
-.settings-container {
+.canon-settings-container {
   padding: var(--spacing);
   padding-top: calc(2 *var(--spacing));
   display: grid;

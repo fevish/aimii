@@ -496,7 +496,7 @@ export const MyMainWindow: React.FC = () => {
                     Now, when you launch a different game, aimii will use these settings to convert your sensitivity to the game you're playing.
                   </p>
 
-                  <div className="settings-container">
+                  <div className="canon-settings-container">
                     <div className="canonical-settings">
                       <h3><strong>Game:</strong> {canonicalSettings.game}</h3>
                       <h3><strong>Sensitivity:</strong> {canonicalSettings.sensitivity}</h3>
