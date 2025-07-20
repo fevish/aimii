@@ -60,6 +60,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: calc(0.5 * var(--spacing));
   -webkit-app-region: no-drag; /* Content area should not be draggable */
 }
@@ -106,36 +107,32 @@
 }
 
 /* Current Game Styles */
-.current-game {
+.current-game-info {
   background: var(--dark);
   border-radius: var(--radius);
-  padding: calc(0.5 * var(--spacing));
-  text-align: center;
+  padding: calc(1.5 * var(--spacing));
   border: 1px solid var(--secondary);
+  text-align: center;
+  position: relative;
 }
 
-.game-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.game-display {
+  text-align: center;
+  flex: 1;
 }
 
-.game-title {
+.game-display p {
+  font-size: 1em;
   margin: 0;
+}
+
+.game-name {
   color: var(--light);
-  text-shadow: none;
 }
 
 .game-status {
   margin: 0;
-}
-
-.game-status.supported {
-  color: var(--primary);
-}
-
-.game-status.unsupported {
-  color: var(--secondary);
+  font-size: 0.9rem;
 }
 
 .game-status.no-game {
@@ -148,29 +145,17 @@
 
 /* Sensitivity Suggestion Styles */
 .sensitivity-suggestion {
-  background: var(--dark);
-  border-radius: var(--radius);
-  padding: calc(0.5 * var(--spacing));
-  border: 1px solid var(--secondary);
-  flex: 1;
-  display: flex;
-  flex-flow: column;
-  justify-content: center;
-}
+  p {
+    font-size: 1.2em;
+    margin: calc(0.5 * var(--spacing)) 0;
+  }
 
-.sensitivity-suggestion h4 {
-  margin: 0 0 calc(0.5 * var(--spacing)) 0;
-  text-align: center;
-}
-
-.suggestion-details {
-  text-align: center;
-}
-
-.suggested-value {
-  margin: 0 0 4px 0;
-  color: var(--light);
-  text-shadow: none;
+  p.suggested-value {
+    margin: 0;
+    color: var(--light);
+    text-shadow: none;
+    font-size: 2.5rem;
+  }
 }
 
 .conversion-info {
