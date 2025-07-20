@@ -113,8 +113,11 @@ const Widget: React.FC = () => {
   };
 
   // Check if current game matches canonical game
-  const isPlayingCanonicalGame = currentGame && canonicalSettings &&
-    currentGame.name === canonicalSettings.game && currentGame.isSupported;
+  const isPlayingCanonicalGame = React.useMemo(() =>
+    currentGame && canonicalSettings &&
+    currentGame.name === canonicalSettings.game && currentGame.isSupported,
+    [currentGame, canonicalSettings]
+  );
 
   useEffect(() => {
     // Fetch initial data
@@ -147,16 +150,10 @@ const Widget: React.FC = () => {
     // Listen for canonical settings changes
     const handleCanonicalSettingsChanged = (settings: any) => {
       console.log('[Widget] Canonical settings changed event received:', settings);
-      fetchCanonicalSettings(); // Refresh canonical settings when they change
 
-      // If settings are null (cleared), immediately clear sensitivity suggestion
-      if (!settings || !settings.game) {
-        console.log('[Widget] Canonical settings cleared, clearing sensitivity suggestion');
-        setSuggestedSensitivity(null);
-      } else {
-        // Otherwise refresh sensitivity suggestions since they depend on canonical settings
-        fetchSuggestedSensitivity();
-      }
+      // Refresh all data when canonical settings change
+      // This ensures the widget updates properly when the canonical game changes
+      fetchData();
     };
 
     // Listen for canonical settings change events from main process
@@ -255,39 +252,30 @@ const Widget: React.FC = () => {
         </button>
       </div>
       <div className="widget-content">
-        <div className="current-game">
-          {isLoading ? (
-            <p className="game-status loading">Loading...</p>
-          ) : currentGame ? (
-            <div className="game-info">
-              <p className="game-title">{currentGame.name}</p>
-              <p className={`game-status ${currentGame.isSupported ? 'supported' : 'unsupported'}`}>
-                {currentGame.isSupported ? '✓ Supported' : '⚠ Not Supported'}
-              </p>
+        {isLoading ? (
+          <p className="game-status loading">Loading...</p>
+        ) : (
+          <div className="current-game-info">
+            <div className="game-display">
+              <p>Game Detected: <b className="game-name">{currentGame?.name}</b></p>
             </div>
-          ) : (
-            <p className="game-status no-game">No game detected</p>
-          )}
-        </div>
-
-        {isPlayingCanonicalGame ? (
-          <div className="current-settings">
-            <h4>Your Current Settings</h4>
-            <div className="settings-details">
-              <p className="setting-item"><span className="label">Game:</span> {canonicalSettings.game}</p>
-              <p className="setting-item"><span className="label">Sensitivity:</span> {canonicalSettings.sensitivity}</p>
-              <p className="setting-item"><span className="label">DPI:</span> {canonicalSettings.dpi}</p>
-            </div>
+            {isPlayingCanonicalGame ? (
+              <div className="sensitivity-suggestion">
+                <p>Sensitivity</p>
+                <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
+              </div>
+            ) : suggestedSensitivity ? (
+              <div className="sensitivity-suggestion">
+                <p>Converted Sensitivity</p>
+                <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+              </div>
+            ) : !canonicalSettings ? (
+              <div className="sensitivity-suggestion">
+                <p>No canon game selected</p>
+              </div>
+            ) : null}
           </div>
-        ) : suggestedSensitivity ? (
-          <div className="sensitivity-suggestion">
-            <h4>{currentGame ? currentGame.name : 'Suggested'} Sensitivity</h4>
-            <div className="suggestion-details">
-              <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-              <p className="cm360-info">{suggestedSensitivity.cm360}cm / 360°</p>
-            </div>
-          </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

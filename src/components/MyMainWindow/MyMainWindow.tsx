@@ -86,6 +86,8 @@ declare global {
   }
 }
 
+
+
 export const MyMainWindow: React.FC = () => {
   const [games, setGames] = useState<GameData[]>([]);
   const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
@@ -99,6 +101,7 @@ export const MyMainWindow: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'main' | 'settings'>('main');
+  const [currentGameIndex, setCurrentGameIndex] = useState<number>(0);
 
   const handleMinimize = () => {
     window.windowControls.minimize();
@@ -106,6 +109,24 @@ export const MyMainWindow: React.FC = () => {
 
   const handleClose = () => {
     window.windowControls.close();
+  };
+
+  const handlePreviousGame = () => {
+    if (allDetectedGames.length > 1) {
+      const newIndex = currentGameIndex === 0 ? allDetectedGames.length - 1 : currentGameIndex - 1;
+      setCurrentGameIndex(newIndex);
+      const game = allDetectedGames[newIndex];
+      window.currentGame.setCurrentGame(game.id);
+    }
+  };
+
+  const handleNextGame = () => {
+    if (allDetectedGames.length > 1) {
+      const newIndex = currentGameIndex === allDetectedGames.length - 1 ? 0 : currentGameIndex + 1;
+      setCurrentGameIndex(newIndex);
+      const game = allDetectedGames[newIndex];
+      window.currentGame.setCurrentGame(game.id);
+    }
   };
 
   // Memoized values to prevent unnecessary recalculations
@@ -176,7 +197,7 @@ export const MyMainWindow: React.FC = () => {
       window.settings.onThemeChanged(handleThemeChanged);
     }
 
-        // Set up listener for game change events
+    // Set up listener for game change events
     const handleGameChanged = (gameInfo: any) => {
       // Reload both current game and all detected games
       loadGameSpecificData(gameInfo);
@@ -335,6 +356,16 @@ export const MyMainWindow: React.FC = () => {
     }
   }, [canonicalSettings, currentGame, updateSensitivitySuggestion]);
 
+  // Update currentGameIndex when currentGame changes
+  useEffect(() => {
+    if (currentGame && allDetectedGames.length > 0) {
+      const index = allDetectedGames.findIndex(game => game.id === currentGame.id);
+      if (index !== -1) {
+        setCurrentGameIndex(index);
+      }
+    }
+  }, [currentGame, allDetectedGames]);
+
   const handleToggleWidget = async () => {
     try {
       await window.widget.toggleWidget();
@@ -456,199 +487,179 @@ export const MyMainWindow: React.FC = () => {
       <main className="app-content">
         {activeTab === 'main' ? (
           <>
-            <section className="canonical-settings-section">
-              <h2>Canonical Game Settings</h2>
-              <p>Set your preferred game, sensitivity, and DPI as your baseline for conversions.</p>
-
+            <section>
               {canonicalSettings && (
-                <div className="current-settings">
-                  <h3>Current Settings:</h3>
-                  <p><strong>Game:</strong> {canonicalSettings.game}</p>
-                  <p><strong>Sensitivity:</strong> {canonicalSettings.sensitivity}</p>
-                  <p><strong>DPI:</strong> {canonicalSettings.dpi}</p>
-                </div>
-              )}
+                <div>
+                  <h2>Your saved settings</h2>
+                  <p>These settings will be used as your canonical sensitivity for conversions.
+                    <br />
+                    Now, when you launch a different game, aimii will use these settings to convert your sensitivity to the game you're playing.
+                  </p>
 
-              <form onSubmit={handleSaveCanonicalSettings} className="canonical-form">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="game-select">1. Preferred Game</label>
-                    <select
-                      id="game-select"
-                      value={selectedGame}
-                      onChange={(e) => setSelectedGame(e.target.value)}
-                      required
-                    >
-                      <option value="">Select a Game</option>
-                      {games.map((game) => (
-                        <option key={game.game} value={game.game}>
-                          {game.game}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="sensitivity-input">2. In-Game Sensitivity</label>
-                    <input
-                      id="sensitivity-input"
-                      type="number"
-                      step="any"
-                      min="0.001"
-                      value={sensitivity}
-                      onChange={(e) => setSensitivity(e.target.value)}
-                      placeholder="0.35"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="dpi-input">3.Mouse DPI</label>
-                    <input
-                      id="dpi-input"
-                      type="number"
-                      min="1"
-                      value={dpi}
-                      onChange={(e) => setDpi(e.target.value)}
-                      placeholder="800"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-buttons">
-                  <button type="submit" disabled={isLoading} className="save-button">
-                    {isLoading ? 'Saving...' : 'Save'}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isLoading || !canonicalSettings}
-                    onClick={handleResetCanonicalSettings}
-                    className="reset-button"
-                  >
-                    {isLoading ? 'Resetting...' : 'Reset'}
-                  </button>
-                </div>
-              </form>
-
-              {message && (
-                <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
-                  {message}
-                </div>
-              )}
-            </section>
-
-            <section className="current-game-section">
-              {allDetectedGames.length > 1 ? (
-                <h2>Multiple games detected</h2>
-              ) : (
-                <h2>Current Game Status</h2>
-              )}
-              <div className="current-game-info">
-                {allDetectedGames.length > 1 ? (
-                  <div className="multiple-games-detected">
-                    <div className="game-tabs">
-                      {allDetectedGames.map((game) => (
-                        <button
-                          key={game.id}
-                          className={`game-tab ${currentGame?.id === game.id ? 'active' : ''}`}
-                          onClick={() => window.currentGame.setCurrentGame(game.id)}
-                        >
-                          {game.name}
-                        </button>
-                      ))}
+                  <div className="canon-settings-container">
+                    <div className="canonical-settings">
+                      <h3><strong>Game:</strong> {canonicalSettings.game}</h3>
+                      <h3><strong>Sensitivity:</strong> {canonicalSettings.sensitivity}</h3>
+                      <h3><strong>DPI:</strong> {canonicalSettings.dpi}</h3>
+                      <button onClick={handleResetCanonicalSettings} className="reset-button">Change</button>
                     </div>
 
-                    {currentGame && (
-                      <div className="selected-game-info">
-                        {isPlayingCanonicalGame && canonicalSettings ? (
-                          <div className="current-settings-display">
-                            <h4>Your Current Settings</h4>
-                            <div className="settings-grid">
-                              <div className="setting-row">
-                                <span className="setting-label">Game:</span>
-                                <span className="setting-value">{canonicalSettings.game}</span>
-                              </div>
-                              <div className="setting-row">
-                                <span className="setting-label">Sensitivity:</span>
-                                <span className="setting-value">{canonicalSettings.sensitivity}</span>
-                              </div>
-                              <div className="setting-row">
-                                <span className="setting-label">DPI:</span>
-                                <span className="setting-value">{canonicalSettings.dpi}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ) : suggestedSensitivity ? (
-                          <div className="sensitivity-suggestion">
-                            <h4>Suggested Sensitivity</h4>
-                            <div className="suggestion-details">
-                              <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                              {/* <p className="conversion-info">
-                                From {suggestedSensitivity.fromGame}: {suggestedSensitivity.fromSensitivity} @ {suggestedSensitivity.fromDPI} DPI
-                              </p>
-                              <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p> */}
-                            </div>
-                          </div>
-                        ) : null}
 
-                        {/* Only show widget toggle button if the game has an owGameId (supports Overwolf overlay) */}
-                        {currentGame?.gameData?.owGameId && currentGame.gameData.owGameId !== "0" && (
-                          <button onClick={handleToggleWidget} className="widget-toggle-btn">
-                            Toggle Widget {hotkeyInfo ? `(${hotkeyInfo.displayText})` : '(Loading...)'}
-                          </button>
+                    <div className="current-game-section">
+                      <div className="current-game-info">
+                        {allDetectedGames.length > 1 ? (
+                          <div className="multiple-games-detected">
+                            {currentGame && (
+                              <div className="selected-game-info">
+                                <div className="game-navigation">
+                                  <div className="game-display">
+                                    <p>Games Detected: <b className="game-name">{currentGame?.name}</b></p>
+                                  </div>
+                                  <div className="multi-games-nav">
+                                    <button
+                                      className="nav-arrow prev-arrow"
+                                      onClick={handlePreviousGame}
+                                      disabled={allDetectedGames.length <= 1}
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
+                                    </button>
+                                    <button
+                                      className="nav-arrow next-arrow"
+                                      onClick={handleNextGame}
+                                      disabled={allDetectedGames.length <= 1}
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="sensitivity-suggestion">
+                                  {suggestedSensitivity ? (
+                                    <>
+                                      <p>
+                                        Converted Sensitivity
+                                      </p>
+                                      <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <p>
+                                        Sensitivity
+                                      </p>
+                                      <p className="suggested-value">{canonicalSettings.sensitivity}</p>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : allDetectedGames.length === 1 && currentGame ? (
+                          <div className="game-detected">
+
+                            <div className="game-display">
+                              <p>Game Detected: <b>{currentGame?.name}</b></p>
+                            </div>
+                            {suggestedSensitivity ? (
+                              <div className="sensitivity-suggestion">
+                                <p>
+                                  Converted Sensitivity
+                                </p>
+                                <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+                              </div>
+                            ) : (
+                              <div className="sensitivity-suggestion">
+                                <p>
+                                  Sensitivity
+                                </p>
+                                <p className="suggested-value">{canonicalSettings.sensitivity}</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="no-game">
+                            <p>No supported game detected</p>
+                            <p className="help-text">Launch a supported game to see sensitivity conversion options</p>
+                          </div>
                         )}
                       </div>
-                    )}
+                    </div>
                   </div>
-                ) : currentGame ? (
-                  <div className="game-detected">
-                    <h3>{currentGame.name}</h3>
-                    {isPlayingCanonicalGame && canonicalSettings ? (
-                      <div className="current-settings-display">
-                        <h4>Your Current Settings</h4>
-                        <div className="settings-grid">
-                          <div className="setting-row">
-                            <span className="setting-label">Game:</span>
-                            <span className="setting-value">{canonicalSettings.game}</span>
-                          </div>
-                          <div className="setting-row">
-                            <span className="setting-label">Sensitivity:</span>
-                            <span className="setting-value">{canonicalSettings.sensitivity}</span>
-                          </div>
-                          <div className="setting-row">
-                            <span className="setting-label">DPI:</span>
-                            <span className="setting-value">{canonicalSettings.dpi}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ) : suggestedSensitivity ? (
-                      <div className="sensitivity-suggestion">
-                        <h4>Suggested Sensitivity</h4>
-                        <div className="suggestion-details">
-                          <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                          {/* <p className="conversion-info">
-                            From {suggestedSensitivity.fromGame}: {suggestedSensitivity.fromSensitivity} @ {suggestedSensitivity.fromDPI} DPI
-                          </p>
-                          <p className="cm360-info">{suggestedSensitivity.cm360} cm/360°</p> */}
-                        </div>
-                      </div>
-                    ) : null}
+                </div>
+              )}
 
-                    {/* Only show widget toggle button if the game has an owGameId (supports Overwolf overlay) */}
-                    {currentGame?.gameData?.owGameId && currentGame.gameData.owGameId !== "0" && (
-                      <button onClick={handleToggleWidget} className="widget-toggle-btn">
-                        Toggle Widget {hotkeyInfo ? `(${hotkeyInfo.displayText})` : '(Loading...)'}
+              {!canonicalSettings && (
+                <div>
+                  <h2>Set your sensitivity baseline</h2>
+                  <p>To get started, set your preferred game, sensitivity, and DPI as your baseline for conversions.</p>
+
+                  <form onSubmit={handleSaveCanonicalSettings} className="canonical-form">
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label htmlFor="game-select">1. Preferred Game</label>
+                        <select
+                          id="game-select"
+                          value={selectedGame}
+                          onChange={(e) => setSelectedGame(e.target.value)}
+                          required
+                        >
+                          <option value="">Select a Game</option>
+                          {games.map((game) => (
+                            <option key={game.game} value={game.game}>
+                              {game.game}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="sensitivity-input">2. In-Game Sensitivity</label>
+                        <input
+                          id="sensitivity-input"
+                          type="number"
+                          step="any"
+                          min="0.001"
+                          value={sensitivity}
+                          onChange={(e) => setSensitivity(e.target.value)}
+                          placeholder="0.35"
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="dpi-input">3.Mouse DPI</label>
+                        <input
+                          id="dpi-input"
+                          type="number"
+                          min="1"
+                          value={dpi}
+                          onChange={(e) => setDpi(e.target.value)}
+                          placeholder="800"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-buttons">
+                      <button type="submit" disabled={isLoading} className="save-button">
+                        {isLoading ? 'Saving...' : 'Save'}
                       </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="no-game">
-                    <p>No supported game detected</p>
-                    <p className="help-text">Launch a supported game to see sensitivity conversion options</p>
-                  </div>
-                )}
-              </div>
+                      <button
+                        type="button"
+                        disabled={isLoading || !canonicalSettings}
+                        onClick={handleResetCanonicalSettings}
+                        className="reset-button"
+                      >
+                        {isLoading ? 'Resetting...' : 'Reset'}
+                      </button>
+                    </div>
+                  </form>
+
+                  {message && (
+                    <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
+                      {message}
+                    </div>
+                  )}
+                </div>
+              )}
             </section>
 
             <section className="notes-section">

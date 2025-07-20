@@ -12,6 +12,7 @@
 header {
   background: var(--dark);
   padding: calc(0.25 * var(--spacing)) var(--spacing);
+  margin-bottom: calc(1 * var(--spacing));
   /* border-bottom: 1px solid var(--secondary); */
   display: flex;
   justify-content: space-between;
@@ -203,12 +204,14 @@ form {
 }
 
 /* Game section */
-.current-game-section {
-  padding: var(--spacing);
-}
 
 .current-game-info {
+  background: var(--dark);
+  border-radius: var(--radius);
+  padding: calc(1.5 * var(--spacing));
+  border: 1px solid var(--secondary);
   text-align: center;
+  position: relative;
 }
 
 .game-detected h3 {
@@ -233,13 +236,103 @@ form {
 }
 
 /* Multiple Games */
-.game-tabs {
+
+.sensitivity-suggestion {
+  position: relative;
+}
+
+.game-navigation {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing);
+
+  p {
+    font-size: 1em;
+    margin: 0;
+  }
+}
+
+.multi-games-nav {
+  position: absolute;
+  top: calc(-0.75* var(--spacing));
+  right: calc(0.5* var(--spacing));
+  background-color: var(--dark);
+  display: flex;
+  flex-flow: row;
   gap: calc(0.5* var(--spacing));
-  flex-wrap: wrap;
+  align-items: center;
+}
+
+.nav-arrow {
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+  border-radius: var(--radius);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg {
+    height: calc(1.5* var(--spacing));
+    width: calc(1.5* var(--spacing));
+  }
+}
+
+.nav-arrow.prev-arrow {}
+
+.nav-arrow.next-arrow svg {
+  transform: rotate(180deg);
+}
+
+.nav-arrow:hover:not(:disabled) {
+  background: var(--light-gray);
+  transform: scale(1.05);
+}
+
+.nav-arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.game-display {
+  text-align: center;
+  flex: 1;
+
+  p {
+    font-size: 1em;
+    margin: 0;
+  }
+}
+
+.game-counter {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--secondary);
+  margin-top: calc(0.25 * var(--spacing));
 }
 
 /* Canon Setting */
+.canon-settings-container {
+  padding: var(--spacing);
+  padding-top: calc(2 *var(--spacing));
+  display: grid;
+  grid-template-columns: 50% 50%;
+}
+
+.canonical-settings {
+  h3 {
+    font-weight: 300;
+  }
+
+  .reset-button {
+    margin-top: calc(0.5 * var(--spacing));
+  }
+}
+
 .canonical-form {
   .form-buttons {
     display: flex;
@@ -315,15 +408,6 @@ form {
   }
 }
 
-.current-settings,
-.current-settings-display {
-  background: var(--dark);
-  border-radius: var(--radius);
-  padding: var(--spacing);
-  margin: var(--spacing) 0;
-  border: 1px solid var(--secondary);
-}
-
 .settings-grid {
   display: flex;
   flex-direction: column;
@@ -356,21 +440,21 @@ form {
 
 /* Sensitivity */
 .sensitivity-suggestion {
-  background: var(--dark);
-  border-radius: var(--radius);
-  padding: var(--spacing);
-  margin: var(--spacing) 0;
-  border: 1px solid var(--secondary);
+  p {
+    font-size: 1.2em;
+    margin: calc(0.5 * var(--spacing)) 0;
+  }
+
+  p.suggested-value {
+    margin: 0;
+    color: var(--light);
+    text-shadow: none;
+    font-size: 2.5rem;
+  }
 }
 
 .suggestion-details {
   text-align: center;
-}
-
-.suggested-value {
-  margin: 0 0 calc(0.25 * var(--spacing)) 0;
-  color: var(--light);
-  text-shadow: none;
 }
 
 .conversion-info {
