@@ -12,7 +12,7 @@
   "homepage": "https://aimii.app",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fevish/sens"
+    "url": "https://github.com/fevish/aimii"
   },
   "scripts": {
     "build": "webpack --mode=development && npm run start",
