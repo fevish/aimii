@@ -5,9 +5,9 @@ import { OverlayHotkeysService } from './services/overlay-hotkeys.service';
 import { OverlayService } from './services/overlay.service';
 import { GameEventsService } from './services/gep.service';
 import { MainWindowController } from './controllers/main-window.controller';
-import { DemoOSRWindowController } from './controllers/demo-osr-window.controller';
+
 import { WidgetWindowController } from './controllers/widget-window.controller';
-import { OverlayInputService } from './services/overlay-input.service';
+
 import { SettingsService } from './services/settings.service';
 import { GamesService } from './services/games.service';
 import { CurrentGameService } from './services/current-game.service';
@@ -89,7 +89,7 @@ const bootstrap = (): Application => {
   const overlayService = new OverlayService();
   const overlayHotkeysService = new OverlayHotkeysService(overlayService);
   const gepService = new GameEventsService();
-  const inputService = new OverlayInputService(overlayService);
+
   const settingsService = new SettingsService();
   const gamesService = new GamesService();
   const currentGameService = new CurrentGameService(overlayService, gamesService);
@@ -102,10 +102,7 @@ const bootstrap = (): Application => {
   const hotkeyService = new HotkeyService(settingsService);
   customGameDetectorService = new CustomGameDetectorService(gamesService);
 
-  const createDemoOsrWindowControllerFactory = (): DemoOSRWindowController => {
-    const controller = new DemoOSRWindowController(overlayService);
-    return controller;
-  }
+
 
   const createWidgetWindowControllerFactory = (): WidgetWindowController => {
     const controller = new WidgetWindowController(overlayService, settingsService, currentGameService, hotkeyService);
@@ -115,10 +112,8 @@ const bootstrap = (): Application => {
   const mainWindowController = new MainWindowController(
     gepService,
     overlayService,
-    createDemoOsrWindowControllerFactory,
     createWidgetWindowControllerFactory,
     overlayHotkeysService,
-    inputService,
     gamesService,
     settingsService,
     currentGameService,

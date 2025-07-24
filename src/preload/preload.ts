@@ -19,6 +19,8 @@ contextBridge.exposeInMainWorld('app', {
 contextBridge.exposeInMainWorld('gep', {
   onMessage: (func: (...args: any[]) => void) => {
     ipcRenderer.on('console-message',(e: any, ...args: any[]) => {
+      // Log to Chrome console instead of terminal
+      console.log(...args);
       func(...args);
     });
   },
@@ -36,29 +38,9 @@ contextBridge.exposeInMainWorld('gep', {
   },
 });
 
-contextBridge.exposeInMainWorld('osr', {
-  openOSR: () => {
-    return ipcRenderer.invoke('createOSR');
-  },
-  toggle: () => {
-    return ipcRenderer.invoke('toggleOSRVisibility');
-  },
-  updateHotkey: () => {
-    return ipcRenderer.invoke('updateHotkey');
-  },
-});
 
-contextBridge.exposeInMainWorld('overlay', {
-  setExclusiveModeType: (mode: any) => {
-    return ipcRenderer.invoke('EXCLUSIVE_TYPE', mode);
-  },
-  setExclusiveModeHotkeyBehavior: (behavior: any) => {
-    return ipcRenderer.invoke('EXCLUSIVE_BEHAVIOR',behavior );
-  },
-  updateExclusiveOptions: (options: any) => {
-    return ipcRenderer.invoke('updateExclusiveOptions', options);
-  }
-});
+
+
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openWidgetDevTools: () => {
