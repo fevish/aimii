@@ -490,7 +490,7 @@ export const MyMainWindow: React.FC = () => {
             <section>
               {canonicalSettings && (
                 <div>
-                  <h2>Your saved settings</h2>
+                  <h2>Your saved sensitivity</h2>
                   <p>These settings will be used as your canonical sensitivity for conversions.
                     <br />
                     Now, when you launch a different game, aimii will use these settings to convert your sensitivity to the game you're playing.
