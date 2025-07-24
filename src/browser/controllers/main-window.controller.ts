@@ -1,12 +1,12 @@
 import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
-import { DemoOSRWindowController } from './demo-osr-window.controller';
+
 import { WidgetWindowController } from './widget-window.controller';
 import { OverlayService } from '../services/overlay.service';
 import { overwolf } from '@overwolf/ow-electron';
 import { OverlayHotkeysService } from '../services/overlay-hotkeys.service';
-import { ExclusiveHotKeyMode, OverlayInputService } from '../services/overlay-input.service';
+
 import { setMainWindowForConsole } from '../index';
 import { GamesService } from '../services/games.service';
 import { SettingsService } from '../services/settings.service';
@@ -31,10 +31,8 @@ export class MainWindowController {
   constructor(
     private readonly gepService: GameEventsService,
     private readonly overlayService: OverlayService,
-    private readonly createDemoOsrWinController: () => DemoOSRWindowController,
     private readonly createWidgetWinController: () => WidgetWindowController,
     private readonly overlayHotkeysService: OverlayHotkeysService,
-    private readonly overlayInputService: OverlayInputService,
     private readonly gamesService: GamesService,
     private readonly settingsService: SettingsService,
     private readonly currentGameService: CurrentGameService,
@@ -185,6 +183,8 @@ export class MainWindowController {
     // Show the window after it's loaded
     this.browserWindow.once('ready-to-show', () => {
       this.browserWindow?.show();
+      // Always open DevTools undocked for the main window
+      this.browserWindow?.webContents.openDevTools({ mode: 'detach' });
     });
   }
 
@@ -261,8 +261,6 @@ export class MainWindowController {
    *
    */
   private registerToIpc() {
-    ipcMain.handle('createOSR', async () => await this.createOSRDemoWindow());
-
     ipcMain.handle('createWidget', async () => await this.createWidget());
 
     ipcMain.handle('toggleWidget', async () => await this.toggleWidget());
@@ -439,45 +437,7 @@ export class MainWindowController {
       return true;
     });
 
-    ipcMain.handle('toggleOSRVisibility', async () => {
-      this.overlayService?.overlayApi?.getAllWindows().forEach((e: any) => {
-        e.window.show();
-      })
-    });
 
-    ipcMain.handle('updateHotkey', async () => {
-      this.overlayHotkeysService?.updateHotkey();
-    });
-
-    ipcMain.handle('updateExclusiveOptions', async (sender: any, options: any) => {
-      this.overlayInputService?.updateExclusiveModeOptions(options);
-    });
-
-    ipcMain.handle('EXCLUSIVE_TYPE', async (sender: any, type: any) => {
-      if (!this.overlayInputService) {
-        return;
-      }
-
-      if (type === 'customWindow') {
-        this.overlayInputService.exclusiveModeAsWindow = true;
-      } else {
-        // native
-        this.overlayInputService.exclusiveModeAsWindow = false;
-      }
-    });
-
-    ipcMain.handle('EXCLUSIVE_BEHAVIOR', async (sender: any, behavior: any) => {
-      if (!this.overlayInputService) {
-        return;
-      }
-
-      if (behavior === 'toggle') {
-        this.overlayInputService.mode = ExclusiveHotKeyMode.Toggle;
-      } else {
-        // native
-        this.overlayInputService.mode = ExclusiveHotKeyMode.AutoRelease;
-      }
-    });
 
     // Hotkey service IPC handlers
     ipcMain.handle('hotkeys-get-all', () => {
@@ -539,16 +499,7 @@ export class MainWindowController {
   /**
    *
    */
-  private async createOSRDemoWindow(): Promise<void> {
-    const controller = this.createDemoOsrWinController();
 
-    const showDevTools = true;
-    await controller.createAndShow(showDevTools);
-
-    controller.overlayBrowserWindow?.window.on('closed', () => {
-      this.printLogMessage('osr window closed');
-    });
-  }
 
   /**
    * Public method to create widget (called from Application)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { OverwolfTerminal } from '../OverwolfTerminal/OverwolfTerminal';
+
 import Settings from '../Settings/Settings';
 import './MyMainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
@@ -683,7 +683,7 @@ export const MyMainWindow: React.FC = () => {
 
             <section className="debug-section">
               <h3>Development Console</h3>
-              <OverwolfTerminal />
+
             </section>
           </>
         ) : (
