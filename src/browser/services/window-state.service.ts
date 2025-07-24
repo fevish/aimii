@@ -99,12 +99,12 @@ export class WindowStateService {
       window.minimize();
     }
 
-    // Restore dev tools state
+    // Restore dev tools state (always in detached mode)
     if (state.devToolsOpen) {
       // Small delay to ensure window is ready
       setTimeout(() => {
         if (!window.webContents.isDevToolsOpened()) {
-          window.webContents.openDevTools();
+          window.webContents.openDevTools({ mode: 'detach' });
         }
       }, 500);
     }

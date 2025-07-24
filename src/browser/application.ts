@@ -46,8 +46,7 @@ export class Application {
    *
    */
   private initialize() {
-    const showDevTools = true;
-    this.mainWindowController.createAndShow(showDevTools);
+    this.mainWindowController.createAndShow();
   }
 
   /**
