@@ -124,7 +124,7 @@ export class MainWindowController {
   /**
    *
    */
-  public createAndShow(showDevTools: boolean) {
+  public createAndShow() {
     // Load saved window state
     const savedState = this.windowStateService.loadWindowState();
 
@@ -142,12 +142,11 @@ export class MainWindowController {
       show: false, // Don't show until we've set up the state
       resizable: false, // Disable window resizing
       webPreferences: {
-        // NOTE: nodeIntegration and contextIsolation are only required for this
-        // specific demo app, they are not a neceassry requirement for any other
-        // ow-electron applications
+        // NOTE: nodeIntegration and contextIsolation are required for this app
+        // to enable IPC communication between main and renderer processes
         nodeIntegration: true,
         contextIsolation: true,
-        devTools: showDevTools || savedState.devToolsOpen,
+        devTools: true,
         // relative to root folder of the project
         preload: path.join(__dirname, '../preload/preload.js'),
       },
@@ -183,8 +182,6 @@ export class MainWindowController {
     // Show the window after it's loaded
     this.browserWindow.once('ready-to-show', () => {
       this.browserWindow?.show();
-      // Always open DevTools undocked for the main window
-      this.browserWindow?.webContents.openDevTools({ mode: 'detach' });
     });
   }
 
