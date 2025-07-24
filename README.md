@@ -10,11 +10,11 @@
 aimii is a mouse sensitivity "normalizer" for games (currently FPS games specifically).
 
 ### Normalizing your aim
-Almost every FPS game uses unique mathematical formulas to convert mouse and controller movement to aim, so the same in-game sensitivity number can feel completely different from one game to the next, for example:
+Most FPS games use unique formulas and scaling ratios for mouse and controllers, so the same in-game sensitivity number can feel completely different from one game to the next, for example:
 
-An in-game sensitivity of `0.5` in Valorant is approximately `1.591` for Counter-Strike 2.
+An in-game sensitivity of `0.5` in Valorant is approximately `1.591` in Counter-Strike 2.
 
-This difference breaks my muscle memory when switching games, and although I can typically manually get my sensitivity normalized to a point where it feels "pretty close", it's never perfect and is just a nuisance when trying out a new title or re-installing an existing one. 
+For me personally, this difference breaks my muscle memory when switching between games and although I can typically manually get my sensitivity normalized to a point where it feels "pretty close", it's never perfect.
 
 ## Features
 
