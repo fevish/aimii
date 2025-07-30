@@ -6,10 +6,12 @@ module.exports = {
   mode: 'development',
   devtool: 'source-map',
   watch: false,
+  context: __dirname,
   watchOptions: {
     ignored: /node_modules/,
     aggregateTimeout: 300,
-    poll: 1000,
+    // Use native file watching instead of polling
+    poll: false,
     // Disable following symlinks and restrict to project directory
     followSymlinks: false
   },

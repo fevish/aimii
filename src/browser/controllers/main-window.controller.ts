@@ -179,6 +179,12 @@ export class MainWindowController {
       if (input.key === 'F11') {
         event.preventDefault();
       }
+
+      // Manual reload hotkey in development (Ctrl+Shift+R)
+      if (process.env.NODE_ENV === 'development' && input.control && input.shift && input.key === 'R') {
+        console.log('Manual reload triggered');
+        this.browserWindow?.webContents.reload();
+      }
     });
 
     // Set up console logging to Chrome dev tools
