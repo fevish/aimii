@@ -488,7 +488,7 @@ export const MyMainWindow: React.FC = () => {
       <main className="app-content">
         {activeTab === 'main' ? (
           <>
-            <section>
+            <section className="main-section">
               {canonicalSettings && (
                 <div>
                   <h2>Your saved sensitivity</h2>
@@ -578,7 +578,7 @@ export const MyMainWindow: React.FC = () => {
                         ) : (
                           <div className="no-game">
                             <p>No supported game detected</p>
-                            <p className="help-text">Launch a supported game to see sensitivity conversion options</p>
+                            <p className="mt-0 mb-0">Launch a supported game to see sensitivity conversion options</p>
                           </div>
                         )}
                       </div>
@@ -661,30 +661,50 @@ export const MyMainWindow: React.FC = () => {
                   )}
                 </div>
               )}
+
+              <div className="cards-section">
+                <div className="card card-primary">
+                  <div className="card-header">
+                    <h4 className="">My eDPI</h4>
+                    <div className="btn-icon">
+                      <SvgIcon name="arrow-north-east" />
+                    </div>
+                  </div>
+                  <p>Content</p>
+                </div>
+                <div className="card card-secondary">
+                  <div className="card-header">
+                    <h4 className="">Card 2</h4>
+                    <div className="btn-icon">
+                      <SvgIcon name="arrow-north-east" />
+                    </div>
+                  </div>
+                  <p>Content</p>
+                </div>
+              </div>
+
+
+              {/* <div className="notes-section">
+                <h4>Early Access Notes</h4>
+                <ul>
+                  <li>
+                    <p>
+                      <b>In-game widget will not work in all games.</b>
+                      <br />
+                      Some of our supported games eg. Counter-Strike 2 do not support in-game overlays.
+                    </p>
+                  </li>
+                  <li>
+                    <p>
+                      This app is very early access, features may change or break. Please report bugs to
+                      &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
+                    </p>
+                  </li>
+                </ul>
+              </div> */}
             </section>
 
-            <section className="notes-section">
-              <h4>Early Access Notes</h4>
-              <ul>
-                <li>
-                  <p>
-                    <b>In-game widget will not work in all games.</b>
-                    <br />
-                    Some of our supported games eg. Counter-Strike 2 do not support in-game overlays.
-                  </p>
-                </li>
-                <li>
-                  <p>
-                    This app is very early access, features may change or break. Please report bugs to
-                    &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
-                  </p>
-                </li>
-              </ul>
-            </section>
-
-            <section className="debug-section">
-              <h3>Development Console</h3>
-
+            <section className="ad-section">
             </section>
           </>
         ) : (

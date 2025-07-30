@@ -68,12 +68,11 @@ header {
     }
 
     &.discord-btn::before {
-      mask-image: url('../../assets/images/discord.svg');
+      mask-image: url('../../assets/svg/discord.svg');
       mask-size: 16px;
     }
   }
 }
-
 
 .app-header h1 {
   margin: 0;
@@ -148,7 +147,7 @@ main {
   padding-top: 0;
   display: grid;
   gap: var(--spacing);
-  grid-template-columns: 70% auto;
+  grid-template-columns: auto 400px;
   margin: 0 auto;
   overflow-x: hidden;
   overflow-y: auto;
@@ -178,6 +177,10 @@ section {
   flex-flow: column;
 }
 
+.main-section {
+  justify-content: space-between;
+}
+
 /* Forms */
 form {
   display: flex;
@@ -204,7 +207,6 @@ form {
 }
 
 /* Game section */
-
 .current-game-info {
   background: var(--dark);
   border-radius: var(--radius);
@@ -231,12 +233,7 @@ form {
   color: var(--secondary);
 }
 
-.no-game p {
-  color: var(--secondary);
-}
-
 /* Multiple Games */
-
 .sensitivity-suggestion {
   position: relative;
 }
@@ -372,8 +369,71 @@ form {
   }
 }
 
+/* Cards Section */
+.cards-section {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  max-width: 400px;
+  gap: var(--spacing);
+
+  .card {
+    color: var(--dark);
+    background: var(--primary);
+    border: 1px solid var(--gray);
+
+    &.card-secondary {
+      background: #fff;
+    }
+
+    border-radius: calc(6 * var(--radius));
+    padding: var(--spacing);
+    padding-left: calc(1.5 * var(--spacing));
+
+    .card-header {
+      display: flex;
+      flex-flow: row;
+      justify-content: space-between;
+      gap: calc(1.5 * var(--spacing));
+      h4 {
+        margin-top: calc(0.5 * var(--spacing));
+        text-transform: none;
+      }
+
+      .btn-icon {
+        border-radius: 100%;
+        padding: calc(1 * var(--spacing));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--dark);
+        color: var(--light);
+        svg {
+          height: 18px;
+          width: 18px;
+        }
+      }
+    }
+    p {
+      margin-bottom: 0;
+      margin-top: calc(2 * var(--spacing));
+      color: var(--dark);
+      font-weight: 600;
+    }
+  }
+}
+
+/* Ad / Debug Section */
+.ad-section {
+  border: 1px solid var(--gray);
+  border-radius: var(--radius);
+  padding: var(--spacing);
+  height: 300px;
+}
+
+
 /* Notes Section */
 .notes-section {
+  margin-top: calc(2 * var(--spacing));
   grid-column: span 2;
   font-size: 0.95em;
   padding-top: 0;
@@ -465,11 +525,6 @@ form {
 .cm360-info {
   margin: 0;
   color: var(--secondary);
-}
-
-/* Utilities */
-.help-text {
-  color: var(--secondary) !important;
 }
 
 .debug-section {
