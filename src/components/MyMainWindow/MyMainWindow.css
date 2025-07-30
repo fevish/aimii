@@ -380,14 +380,14 @@ form {
     color: var(--dark);
     background: var(--primary);
     border: 1px solid var(--gray);
+    border-radius: calc(6 * var(--radius));
+    padding: var(--spacing);
+    padding-left: calc(1.5 * var(--spacing));
+    text-align: start;
 
     &.card-secondary {
       background: #fff;
     }
-
-    border-radius: calc(6 * var(--radius));
-    padding: var(--spacing);
-    padding-left: calc(1.5 * var(--spacing));
 
     .card-header {
       display: flex;
@@ -411,13 +411,20 @@ form {
           height: 18px;
           width: 18px;
         }
+
+        &.btn-icon-secondary {
+          background: #fff;
+          color: var(--dark);
+          border: 1px solid #999;
+        }
       }
     }
     p {
       margin-bottom: 0;
       margin-top: calc(2 * var(--spacing));
       color: var(--dark);
-      font-weight: 600;
+      font-weight: 800;
+      font-size: 1.75em;
     }
   }
 }
@@ -429,6 +436,7 @@ form {
   padding: var(--spacing);
   height: 300px;
 }
+
 
 
 /* Notes Section */
