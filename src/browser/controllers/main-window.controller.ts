@@ -92,6 +92,13 @@ export class MainWindowController {
     this.browserWindow?.webContents?.send('console-message', message, ...args);
   }
 
+  /**
+   * Get the browser window instance for external access
+   */
+  public getBrowserWindow(): BrowserWindow | null {
+    return this.browserWindow;
+  }
+
   //----------------------------------------------------------------------------
   private logPackageManagerErrors(e: any, packageName: any, ...args: any[]) {
     this.printLogMessage(

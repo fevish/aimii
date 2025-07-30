@@ -1,4 +1,5 @@
 import { GameInfo, GameLaunchEvent } from '@overwolf/ow-electron-packages-types';
+import { app as ElectronApp } from 'electron';
 import { MainWindowController } from './controllers/main-window.controller';
 import { OverlayService } from './services/overlay.service';
 import { GameEventsService } from './services/gep.service';
@@ -39,6 +40,29 @@ export class Application {
    *
    */
   public run() {
+    // Check if another instance is already running
+    const gotTheLock = ElectronApp.requestSingleInstanceLock();
+
+    if (!gotTheLock) {
+      console.log('Another instance of aimii is already running. Exiting...');
+      ElectronApp.quit();
+      return;
+    }
+
+    // Handle second instance attempts
+    ElectronApp.on('second-instance', (event: Electron.Event, commandLine: string[], workingDirectory: string) => {
+      console.log('Second instance attempted, focusing existing window');
+
+      // Focus the existing window
+      const mainWindow = this.mainWindowController.getBrowserWindow();
+      if (mainWindow) {
+        if (mainWindow.isMinimized()) {
+          mainWindow.restore();
+        }
+        mainWindow.focus();
+      }
+    });
+
     this.initialize();
   }
 
