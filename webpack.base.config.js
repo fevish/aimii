@@ -26,12 +26,33 @@ module.exports = {
       // CSS loader for external CSS files
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
+      },
+      // SVG loader - handle SVGs differently based on usage
+      {
+        test: /\.svg$/,
+        oneOf: [
+          // For React components (SvgIcon) - treat as raw text
+          {
+            resourceQuery: /react/,
+            type: 'asset/source'
+          },
+          // For CSS and other uses - treat as files
+          {
+            type: 'asset/resource',
+            generator: {
+              filename: 'assets/svg/[name][ext]'
+            }
+          }
+        ]
       },
     ],
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.json', '.js', '.css'],
+    extensions: ['.ts', '.tsx', '.json', '.js', '.css', '.svg'],
   },
 
   output: {
@@ -46,6 +67,10 @@ module.exports = {
         {
           from: 'public/icons/icon.ico',
           to: 'icon.ico'
+        },
+        {
+          from: 'src/assets/svg',
+          to: 'assets/svg'
         }
       ]
     })

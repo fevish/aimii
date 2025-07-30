@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import Settings from '../Settings/Settings';
+import { SvgIcon } from '../SvgIcon/SvgIcon';
 import './MyMainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
