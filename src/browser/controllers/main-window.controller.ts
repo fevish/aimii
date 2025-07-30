@@ -1,6 +1,7 @@
 import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
+import { WINDOW_CONFIG } from '../services/window-state.service';
 
 import { WidgetWindowController } from './widget-window.controller';
 import { OverlayService } from '../services/overlay.service';
@@ -139,15 +140,15 @@ export class MainWindowController {
     const appIcon = this.loadAppIcon();
 
     this.browserWindow = new BrowserWindow({
-      width: savedState.width,
-      height: savedState.height,
+      width: WINDOW_CONFIG.mainWindow.width,
+      height: WINDOW_CONFIG.mainWindow.height,
       x: savedState.x,
       y: savedState.y,
-      frame: false, // Hide the default window frame
-      title: 'aimii',
+      frame: WINDOW_CONFIG.mainWindow.frame, // Hide the default window frame
+      title: WINDOW_CONFIG.mainWindow.title,
       icon: appIcon, // Use native image for better icon handling
-      show: false, // Don't show until we've set up the state
-      resizable: false, // Disable window resizing
+      show: WINDOW_CONFIG.mainWindow.showOnStartup, // Don't show until we've set up the state
+      resizable: WINDOW_CONFIG.mainWindow.resizable, // Disable window resizing
       webPreferences: {
         // NOTE: nodeIntegration and contextIsolation are required for this app
         // to enable IPC communication between main and renderer processes
