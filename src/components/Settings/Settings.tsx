@@ -30,6 +30,7 @@ interface CanonicalSettings {
   game: string;
   sensitivity: number;
   dpi: number;
+  edpi: number;
 }
 
 declare global {

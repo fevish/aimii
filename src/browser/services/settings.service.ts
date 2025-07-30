@@ -6,6 +6,7 @@ export interface CanonicalGameSettings {
   game: string;
   sensitivity: number;
   dpi: number;
+  edpi: number;
 }
 
 export interface HotkeyConfig {
@@ -65,6 +66,11 @@ export class SettingsService {
         const data = fs.readFileSync(this.settingsPath, 'utf8');
         const loadedSettings = JSON.parse(data);
 
+        // Migrate old canonical settings to include edpi
+        if (loadedSettings.canonical && !loadedSettings.canonical.edpi) {
+          loadedSettings.canonical.edpi = loadedSettings.canonical.sensitivity * loadedSettings.canonical.dpi;
+        }
+
         // Merge with defaults to ensure all properties exist
         return { ...this.getDefaultSettings(), ...loadedSettings };
       }
@@ -110,7 +116,8 @@ export class SettingsService {
   }
 
   public setCanonicalSettings(game: string, sensitivity: number, dpi: number): void {
-    this.settings.canonical = { game, sensitivity, dpi };
+    const edpi = sensitivity * dpi;
+    this.settings.canonical = { game, sensitivity, dpi, edpi };
     this.saveSettings();
   }
 
