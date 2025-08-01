@@ -134,12 +134,35 @@ label {
   margin-bottom: calc(0.5 * var(--spacing));
 }
 
+.select-wrapper {
+  position: relative;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: calc(0.50 * var(--spacing));
+    width: calc(2 * var(--spacing));
+    height: calc(2 * var(--spacing));
+    background-color: var(--primary);
+    -webkit-mask-image: url('./assets/svg/chevron-down.svg');
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+  }
+}
+
+select {
+  -webkit-appearance: none;
+}
+
 select,
 input {
   padding: calc(0.25 * var(--spacing));
   border: 1px solid var(--secondary);
   border-radius: var(--radius);
-  background: var(--dark);
+  background-color: var(--dark);
   color: var(--light);
   transition: all 0.2s ease;
   font-family: inherit;
@@ -149,12 +172,12 @@ select:focus,
 input:focus {
   outline: none;
   border-color: var(--primary);
-  background: var(--dark);
+  background-color: var(--dark);
   box-shadow: 0 0 0 1px var(--primary);
 }
 
 select option {
-  background: var(--dark);
+  background-color: var(--dark);
   color: var(--light);
 }
 
@@ -193,6 +216,31 @@ button:disabled {
   border-color: var(--secondary);
   color: var(--secondary);
 }
+
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--dark);
+}
+
+.btn-primary:hover {
+  background: var(--light-gray);
+  transform: scale(1.02);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--light);
+  border: 2px solid var(--secondary);
+}
+
+.btn-secondary:hover {
+  background: var(--secondary);
+  color: var(--dark);
+  transform: scale(1.02);
+}
+
+
 
 /* My Sens */
 .my-sens {

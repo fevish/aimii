@@ -520,6 +520,10 @@ export const MyMainWindow: React.FC = () => {
   const handleOnboardingBack = () => {
     if (onboardingStep > 1) {
       setOnboardingStep(onboardingStep - 1);
+    } else if (onboardingData.knowsEdpi !== null) {
+      // Go back to initial choice screen
+      setOnboardingData(prev => ({ ...prev, knowsEdpi: null }));
+      setOnboardingStep(1);
     }
   };
 
@@ -692,7 +696,7 @@ export const MyMainWindow: React.FC = () => {
   };
 
   return (
-    <div className="my-main-window">
+    <div className={`my-main-window ${showOnboarding ? 'onboarding' : ''}`}>
       <header className="app-header">
         <div className="app-logo">
           <h1>aimii</h1>
@@ -735,6 +739,7 @@ export const MyMainWindow: React.FC = () => {
                 onDataChange={handleOnboardingDataChange}
                 onNext={handleOnboardingNext}
                 onBack={handleOnboardingBack}
+                onRestart={handleRestartOnboarding}
               />
             ) : (
               <>

@@ -27,6 +27,7 @@ interface OnboardingProps {
   onDataChange: (field: string, value: string) => void;
   onNext: () => void;
   onBack: () => void;
+  onRestart: () => void;
 }
 
 export const Onboarding: React.FC<OnboardingProps> = ({
@@ -37,7 +38,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({
   message,
   onDataChange,
   onNext,
-  onBack
+  onBack,
+  onRestart
 }) => {
   // Calculate eDPI when sensitivity or DPI changes
   React.useEffect(() => {
@@ -52,6 +54,37 @@ export const Onboarding: React.FC<OnboardingProps> = ({
       }
     }
   }, [onboardingData.sensitivity, onboardingData.dpi, onboardingData.edpi, onDataChange]);
+
+  // Auto-focus text inputs when screens load
+  React.useEffect(() => {
+    if (onboardingData.knowsEdpi === true) {
+      // Focus eDPI input when user knows their eDPI
+      const edpiInput = document.getElementById('onboarding-edpi-input');
+      if (edpiInput) {
+        edpiInput.focus();
+      }
+    } else if (onboardingData.knowsEdpi === false) {
+      if (onboardingStep === 1) {
+        // Focus game select when user doesn't know eDPI and is on step 1
+        const gameSelect = document.getElementById('onboarding-game-select');
+        if (gameSelect) {
+          gameSelect.focus();
+        }
+      } else if (onboardingStep === 2) {
+        // Focus sensitivity input on step 2
+        const sensitivityInput = document.getElementById('onboarding-sensitivity-input');
+        if (sensitivityInput) {
+          sensitivityInput.focus();
+        }
+      } else if (onboardingStep === 3) {
+        // Focus DPI input on step 3
+        const dpiInput = document.getElementById('onboarding-dpi-input');
+        if (dpiInput) {
+          dpiInput.focus();
+        }
+      }
+    }
+  }, [onboardingData.knowsEdpi, onboardingStep]);
 
   const handleKnowsEdpiChoice = (knows: boolean) => {
     onDataChange('knowsEdpi', knows ? 'true' : 'false');
@@ -75,13 +108,13 @@ export const Onboarding: React.FC<OnboardingProps> = ({
 
             <div className="choice-buttons">
               <button
-                className="choice-btn choice-btn-yes"
+                className="btn btn-primary"
                 onClick={() => handleKnowsEdpiChoice(true)}
               >
                 Yes, I know my eDPI
               </button>
               <button
-                className="choice-btn choice-btn-no"
+                className="btn btn-secondary"
                 onClick={() => handleKnowsEdpiChoice(false)}
               >
                 No, help me set it!
@@ -122,19 +155,21 @@ export const Onboarding: React.FC<OnboardingProps> = ({
 
             <div className="form-group">
               <label htmlFor="onboarding-game-select">Select your most played game</label>
-              <select
-                id="onboarding-game-select"
-                value={onboardingData.selectedGame}
-                onChange={(e) => onDataChange('selectedGame', e.target.value)}
-                required
-              >
-                <option value="">Select a Game</option>
-                {games.map((game) => (
-                  <option key={game.game} value={game.game}>
-                    {game.game}
-                  </option>
-                ))}
-              </select>
+              <div className="select-wrapper">
+                <select
+                  id="onboarding-game-select"
+                  value={onboardingData.selectedGame}
+                  onChange={(e) => onDataChange('selectedGame', e.target.value)}
+                  required
+                >
+                  <option value="">Select a Game</option>
+                  {games.map((game) => (
+                    <option key={game.game} value={game.game}>
+                      {game.game}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         )}
@@ -187,40 +222,32 @@ export const Onboarding: React.FC<OnboardingProps> = ({
           </div>
         )}
 
-                        {onboardingData.knowsEdpi === true && (
+        {/* Show back button only after user has made initial choice */}
+        {onboardingData.knowsEdpi !== null && (
           <div className="onboarding-navigation">
             <button
-              onClick={onNext}
-              className="onboarding-btn onboarding-btn-next"
-              disabled={isLoading || !onboardingData.edpi}
+              className="onboarding-btn onboarding-btn-back"
+              onClick={onBack}
+              disabled={isLoading}
             >
-              {isLoading ? 'Saving...' : 'Continue'}
+              Back
             </button>
-          </div>
-        )}
 
-        {onboardingData.knowsEdpi === false && (
-          <div className="onboarding-navigation">
-            {onboardingStep > 1 && (
-              <button
-                onClick={onBack}
-                className="onboarding-btn onboarding-btn-back"
-                disabled={isLoading}
-              >
-                Back
-              </button>
-            )}
             <button
               onClick={onNext}
               className="onboarding-btn onboarding-btn-next"
               disabled={
                 isLoading ||
-                (onboardingStep === 1 && !onboardingData.selectedGame) ||
-                (onboardingStep === 2 && !onboardingData.sensitivity) ||
-                (onboardingStep === 3 && !onboardingData.dpi)
+                (onboardingData.knowsEdpi === true && !onboardingData.edpi) ||
+                (onboardingData.knowsEdpi === false && onboardingStep === 1 && !onboardingData.selectedGame) ||
+                (onboardingData.knowsEdpi === false && onboardingStep === 2 && !onboardingData.sensitivity) ||
+                (onboardingData.knowsEdpi === false && onboardingStep === 3 && !onboardingData.dpi)
               }
             >
-              {onboardingStep === 3 ? (isLoading ? 'Saving...' : 'Complete') : 'Next'}
+              {onboardingData.knowsEdpi === true
+                ? (isLoading ? 'Saving...' : 'Continue')
+                : (onboardingStep === 3 ? (isLoading ? 'Saving...' : 'Complete') : 'Next')
+              }
             </button>
           </div>
         )}

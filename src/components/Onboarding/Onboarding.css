@@ -1,4 +1,9 @@
 /* Onboarding Styles */
+
+.my-main-window.onboarding .app-content {
+  grid-template-columns: 1fr;
+}
+
 .onboarding-section {
   display: flex;
   justify-content: center;
@@ -11,7 +16,7 @@
   background: var(--dark);
   border-radius: var(--radius);
   padding: calc(2 * var(--spacing));
-  max-width: 500px;
+  max-width: 600px;
   width: 100%;
   text-align: center;
   border: 1px solid var(--secondary);
@@ -42,18 +47,9 @@
   color: var(--dark);
 }
 
-.onboarding-step {
-  margin-bottom: calc(2 * var(--spacing));
-}
-
 .onboarding-step h2 {
   margin-bottom: calc(0.5 * var(--spacing));
   color: var(--light);
-}
-
-.onboarding-step p {
-  margin-bottom: calc(1.5 * var(--spacing));
-  color: var(--secondary);
 }
 
 .onboarding-step .form-group {
@@ -72,7 +68,7 @@
 .onboarding-step .form-group input {
   width: 100%;
   padding: calc(0.75 * var(--spacing));
-  background: var(--dark);
+  background-color: var(--dark);
   border: 1px solid var(--secondary);
   border-radius: var(--radius);
   color: var(--light);
@@ -94,47 +90,26 @@
 
 .choice-buttons {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: calc(1 * var(--spacing));
   margin-top: calc(2 * var(--spacing));
+
+  .btn {
+    padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
+    border-radius: var(--radius);
+    border: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
 }
 
-.choice-btn {
-  padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
-  border-radius: var(--radius);
-  border: none;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.choice-btn-yes {
-  background: var(--primary);
-  color: var(--dark);
-}
-
-.choice-btn-yes:hover {
-  background: var(--light-gray);
-  transform: scale(1.02);
-}
-
-.choice-btn-no {
-  background: transparent;
-  color: var(--light);
-  border: 2px solid var(--secondary);
-}
-
-.choice-btn-no:hover {
-  background: var(--secondary);
-  color: var(--dark);
-  transform: scale(1.02);
-}
 
 .edpi-display {
   margin-top: calc(1 * var(--spacing));
