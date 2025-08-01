@@ -119,8 +119,14 @@ export const MyMainWindow: React.FC = () => {
     knowsEdpi: null
   });
 
-  // Modal state
-  const [showEdpiModal, setShowEdpiModal] = useState<boolean>(false);
+  // eDPI card state
+  const [isEdpiCardOpen, setIsEdpiCardOpen] = useState<boolean>(false);
+  const [showEdpiForm, setShowEdpiForm] = useState<boolean>(false);
+  const [edpiFormData, setEdpiFormData] = useState({
+    selectedGame: '',
+    sensitivity: '',
+    dpi: ''
+  });
 
   // cm/360° state
   const [cm360, setCm360] = useState<number | null>(null);
@@ -534,15 +540,36 @@ export const MyMainWindow: React.FC = () => {
     }));
   };
 
-  const handleOpenEdpiModal = () => {
-    setShowEdpiModal(true);
+  const handleOpenEdpiCard = () => {
+    setIsEdpiCardOpen(true);
+    setShowEdpiForm(false);
+    setEdpiFormData({
+      selectedGame: canonicalSettings?.game || '',
+      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
+      dpi: canonicalSettings?.dpi?.toString() || ''
+    });
   };
 
-  const handleCloseEdpiModal = () => {
-    setShowEdpiModal(false);
+  const handleCloseEdpiCard = () => {
+    setIsEdpiCardOpen(false);
+    setShowEdpiForm(false);
+    setEdpiFormData({ selectedGame: '', sensitivity: '', dpi: '' });
   };
 
-    const fetchCanonicalCm360 = async () => {
+  const handleShowEdpiForm = () => {
+    setShowEdpiForm(true);
+  };
+
+  const handleCancelEdpiForm = () => {
+    setShowEdpiForm(false);
+    setEdpiFormData({
+      selectedGame: canonicalSettings?.game || '',
+      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
+      dpi: canonicalSettings?.dpi?.toString() || ''
+    });
+  };
+
+  const fetchCanonicalCm360 = async () => {
     if (canonicalSettings && window.sensitivityConverter) {
       try {
         const cm360Value = await window.sensitivityConverter.getCanonicalCm360();
@@ -556,12 +583,12 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-  const handleResetSettingsFromModal = () => {
-    setShowEdpiModal(false);
+  const handleResetSettingsFromCard = () => {
+    setIsEdpiCardOpen(false);
     handleResetCanonicalSettings();
   };
 
-  const handleSaveSettingsFromModal = async (game: string, sensitivity: number, dpi: number): Promise<boolean> => {
+  const handleSaveSettingsFromCard = async (game: string, sensitivity: number, dpi: number): Promise<boolean> => {
     try {
       const success = await window.settings.setCanonicalSettings(game, sensitivity, dpi);
       if (success) {
@@ -569,6 +596,7 @@ export const MyMainWindow: React.FC = () => {
         await loadAllData();
         setMessage('Settings saved successfully!');
         setTimeout(() => setMessage(''), 3000);
+        setShowEdpiForm(false);
       } else {
         setMessage('Error saving settings');
         setTimeout(() => setMessage(''), 3000);
@@ -580,6 +608,17 @@ export const MyMainWindow: React.FC = () => {
       setTimeout(() => setMessage(''), 3000);
       return false;
     }
+  };
+
+  const handleSubmitEdpiForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!edpiFormData.selectedGame || !edpiFormData.sensitivity || !edpiFormData.dpi) return;
+
+    const success = await handleSaveSettingsFromCard(
+      edpiFormData.selectedGame,
+      parseFloat(edpiFormData.sensitivity),
+      parseInt(edpiFormData.dpi)
+    );
   };
 
   const handleRestartOnboarding = async () => {
@@ -726,7 +765,7 @@ export const MyMainWindow: React.FC = () => {
         </div>
       </header>
 
-      <main className="app-content">
+      <main className="app-content" onClick={isEdpiCardOpen ? handleCloseEdpiCard : undefined}>
         {activeTab === 'main' ? (
           <>
             {showOnboarding ? (
@@ -830,15 +869,136 @@ export const MyMainWindow: React.FC = () => {
                   </div>
 
                   <div className="cards-section">
-                    <button className="card card-primary edpi-card" onClick={handleOpenEdpiModal}>
+                    <div
+                      className={`card card-primary edpi-card ${isEdpiCardOpen ? 'card-open' : ''}`}
+                      onClick={isEdpiCardOpen ? handleCloseEdpiCard : handleOpenEdpiCard}
+                    >
                       <div className="card-header">
                         <h4 className="">eDPI</h4>
-                        <div className="btn-icon">
+                        <button className="btn-icon">
                           <SvgIcon name="arrow-north-east" />
-                        </div>
+                        </button>
                       </div>
+                      <div className="card user-settings" onClick={(e) => e.stopPropagation()}>
+                        {isEdpiCardOpen && (
+                          <>
+                            <div className="card-header">
+                              <h4>Your Preferences</h4>
+                              <button className="btn-icon btn-close" onClick={handleCloseEdpiCard}>
+                                <SvgIcon name="close" />
+                              </button>
+                            </div>
+                            <div className="edpi-card-content">
+                            {showEdpiForm ? (
+                              <form onSubmit={handleSubmitEdpiForm} className="edpi-form">
+                                <div className="form-group">
+                                  <label htmlFor="card-game-select">Preferred Game</label>
+                                  <select
+                                    id="card-game-select"
+                                    value={edpiFormData.selectedGame}
+                                    onChange={(e) => setEdpiFormData(prev => ({ ...prev, selectedGame: e.target.value }))}
+                                    required
+                                  >
+                                    <option value="">Select a Game</option>
+                                    {games.map((game) => (
+                                      <option key={game.game} value={game.game}>
+                                        {game.game}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                <div className="form-group">
+                                  <label htmlFor="card-sensitivity-input">In-Game Sensitivity</label>
+                                  <input
+                                    id="card-sensitivity-input"
+                                    type="text"
+                                    step="any"
+                                    min="0.001"
+                                    value={edpiFormData.sensitivity}
+                                    onChange={(e) => setEdpiFormData(prev => ({ ...prev, sensitivity: e.target.value }))}
+                                    placeholder="0.35"
+                                    required
+                                  />
+                                </div>
+
+                                <div className="form-group">
+                                  <label htmlFor="card-dpi-input">Mouse DPI</label>
+                                  <input
+                                    id="card-dpi-input"
+                                    type="text"
+                                    min="1"
+                                    value={edpiFormData.dpi}
+                                    onChange={(e) => setEdpiFormData(prev => ({ ...prev, dpi: e.target.value }))}
+                                    placeholder="800"
+                                    required
+                                  />
+                                </div>
+
+                                {message && (
+                                  <div className={`edpi-message ${message.includes('Error') ? 'error' : 'success'}`}>
+                                    {message}
+                                  </div>
+                                )}
+
+                                <div className="edpi-actions">
+                                  <button type="submit" disabled={isLoading} className="edpi-btn edpi-btn-save">
+                                    {isLoading ? 'Saving...' : 'Save'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleCancelEdpiForm}
+                                    disabled={isLoading}
+                                    className="edpi-btn edpi-btn-cancel"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </form>
+                            ) : canonicalSettings ? (
+                              <div className="current-settings">
+                                <div className="setting-row">
+                                  <span className="setting-label">Game:</span>
+                                  <span className="setting-value">{canonicalSettings.game}</span>
+                                </div>
+                                <div className="setting-row">
+                                  <span className="setting-label">Sensitivity:</span>
+                                  <span className="setting-value">{canonicalSettings.sensitivity}</span>
+                                </div>
+                                <div className="setting-row">
+                                  <span className="setting-label">DPI:</span>
+                                  <span className="setting-value">{canonicalSettings.dpi}</span>
+                                </div>
+                                <div className="setting-row">
+                                  <span className="setting-label">eDPI:</span>
+                                  <span className="setting-value">{canonicalSettings.edpi}</span>
+                                </div>
+                                <div className="setting-row">
+                                  <span className="setting-label">CM/360°:</span>
+                                  <span className="setting-value">{cm360 !== null ? `${cm360} cm` : 'Calculating...'}</span>
+                                </div>
+
+                                <div className="edpi-actions">
+                                  <button
+                                    className="edpi-btn edpi-btn-reset"
+                                    onClick={handleShowEdpiForm}
+                                  >
+                                    Change Settings
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="edpi-empty">
+                                <p>No settings configured</p>
+                              </div>
+                            )}
+                          </div>
+                            </>
+                          )}
+                        </div>
+
                       <p>{canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}</p>
-                    </button>
+                    </div>
                     <div className="card card-secondary">
                       <div className="card-header">
                         <h4 className="">Card 2</h4>
@@ -861,17 +1021,7 @@ export const MyMainWindow: React.FC = () => {
         )}
       </main>
 
-      <EdpiModal
-        isOpen={showEdpiModal}
-        canonicalSettings={canonicalSettings}
-        cm360={cm360}
-        games={games}
-        onClose={handleCloseEdpiModal}
-        onResetSettings={handleResetSettingsFromModal}
-        onSaveSettings={handleSaveSettingsFromModal}
-        isLoading={isLoading}
-        message={message}
-      />
+
     </div >
   );
 };

@@ -179,6 +179,7 @@ section {
 
 .main-section {
   justify-content: space-between;
+  position: relative;
 }
 
 /* Forms */
@@ -384,9 +385,44 @@ form {
     padding: var(--spacing);
     padding-left: calc(1.5 * var(--spacing));
     text-align: start;
+    transition: all 0.3s ease;
 
     &.card-secondary {
       background: #fff;
+    }
+
+    .user-settings {
+      position: absolute;
+      left: var(--spacing);
+      bottom: var(--spacing);
+      width: 0;
+      height: 0;
+      overflow: hidden;
+      transition: all 0.75s cubic-bezier(.19,1,.22,1);
+      border-radius: calc(6 * var(--radius));
+      z-index: 1;
+      .card-header {
+        margin-bottom: calc(2 * var(--spacing));
+        h4 {
+          font-size: 1.5em;
+        }
+      }
+      .current-settings {
+        font-size: 1.7em;
+      }
+    }
+    &:not(.card-open) {
+      .user-settings {
+        padding: 0;
+        border: none;
+      }
+    }
+
+    /* Expanded card styles */
+    &.card-open .user-settings {
+      background-color: var(--primary);
+      width: calc(100% - var(--spacing));
+      height: calc(100% - var(--spacing));
     }
 
     .card-header {
@@ -487,23 +523,18 @@ form {
   justify-content: space-between;
   align-items: center;
   padding: calc(0.25 * var(--spacing)) 0;
-  border-bottom: 1px solid var(--secondary);
-}
-
-.setting-row:last-child {
-  border-bottom: none;
 }
 
 .setting-label {
-  color: var(--secondary);
+  color: var(--dark);
 }
 
-.setting-row:first-child .setting-label {
-  color: var(--primary);
+.setting-row .setting-label {
+  color: var(--dark);
 }
 
 .setting-value {
-  color: var(--light);
+  color: var(--dark);
 }
 
 /* Sensitivity */

@@ -199,6 +199,10 @@ button {
   letter-spacing: normal;
   align-self: flex-start;
   font-family: inherit;
+  svg {
+    height: calc(1.5 * var(--spacing));
+    width: auto;
+  }
 }
 
 button:hover:not(:disabled) {
