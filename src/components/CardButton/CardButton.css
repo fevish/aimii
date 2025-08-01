@@ -35,6 +35,8 @@
     .card-content {
       cursor: default;
       position: absolute;
+      display: flex;
+      flex-flow: column;
       left: var(--spacing);
       bottom: var(--spacing);
       width: 0;
@@ -56,6 +58,20 @@
 
       .current-settings {
         font-size: 1.7em;
+        display: flex;
+        flex-flow: column;
+        height: 100%;
+        .card-actions {
+          margin-top: auto;
+          display: flex;
+          .btn {
+            padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
+            font-size: 0.85em;
+            margin: 0 auto;
+            font-weight: 500;
+            border-radius: calc(1 * var(--spacing));
+          }
+        }
       }
     }
 
@@ -111,12 +127,22 @@
       }
     }
 
-    p {
+    > p {
       margin-bottom: 0;
       margin-top: calc(2 * var(--spacing));
       color: var(--dark);
       font-weight: 800;
       font-size: 1.75em;
+    }
+
+    .settings-flow {
+      background: var(--dark);
+      border-radius: calc(3 * var(--radius));
+      p {
+        color: var(--primary)
+      }
+      .choice-buttons {
+      }
     }
   }
 }

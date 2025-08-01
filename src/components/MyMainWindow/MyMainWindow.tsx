@@ -130,6 +130,14 @@ export const MyMainWindow: React.FC = () => {
     sensitivity: '',
     dpi: ''
   });
+  const [userPreferencesSettingsData, setUserPreferencesSettingsData] = useState({
+    selectedGame: '',
+    sensitivity: '',
+    dpi: '',
+    edpi: '',
+    knowsEdpi: null as boolean | null
+  });
+  const [userPreferencesSettingsStep, setUserPreferencesSettingsStep] = useState(1);
 
   // cm/360° state
   const [cm360, setCm360] = useState<number | null>(null);
@@ -456,7 +464,8 @@ export const MyMainWindow: React.FC = () => {
       // Update canonical settings state
       const newSettings = { game: selectedGame, sensitivity: sensitivityNum, dpi: dpiNum, edpi: sensitivityNum * dpiNum };
       setCanonicalSettings(newSettings);
-      setMessage('Canonical settings saved successfully!');
+      setMessage('eDPI saved successfully!');
+      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error saving canonical settings:', error);
       setMessage('Error saving settings');
@@ -561,6 +570,15 @@ export const MyMainWindow: React.FC = () => {
 
   const handleShowUserPreferencesForm = () => {
     setShowUserPreferencesForm(true);
+    // Initialize settings data with current values
+    setUserPreferencesSettingsData({
+      selectedGame: canonicalSettings?.game || '',
+      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
+      dpi: canonicalSettings?.dpi?.toString() || '',
+      edpi: canonicalSettings?.edpi?.toString() || '',
+      knowsEdpi: null
+    });
+    setUserPreferencesSettingsStep(1);
   };
 
   const handleCancelUserPreferencesForm = () => {
@@ -570,6 +588,76 @@ export const MyMainWindow: React.FC = () => {
       sensitivity: canonicalSettings?.sensitivity?.toString() || '',
       dpi: canonicalSettings?.dpi?.toString() || ''
     });
+    // Reset settings flow data
+    setUserPreferencesSettingsData({
+      selectedGame: canonicalSettings?.game || '',
+      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
+      dpi: canonicalSettings?.dpi?.toString() || '',
+      edpi: canonicalSettings?.edpi?.toString() || '',
+      knowsEdpi: null
+    });
+    setUserPreferencesSettingsStep(1);
+  };
+
+  const handleUserPreferencesNext = async () => {
+    if (userPreferencesSettingsData.knowsEdpi === true && userPreferencesSettingsData.edpi) {
+      // User knows eDPI - save settings
+      const edpiNum = parseFloat(userPreferencesSettingsData.edpi);
+      if (isNaN(edpiNum) || edpiNum <= 0) {
+        setMessage('Please enter a valid eDPI value');
+        setTimeout(() => setMessage(''), 3000);
+        return;
+      }
+
+      // Calculate sensitivity and DPI from eDPI (assuming 800 DPI as default)
+      const defaultDpi = 800;
+      const calculatedSensitivity = (edpiNum / defaultDpi).toFixed(3);
+
+      const success = await handleSaveSettingsFromCard(
+        canonicalSettings?.game || 'Unknown',
+        parseFloat(calculatedSensitivity),
+        defaultDpi,
+        'eDPI Updated'
+      );
+
+      if (success) {
+        setShowUserPreferencesForm(false);
+        setUserPreferencesSettingsStep(1);
+      }
+    } else if (userPreferencesSettingsData.knowsEdpi === false) {
+      if (userPreferencesSettingsStep < 3) {
+        setUserPreferencesSettingsStep(userPreferencesSettingsStep + 1);
+      } else {
+        // Final step - save settings
+        if (!userPreferencesSettingsData.selectedGame || !userPreferencesSettingsData.sensitivity || !userPreferencesSettingsData.dpi) {
+          setMessage('Please fill in all fields');
+          setTimeout(() => setMessage(''), 3000);
+          return;
+        }
+
+        const success = await handleSaveSettingsFromCard(
+          userPreferencesSettingsData.selectedGame,
+          parseFloat(userPreferencesSettingsData.sensitivity),
+          parseInt(userPreferencesSettingsData.dpi),
+          'eDPI Updated'
+        );
+
+        if (success) {
+          setShowUserPreferencesForm(false);
+          setUserPreferencesSettingsStep(1);
+        }
+      }
+    }
+  };
+
+  const handleUserPreferencesBack = () => {
+    if (userPreferencesSettingsStep > 1) {
+      setUserPreferencesSettingsStep(userPreferencesSettingsStep - 1);
+    } else if (userPreferencesSettingsData.knowsEdpi !== null) {
+      // Go back to initial choice
+      setUserPreferencesSettingsData(prev => ({ ...prev, knowsEdpi: null }));
+      setUserPreferencesSettingsStep(1);
+    }
   };
 
   const handleOpenSecondaryCard = () => {
@@ -599,15 +687,18 @@ export const MyMainWindow: React.FC = () => {
     handleResetCanonicalSettings();
   };
 
-    const handleSaveSettingsFromCard = async (game: string, sensitivity: number, dpi: number): Promise<boolean> => {
+    const handleSaveSettingsFromCard = async (game: string, sensitivity: number, dpi: number, customMessage?: string): Promise<boolean> => {
     try {
       const success = await window.settings.setCanonicalSettings(game, sensitivity, dpi);
       if (success) {
         // Reload data to update the UI
         await loadAllData();
-        setMessage('Settings saved successfully!');
-        setTimeout(() => setMessage(''), 3000);
         setShowUserPreferencesForm(false);
+        // Show success message in the card content (not in SettingsFlow)
+        if (customMessage) {
+          setMessage(customMessage);
+          setTimeout(() => setMessage(''), 3000);
+        }
       } else {
         setMessage('Error saving settings');
         setTimeout(() => setMessage(''), 3000);
@@ -686,7 +777,8 @@ export const MyMainWindow: React.FC = () => {
         setShowOnboarding(false);
         setOnboardingStep(1);
         setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
-        setMessage('Settings saved successfully!');
+        setMessage('eDPI saved successfully!');
+        setTimeout(() => setMessage(''), 3000);
       } catch (error) {
         console.error('Error saving onboarding settings:', error);
         setMessage('Error saving settings');
@@ -736,7 +828,8 @@ export const MyMainWindow: React.FC = () => {
       setShowOnboarding(false);
       setOnboardingStep(1);
       setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '800', edpi: '', knowsEdpi: null });
-      setMessage('Settings saved successfully!');
+      setMessage('eDPI saved successfully!');
+      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error saving onboarding settings:', error);
       setMessage('Error saving settings');
@@ -895,15 +988,20 @@ export const MyMainWindow: React.FC = () => {
                         canonicalSettings={canonicalSettings}
                         cm360={cm360}
                         games={games}
-                        formData={userPreferencesFormData}
+                        settingsData={userPreferencesSettingsData}
+                        settingsStep={userPreferencesSettingsStep}
                         isLoading={isLoading}
                         message={message}
-                        onFormDataChange={(field, value) =>
-                          setUserPreferencesFormData(prev => ({ ...prev, [field]: value }))
+                        onDataChange={(field: string, value: string) =>
+                          setUserPreferencesSettingsData(prev => ({
+                            ...prev,
+                            [field]: field === 'knowsEdpi' ? value === 'true' : value
+                          }))
                         }
+                        onNext={handleUserPreferencesNext}
+                        onBack={handleUserPreferencesBack}
                         onShowForm={handleShowUserPreferencesForm}
                         onCancelForm={handleCancelUserPreferencesForm}
-                        onSubmitForm={handleSubmitUserPreferencesForm}
                       />
                     </CardButton>
 

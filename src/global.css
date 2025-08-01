@@ -197,7 +197,6 @@ button {
   transition: all 0.2s ease;
   text-transform: none;
   letter-spacing: normal;
-  align-self: flex-start;
   font-family: inherit;
   svg {
     height: calc(1.5 * var(--spacing));
@@ -221,10 +220,10 @@ button:disabled {
   color: var(--secondary);
 }
 
-
 .btn-primary {
   background: var(--primary);
   color: var(--dark);
+  border: 2px solid var(--primary);
 }
 
 .btn-primary:hover {
@@ -233,9 +232,9 @@ button:disabled {
 }
 
 .btn-secondary {
-  background: transparent;
+  background: var(--dark);
   color: var(--light);
-  border: 2px solid var(--secondary);
+  border: 2px solid var(--light);
 }
 
 .btn-secondary:hover {
@@ -243,8 +242,6 @@ button:disabled {
   color: var(--dark);
   transform: scale(1.02);
 }
-
-
 
 /* My Sens */
 .my-sens {

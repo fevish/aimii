@@ -1,4 +1,5 @@
 import React from 'react';
+import { SettingsFlow } from '../SettingsFlow/SettingsFlow';
 
 interface CanonicalSettings {
   game: string;
@@ -21,17 +22,21 @@ interface UserPreferencesContentProps {
   canonicalSettings: CanonicalSettings | null;
   cm360: number | null;
   games: GameData[];
-  formData: {
+  settingsData: {
     selectedGame: string;
     sensitivity: string;
     dpi: string;
+    edpi: string;
+    knowsEdpi: boolean | null;
   };
+  settingsStep: number;
   isLoading: boolean;
   message: string;
-  onFormDataChange: (field: string, value: string) => void;
+  onDataChange: (field: string, value: string) => void;
+  onNext: () => void;
+  onBack: () => void;
   onShowForm: () => void;
   onCancelForm: () => void;
-  onSubmitForm: (e: React.FormEvent) => void;
 }
 
 export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
@@ -39,84 +44,40 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
   canonicalSettings,
   cm360,
   games,
-  formData,
+  settingsData,
+  settingsStep,
   isLoading,
   message,
-  onFormDataChange,
+  onDataChange,
+  onNext,
+  onBack,
   onShowForm,
-  onCancelForm,
-  onSubmitForm
+  onCancelForm
 }) => {
     return (
     <>
       {showForm ? (
-        <form onSubmit={onSubmitForm} className="card-form">
-          <div className="form-group">
-            <label htmlFor="card-game-select">Preferred Game</label>
-            <select
-              id="card-game-select"
-              value={formData.selectedGame}
-              onChange={(e) => onFormDataChange('selectedGame', e.target.value)}
-              required
-            >
-              <option value="">Select a Game</option>
-              {games.map((game) => (
-                <option key={game.game} value={game.game}>
-                  {game.game}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="card-sensitivity-input">In-Game Sensitivity</label>
-            <input
-              id="card-sensitivity-input"
-              type="text"
-              step="any"
-              min="0.001"
-              value={formData.sensitivity}
-              onChange={(e) => onFormDataChange('sensitivity', e.target.value)}
-              placeholder="0.35"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="card-dpi-input">Mouse DPI</label>
-            <input
-              id="card-dpi-input"
-              type="text"
-              min="1"
-              value={formData.dpi}
-              onChange={(e) => onFormDataChange('dpi', e.target.value)}
-              placeholder="800"
-              required
-            />
-          </div>
-
+        <SettingsFlow
+          games={games}
+          settingsData={settingsData}
+          currentStep={settingsStep}
+          isLoading={isLoading}
+          message={message}
+          onDataChange={onDataChange}
+          onNext={onNext}
+          onBack={onBack}
+          onComplete={onNext}
+          showProgress={false}
+          inputPrefix="card"
+        />
+      ) : canonicalSettings ? (
+        <div className="current-settings">
           {message && (
             <div className={`card-message ${message.includes('Error') ? 'error' : 'success'}`}>
               {message}
             </div>
           )}
 
-          <div className="card-actions">
-            <button type="submit" disabled={isLoading} className="card-btn card-btn-save">
-              {isLoading ? 'Saving...' : 'Save'}
-            </button>
-            <button
-              type="button"
-              onClick={onCancelForm}
-              disabled={isLoading}
-              className="card-btn card-btn-cancel"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      ) : canonicalSettings ? (
-        <div className="current-settings">
           <div className="setting-row">
             <span className="setting-label">Game:</span>
             <span className="setting-value">{canonicalSettings.game}</span>
@@ -140,10 +101,10 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
 
           <div className="card-actions">
             <button
-              className="card-btn card-btn-reset"
+              className="btn btn-secondary"
               onClick={onShowForm}
             >
-              Change Settings
+              Change eDPI
             </button>
           </div>
         </div>
