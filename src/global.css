@@ -243,6 +243,12 @@ button:disabled {
   transform: scale(1.02);
 }
 
+.btn-outline {
+  background: transparent;
+  color: currentColor;
+  border: 1px solid currentColor;
+}
+
 /* My Sens */
 .my-sens {
   background-color: var(--primary);

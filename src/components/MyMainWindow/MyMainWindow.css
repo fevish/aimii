@@ -417,30 +417,6 @@ form {
   }
 }
 
-.settings-grid {
-  display: flex;
-  flex-direction: column;
-  gap: calc(0.25 * var(--spacing));
-}
-
-.setting-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: calc(0.25 * var(--spacing)) 0;
-}
-
-.setting-label {
-  color: var(--dark);
-}
-
-.setting-row .setting-label {
-  color: var(--dark);
-}
-
-.setting-value {
-  color: var(--dark);
-}
 
 /* Sensitivity */
 .sensitivity-suggestion {

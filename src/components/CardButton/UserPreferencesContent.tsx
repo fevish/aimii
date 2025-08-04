@@ -54,7 +54,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
   onShowForm,
   onCancelForm
 }) => {
-    return (
+  return (
     <>
       {showForm ? (
         <SettingsFlow
@@ -72,40 +72,40 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
         />
       ) : canonicalSettings ? (
         <div className="current-settings">
-          {message && (
-            <div className={`card-message ${message.includes('Error') ? 'error' : 'success'}`}>
-              {message}
+
+          <div className="main-setting">
+            <div className="setting-row">
+              <p>// {message ? (message.includes('Error') ? 'Error updating eDPI' : 'UPDATED eDPI') : 'YOUR SAVED eDPI'}
+                <button
+                  className="btn btn-secondary btn-outline"
+                  onClick={onShowForm}
+                >
+                  Change eDPI
+                </button>
+              </p>
+              {/* <span className="setting-label">eDPI</span> */}
+              <span className="setting-value">{canonicalSettings.edpi}
+              </span>
             </div>
-          )}
-
-          <div className="setting-row">
-            <span className="setting-label">Game:</span>
-            <span className="setting-value">{canonicalSettings.game}</span>
           </div>
-          <div className="setting-row">
-            <span className="setting-label">Sensitivity:</span>
-            <span className="setting-value">{canonicalSettings.sensitivity}</span>
-          </div>
-          <div className="setting-row">
-            <span className="setting-label">DPI:</span>
-            <span className="setting-value">{canonicalSettings.dpi}</span>
-          </div>
-          <div className="setting-row">
-            <span className="setting-label">eDPI:</span>
-            <span className="setting-value">{canonicalSettings.edpi}</span>
-          </div>
-          <div className="setting-row">
-            <span className="setting-label">CM/360°:</span>
-            <span className="setting-value">{cm360 !== null ? `${cm360} cm` : 'Calculating...'}</span>
-          </div>
-
-          <div className="card-actions">
-            <button
-              className="btn btn-secondary"
-              onClick={onShowForm}
-            >
-              Change eDPI
-            </button>
+          <p>// EQUIVALENT TO</p>
+          <div className="settings-grid">
+            <div className="setting-row">
+              <span className="setting-label">Game</span>
+              <span className="setting-value">{canonicalSettings.game}</span>
+            </div>
+            <div className="setting-row">
+              <span className="setting-label">Sensitivity</span>
+              <span className="setting-value">{canonicalSettings.sensitivity}</span>
+            </div>
+            <div className="setting-row">
+              <span className="setting-label">DPI</span>
+              <span className="setting-value">{canonicalSettings.dpi}</span>
+            </div>
+            <div className="setting-row">
+              <span className="setting-label">CM/360°</span>
+              <span className="setting-value">{cm360 !== null ? `${cm360} cm` : 'Calculating...'}</span>
+            </div>
           </div>
         </div>
       ) : (
