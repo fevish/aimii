@@ -50,9 +50,10 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
   showProgress = true,
   inputPrefix = ''
 }) => {
-  // Calculate eDPI when sensitivity or DPI changes
+  // Update the useEffect to only calculate when knowsEdpi === false
   React.useEffect(() => {
-    if (settingsData.sensitivity && settingsData.dpi) {
+    // Only auto-calculate eDPI when user doesn't know their eDPI
+    if (settingsData.knowsEdpi === false && settingsData.sensitivity && settingsData.dpi) {
       const sensitivity = parseFloat(settingsData.sensitivity);
       const dpi = parseInt(settingsData.dpi);
       if (!isNaN(sensitivity) && !isNaN(dpi) && sensitivity > 0 && dpi > 0) {
@@ -62,7 +63,7 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
         }
       }
     }
-  }, [settingsData.sensitivity, settingsData.dpi, settingsData.edpi, onDataChange]);
+  }, [settingsData.sensitivity, settingsData.dpi, settingsData.edpi, onDataChange, settingsData.knowsEdpi]);
 
   const handleKnowsEdpiChoice = (knows: boolean) => {
     onDataChange('knowsEdpi', knows ? 'true' : 'false');

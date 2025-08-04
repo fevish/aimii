@@ -752,7 +752,7 @@ export const MyMainWindow: React.FC = () => {
       }
 
       // For direct eDPI input, we need to set a default game and calculate sensitivity/DPI
-      const defaultGame = 'Counter-Strike 2';
+      const defaultGame = 'Valorant';
       const defaultDpi = 800;
       const calculatedSensitivity = edpiNum / defaultDpi;
 
