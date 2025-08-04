@@ -28,6 +28,7 @@ const Widget: React.FC = () => {
   const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
   const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
   const [hotkeyInfo, setHotkeyInfo] = useState<HotkeyInfo | null>(null);
+  const [cm360, setCm360] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrentGame = async () => {
@@ -108,8 +109,19 @@ const Widget: React.FC = () => {
     }
   };
 
+  const fetchCanonicalCm360 = async () => {
+    try {
+      const { ipcRenderer } = require('electron');
+      const cm360Value = await ipcRenderer.invoke('sensitivity-get-canonical-cm360');
+      setCm360(cm360Value);
+    } catch (error) {
+      console.error('Failed to fetch cm/360°:', error);
+      setCm360(null);
+    }
+  };
+
   const fetchData = async () => {
-    await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchHotkeyInfo(), fetchSuggestedSensitivity()]);
+    await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchHotkeyInfo(), fetchSuggestedSensitivity(), fetchCanonicalCm360()]);
   };
 
   // Check if current game matches canonical game
@@ -263,11 +275,13 @@ const Widget: React.FC = () => {
               <div className="sensitivity-suggestion">
                 <p>Sensitivity</p>
                 <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
+                {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
               </div>
             ) : suggestedSensitivity ? (
               <div className="sensitivity-suggestion">
                 <p>Converted Sensitivity</p>
                 <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+                {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
               </div>
             ) : !canonicalSettings ? (
               <div className="sensitivity-suggestion">

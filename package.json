@@ -19,7 +19,7 @@
     "build:prod": "webpack --mode=production",
     "build:ow-electron": "ow-electron-builder --publish=never",
     "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build:prod && ow-electron-builder --publish=never",
-    "watch": "npm run build && concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
+    "watch": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
     "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
     "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js",
     "start": "ow-electron ."
@@ -90,6 +90,7 @@
     "@overwolf/ow-electron": "^34.5.7",
     "@overwolf/ow-electron-builder": "latest",
     "@overwolf/ow-electron-packages-types": "^0.0.5",
+    "@svgr/webpack": "^8.1.0",
     "@types/jquery": "^3.5.16",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.11.18",

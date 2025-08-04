@@ -299,21 +299,27 @@ export class MainWindowController {
 
     // Canonical settings IPC handlers
     ipcMain.handle('settings-get-canonical', () => {
-      return this.settingsService.getCanonicalSettings();
+      const settings = this.settingsService.getCanonicalSettings();
+      // Ensure edpi is included for frontend compatibility
+      if (settings && !settings.edpi) {
+        settings.edpi = settings.sensitivity * settings.dpi;
+      }
+      return settings;
     });
 
     ipcMain.handle('settings-set-canonical', (event, game: string, sensitivity: number, dpi: number) => {
       this.settingsService.setCanonicalSettings(game, sensitivity, dpi);
-      this.printLogMessage(`Canonical settings saved: ${game}, sensitivity: ${sensitivity}, DPI: ${dpi}`);
+      const edpi = sensitivity * dpi;
+      this.printLogMessage(`Canonical settings saved: ${game}, sensitivity: ${sensitivity}, DPI: ${dpi}, eDPI: ${edpi}`);
 
       // Notify main window about settings change
       if (this.browserWindow && !this.browserWindow.isDestroyed()) {
         this.browserWindow.webContents.send('canonical-settings-changed');
       }
 
-      // Notify widget about settings change (pass the new settings)
+      // Notify widget about settings change (pass the new settings with edpi)
       if (this.widgetController?.overlayBrowserWindow) {
-        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', { game, sensitivity, dpi });
+        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', { game, sensitivity, dpi, edpi });
       }
 
       return true;
@@ -395,6 +401,10 @@ export class MainWindowController {
 
     ipcMain.handle('sensitivity-get-all-conversions', () => {
       return this.sensitivityConverterService.getAllConversionsFromCanonical();
+    });
+
+    ipcMain.handle('sensitivity-get-canonical-cm360', () => {
+      return this.sensitivityConverterService.getCanonicalCm360();
     });
 
     ipcMain.handle('sensitivity-convert', (event, fromGame: string, toGame: string, sensitivity: number, dpi: number) => {

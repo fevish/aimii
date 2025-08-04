@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 import Settings from '../Settings/Settings';
 import { SvgIcon } from '../SvgIcon/SvgIcon';
+import { Onboarding } from '../Onboarding';
+import { EdpiModal } from '../EdpiModal';
 import './MyMainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
@@ -19,6 +21,7 @@ interface CanonicalSettings {
   game: string;
   sensitivity: number;
   dpi: number;
+  edpi: number;
 }
 
 interface HotkeyInfo {
@@ -76,6 +79,7 @@ declare global {
       getSuggestedForCurrentGame: () => Promise<SensitivityConversion | null>;
       getAllConversions: () => Promise<SensitivityConversion[]>;
       convert: (fromGame: string, toGame: string, sensitivity: number, dpi: number) => Promise<SensitivityConversion | null>;
+      getCanonicalCm360: () => Promise<number | null>;
     };
     windowControls: {
       minimize: () => void;
@@ -103,6 +107,23 @@ export const MyMainWindow: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'main' | 'settings'>('main');
   const [currentGameIndex, setCurrentGameIndex] = useState<number>(0);
+
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
+  const [onboardingStep, setOnboardingStep] = useState<number>(1);
+  const [onboardingData, setOnboardingData] = useState({
+    selectedGame: '',
+    sensitivity: '',
+    dpi: '',
+    edpi: '',
+    knowsEdpi: null
+  });
+
+  // Modal state
+  const [showEdpiModal, setShowEdpiModal] = useState<boolean>(false);
+
+  // cm/360° state
+  const [cm360, setCm360] = useState<number | null>(null);
 
   const handleMinimize = () => {
     window.windowControls.minimize();
@@ -141,18 +162,31 @@ export const MyMainWindow: React.FC = () => {
   const loadAllData = React.useCallback(async () => {
     try {
       // Load all data in parallel for better performance
-      const [gamesData, settings, gameInfo, allGames, hotkey] = await Promise.all([
+      const [gamesData, settings, gameInfo, allGames, hotkey, hasSettings] = await Promise.all([
         window.games.getEnabledGames(), // Changed from getAllGames() to getEnabledGames()
         window.settings.getCanonicalSettings(),
         window.currentGame.getCurrentGameInfo(),
         window.currentGame.getAllDetectedGames(),
-        window.widget.getHotkeyInfo()
+        window.widget.getHotkeyInfo(),
+        window.settings.hasCanonicalSettings()
       ]);
 
       setGames(gamesData);
-      setCanonicalSettings(settings);
+      // Ensure settings have edpi for compatibility
+      if (settings && typeof settings === 'object' && 'sensitivity' in settings && 'dpi' in settings && !('edpi' in settings)) {
+        (settings as any).edpi = (settings as any).sensitivity * (settings as any).dpi;
+      }
+      setCanonicalSettings(settings as CanonicalSettings);
       setHotkeyInfo(hotkey);
       setAllDetectedGames(allGames);
+
+      // Check if user has canonical settings, if not show onboarding
+      if (!hasSettings) {
+        setShowOnboarding(true);
+        setOnboardingStep(1);
+        // Reset onboarding data to ensure clean state
+        setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
+      }
 
       // Only update current game if it actually changed
       setCurrentGame(prevGame => {
@@ -243,11 +277,15 @@ export const MyMainWindow: React.FC = () => {
       try {
         const settings = await window.settings.getCanonicalSettings();
         setCanonicalSettings(prev => {
-          if (!prev || !settings) return settings;
+          if (!prev || !settings) return settings as CanonicalSettings;
           if (prev.game === settings.game && prev.sensitivity === settings.sensitivity && prev.dpi === settings.dpi) {
             return prev; // No change
           }
-          return settings;
+          // Ensure settings have edpi for compatibility
+          if (settings && typeof settings === 'object' && 'sensitivity' in settings && 'dpi' in settings && !('edpi' in settings)) {
+            (settings as any).edpi = (settings as any).sensitivity * (settings as any).dpi;
+          }
+          return settings as CanonicalSettings;
         });
       } catch (error) {
         console.error('Error checking settings:', error);
@@ -357,6 +395,11 @@ export const MyMainWindow: React.FC = () => {
     }
   }, [canonicalSettings, currentGame, updateSensitivitySuggestion]);
 
+  // Calculate cm/360° when canonical settings change
+  useEffect(() => {
+    fetchCanonicalCm360();
+  }, [canonicalSettings]);
+
   // Update currentGameIndex when currentGame changes
   useEffect(() => {
     if (currentGame && allDetectedGames.length > 0) {
@@ -402,7 +445,7 @@ export const MyMainWindow: React.FC = () => {
       await window.settings.setCanonicalSettings(selectedGame, sensitivityNum, dpiNum);
 
       // Update canonical settings state
-      const newSettings = { game: selectedGame, sensitivity: sensitivityNum, dpi: dpiNum };
+      const newSettings = { game: selectedGame, sensitivity: sensitivityNum, dpi: dpiNum, edpi: sensitivityNum * dpiNum };
       setCanonicalSettings(newSettings);
       setMessage('Canonical settings saved successfully!');
     } catch (error) {
@@ -455,8 +498,205 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
+  // Onboarding handlers
+  const handleOnboardingNext = () => {
+    // If user knows their eDPI and has entered it, complete onboarding
+    if (onboardingData.knowsEdpi === true && onboardingData.edpi) {
+      handleCompleteOnboarding();
+      return;
+    }
+
+    // If user doesn't know their eDPI, go through step-by-step process
+    if (onboardingData.knowsEdpi === false) {
+      if (onboardingStep < 3) {
+        setOnboardingStep(onboardingStep + 1);
+      } else {
+        // Complete onboarding
+        handleCompleteOnboarding();
+      }
+    }
+  };
+
+  const handleOnboardingBack = () => {
+    if (onboardingStep > 1) {
+      setOnboardingStep(onboardingStep - 1);
+    } else if (onboardingData.knowsEdpi !== null) {
+      // Go back to initial choice screen
+      setOnboardingData(prev => ({ ...prev, knowsEdpi: null }));
+      setOnboardingStep(1);
+    }
+  };
+
+  const handleOnboardingDataChange = (field: string, value: string) => {
+    setOnboardingData(prev => ({
+      ...prev,
+      [field]: field === 'knowsEdpi' ? value === 'true' : value
+    }));
+  };
+
+  const handleOpenEdpiModal = () => {
+    setShowEdpiModal(true);
+  };
+
+  const handleCloseEdpiModal = () => {
+    setShowEdpiModal(false);
+  };
+
+    const fetchCanonicalCm360 = async () => {
+    if (canonicalSettings && window.sensitivityConverter) {
+      try {
+        const cm360Value = await window.sensitivityConverter.getCanonicalCm360();
+        setCm360(cm360Value);
+      } catch (error) {
+        console.error('Error fetching cm/360°:', error);
+        setCm360(null);
+      }
+    } else {
+      setCm360(null);
+    }
+  };
+
+  const handleResetSettingsFromModal = () => {
+    setShowEdpiModal(false);
+    handleResetCanonicalSettings();
+  };
+
+  const handleSaveSettingsFromModal = async (game: string, sensitivity: number, dpi: number): Promise<boolean> => {
+    try {
+      const success = await window.settings.setCanonicalSettings(game, sensitivity, dpi);
+      if (success) {
+        // Reload data to update the UI
+        await loadAllData();
+        setMessage('Settings saved successfully!');
+        setTimeout(() => setMessage(''), 3000);
+      } else {
+        setMessage('Error saving settings');
+        setTimeout(() => setMessage(''), 3000);
+      }
+      return success;
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      setMessage('Error saving settings');
+      setTimeout(() => setMessage(''), 3000);
+      return false;
+    }
+  };
+
+  const handleRestartOnboarding = async () => {
+    try {
+      // Clear all canonical settings
+      await window.settings.clearCanonicalSettings();
+
+      // Reset all state
+      setCanonicalSettings(null);
+      setCm360(null);
+      setSuggestedSensitivity(null);
+      setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
+      setOnboardingStep(1);
+      setShowOnboarding(true);
+
+      console.log('Onboarding restarted - all settings cleared');
+    } catch (error) {
+      console.error('Error restarting onboarding:', error);
+    }
+  };
+
+  const handleCompleteOnboarding = async () => {
+    // Check if user provided eDPI directly
+    if (onboardingData.knowsEdpi === true && onboardingData.edpi) {
+      const edpiNum = parseFloat(onboardingData.edpi);
+      if (isNaN(edpiNum) || edpiNum <= 0) {
+        setMessage('Please enter a valid eDPI value');
+        return;
+      }
+
+      // For direct eDPI input, we need to set a default game and calculate sensitivity/DPI
+      const defaultGame = 'Counter-Strike 2';
+      const defaultDpi = 800;
+      const calculatedSensitivity = edpiNum / defaultDpi;
+
+      setIsLoading(true);
+      try {
+        await window.settings.setCanonicalSettings(
+          defaultGame,
+          calculatedSensitivity,
+          defaultDpi
+        );
+
+        // Update canonical settings state
+        const newSettings = {
+          game: defaultGame,
+          sensitivity: calculatedSensitivity,
+          dpi: defaultDpi,
+          edpi: edpiNum
+        };
+        setCanonicalSettings(newSettings);
+
+        // Hide onboarding and show main screen
+        setShowOnboarding(false);
+        setOnboardingStep(1);
+        setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
+        setMessage('Settings saved successfully!');
+      } catch (error) {
+        console.error('Error saving onboarding settings:', error);
+        setMessage('Error saving settings');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Check if user went through the step-by-step process
+    if (!onboardingData.sensitivity || !onboardingData.dpi) {
+      setMessage('Please fill in all required fields');
+      return;
+    }
+
+    const sensitivityNum = parseFloat(onboardingData.sensitivity);
+    const dpiNum = parseInt(onboardingData.dpi);
+
+    if (isNaN(sensitivityNum) || sensitivityNum <= 0) {
+      setMessage('Please enter a valid sensitivity value');
+      return;
+    }
+
+    if (isNaN(dpiNum) || dpiNum <= 0) {
+      setMessage('Please enter a valid DPI value');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await window.settings.setCanonicalSettings(
+        onboardingData.selectedGame || 'Counter-Strike 2',
+        sensitivityNum,
+        dpiNum
+      );
+
+      // Update canonical settings state
+      const newSettings = {
+        game: onboardingData.selectedGame || 'Counter-Strike 2',
+        sensitivity: sensitivityNum,
+        dpi: dpiNum,
+        edpi: sensitivityNum * dpiNum
+      };
+      setCanonicalSettings(newSettings);
+
+      // Hide onboarding and show main screen
+      setShowOnboarding(false);
+      setOnboardingStep(1);
+      setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '800', edpi: '', knowsEdpi: null });
+      setMessage('Settings saved successfully!');
+    } catch (error) {
+      console.error('Error saving onboarding settings:', error);
+      setMessage('Error saving settings');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="my-main-window">
+    <div className={`my-main-window ${showOnboarding ? 'onboarding' : ''}`}>
       <header className="app-header">
         <div className="app-logo">
           <h1>aimii</h1>
@@ -477,6 +717,7 @@ export const MyMainWindow: React.FC = () => {
               Settings
             </button>
             <button className="tab-button btn-icon discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>Discord</button>
+            <button className="tab-button" onClick={handleRestartOnboarding} title="Restart Onboarding (Clear Settings)">Restart</button>
           </nav>
           <div className="window-controls">
             <button onClick={handleMinimize} className="window-control-btn minimize-btn">_</button>
@@ -488,229 +729,149 @@ export const MyMainWindow: React.FC = () => {
       <main className="app-content">
         {activeTab === 'main' ? (
           <>
-            <section className="main-section">
-              {canonicalSettings && (
-                <div>
-                  <h2>Your saved sensitivity</h2>
-                  <p>These settings will be used as your canonical sensitivity for conversions.
-                    <br />
-                    Now, when you launch a different game, aimii will use these settings to convert your sensitivity to the game you're playing.
-                  </p>
+            {showOnboarding ? (
+              <Onboarding
+                games={games}
+                onboardingData={onboardingData}
+                onboardingStep={onboardingStep}
+                isLoading={isLoading}
+                message={message}
+                onDataChange={handleOnboardingDataChange}
+                onNext={handleOnboardingNext}
+                onBack={handleOnboardingBack}
+                onRestart={handleRestartOnboarding}
+              />
+            ) : (
+              <>
+                <section className="main-section">
+                  <div>
+                    <h2>Your ready to go!</h2>
+                    <p>Your eDPI is currently set to {canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}.</p>
+                    <p>CM/360 is currently set to {cm360 !== null ? `${cm360} cm` : 'Calculating...'}.</p>
+                    <p>Launch a game to get started and we'll recommend a sensitivity for you based of your eDPI.</p>
+                  </div>
 
-                  <div className="canon-settings-container">
-                    <div className="canonical-settings">
-                      <h3><strong>Game:</strong> {canonicalSettings.game}</h3>
-                      <h3><strong>Sensitivity:</strong> {canonicalSettings.sensitivity}</h3>
-                      <h3><strong>DPI:</strong> {canonicalSettings.dpi}</h3>
-                      <button onClick={handleResetCanonicalSettings} className="reset-button">Change</button>
-                    </div>
-
-
-                    <div className="current-game-section">
-                      <div className="current-game-info">
-                        {allDetectedGames.length > 1 ? (
-                          <div className="multiple-games-detected">
-                            {currentGame && (
-                              <div className="selected-game-info">
-                                <div className="game-navigation">
-                                  <div className="game-display">
-                                    <p>Games Detected: <b className="game-name">{currentGame?.name}</b></p>
-                                  </div>
-                                  <div className="multi-games-nav">
-                                    <button
-                                      className="nav-arrow prev-arrow"
-                                      onClick={handlePreviousGame}
-                                      disabled={allDetectedGames.length <= 1}
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
-                                    </button>
-                                    <button
-                                      className="nav-arrow next-arrow"
-                                      onClick={handleNextGame}
-                                      disabled={allDetectedGames.length <= 1}
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
-                                    </button>
-                                  </div>
+                  {/* Game Detection Section */}
+                  <div className="current-game-section">
+                    <div className="current-game-info">
+                      {allDetectedGames.length > 1 ? (
+                        <div className="multiple-games-detected">
+                          {currentGame && (
+                            <div className="selected-game-info">
+                              <div className="game-navigation">
+                                <div className="game-display">
+                                  <p>Games Detected: <b className="game-name">{currentGame?.name}</b></p>
                                 </div>
-                                <div className="sensitivity-suggestion">
-                                  {suggestedSensitivity ? (
-                                    <>
-                                      <p>
-                                        Converted Sensitivity
-                                      </p>
-                                      <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <p>
-                                        Sensitivity
-                                      </p>
-                                      <p className="suggested-value">{canonicalSettings.sensitivity}</p>
-                                    </>
-                                  )}
+                                <div className="multi-games-nav">
+                                  <button
+                                    className="nav-arrow prev-arrow"
+                                    onClick={handlePreviousGame}
+                                    disabled={allDetectedGames.length <= 1}
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
+                                  </button>
+                                  <button
+                                    className="nav-arrow next-arrow"
+                                    onClick={handleNextGame}
+                                    disabled={allDetectedGames.length <= 1}
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
+                                  </button>
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        ) : allDetectedGames.length === 1 && currentGame ? (
-                          <div className="game-detected">
-
-                            <div className="game-display">
-                              <p>Game Detected: <b>{currentGame?.name}</b></p>
+                              <div className="sensitivity-suggestion">
+                                {suggestedSensitivity ? (
+                                  <>
+                                    <p>
+                                      Converted Sensitivity
+                                    </p>
+                                    <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p>
+                                      Sensitivity
+                                    </p>
+                                    <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            {suggestedSensitivity ? (
-                              <div className="sensitivity-suggestion">
-                                <p>
-                                  Converted Sensitivity
-                                </p>
-                                <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                              </div>
-                            ) : (
-                              <div className="sensitivity-suggestion">
-                                <p>
-                                  Sensitivity
-                                </p>
-                                <p className="suggested-value">{canonicalSettings.sensitivity}</p>
-                              </div>
-                            )}
+                          )}
+                        </div>
+                      ) : allDetectedGames.length === 1 && currentGame ? (
+                        <div className="game-detected">
+                          <div className="game-display">
+                            <p>Game Detected: <b>{currentGame?.name}</b></p>
                           </div>
-                        ) : (
-                          <div className="no-game">
-                            <p>No supported game detected</p>
-                            <p className="mt-0 mb-0">Launch a supported game to see sensitivity conversion options</p>
-                          </div>
-                        )}
-                      </div>
+                          {suggestedSensitivity ? (
+                            <div className="sensitivity-suggestion">
+                              <p>
+                                Converted Sensitivity
+                              </p>
+                              <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+                            </div>
+                          ) : (
+                            <div className="sensitivity-suggestion">
+                              <p>
+                                Sensitivity
+                              </p>
+                              <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="no-game">
+                          <p>No supported game detected</p>
+                          <p className="mt-0 mb-0">Launch a supported game to see sensitivity conversion options</p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              )}
 
-              {!canonicalSettings && (
-                <div>
-                  <h2>Set your sensitivity baseline</h2>
-                  <p>To get started, set your preferred game, sensitivity, and DPI as your baseline for conversions.</p>
-
-                  <form onSubmit={handleSaveCanonicalSettings} className="canonical-form">
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label htmlFor="game-select">1. Preferred Game</label>
-                        <select
-                          id="game-select"
-                          value={selectedGame}
-                          onChange={(e) => setSelectedGame(e.target.value)}
-                          required
-                        >
-                          <option value="">Select a Game</option>
-                          {games.map((game) => (
-                            <option key={game.game} value={game.game}>
-                              {game.game}
-                            </option>
-                          ))}
-                        </select>
+                  <div className="cards-section">
+                    <button className="card card-primary edpi-card" onClick={handleOpenEdpiModal}>
+                      <div className="card-header">
+                        <h4 className="">eDPI</h4>
+                        <div className="btn-icon">
+                          <SvgIcon name="arrow-north-east" />
+                        </div>
                       </div>
-
-                      <div className="form-group">
-                        <label htmlFor="sensitivity-input">2. In-Game Sensitivity</label>
-                        <input
-                          id="sensitivity-input"
-                          type="number"
-                          step="any"
-                          min="0.001"
-                          value={sensitivity}
-                          onChange={(e) => setSensitivity(e.target.value)}
-                          placeholder="0.35"
-                          required
-                        />
+                      <p>{canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}</p>
+                    </button>
+                    <div className="card card-secondary">
+                      <div className="card-header">
+                        <h4 className="">Card 2</h4>
+                        <div className="btn-icon btn-icon-secondary">
+                          <SvgIcon name="arrow-north-east" />
+                        </div>
                       </div>
-
-                      <div className="form-group">
-                        <label htmlFor="dpi-input">3.Mouse DPI</label>
-                        <input
-                          id="dpi-input"
-                          type="number"
-                          min="1"
-                          value={dpi}
-                          onChange={(e) => setDpi(e.target.value)}
-                          placeholder="800"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-buttons">
-                      <button type="submit" disabled={isLoading} className="save-button">
-                        {isLoading ? 'Saving...' : 'Save'}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isLoading || !canonicalSettings}
-                        onClick={handleResetCanonicalSettings}
-                        className="reset-button"
-                      >
-                        {isLoading ? 'Resetting...' : 'Reset'}
-                      </button>
-                    </div>
-                  </form>
-
-                  {message && (
-                    <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
-                      {message}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="cards-section">
-                <div className="card card-primary">
-                  <div className="card-header">
-                    <h4 className="">My eDPI</h4>
-                    <div className="btn-icon">
-                      <SvgIcon name="arrow-north-east" />
+                      <p>Content</p>
                     </div>
                   </div>
-                  <p>Content</p>
-                </div>
-                <div className="card card-secondary">
-                  <div className="card-header">
-                    <h4 className="">Card 2</h4>
-                    <div className="btn-icon">
-                      <SvgIcon name="arrow-north-east" />
-                    </div>
-                  </div>
-                  <p>Content</p>
-                </div>
-              </div>
+                </section>
 
-
-              {/* <div className="notes-section">
-                <h4>Early Access Notes</h4>
-                <ul>
-                  <li>
-                    <p>
-                      <b>In-game widget will not work in all games.</b>
-                      <br />
-                      Some of our supported games eg. Counter-Strike 2 do not support in-game overlays.
-                    </p>
-                  </li>
-                  <li>
-                    <p>
-                      This app is very early access, features may change or break. Please report bugs to
-                      &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
-                    </p>
-                  </li>
-                </ul>
-              </div> */}
-            </section>
-
-            <section className="ad-section">
-            </section>
+                <section className="ad-section">
+                </section>
+              </>
+            )}
           </>
         ) : (
           <Settings />
         )}
       </main>
+
+      <EdpiModal
+        isOpen={showEdpiModal}
+        canonicalSettings={canonicalSettings}
+        cm360={cm360}
+        games={games}
+        onClose={handleCloseEdpiModal}
+        onResetSettings={handleResetSettingsFromModal}
+        onSaveSettings={handleSaveSettingsFromModal}
+        isLoading={isLoading}
+        message={message}
+      />
     </div >
   );
 };

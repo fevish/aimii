@@ -35,10 +35,10 @@ module.exports = {
       {
         test: /\.svg$/,
         oneOf: [
-          // For React components (SvgIcon) - treat as raw text
+          // For React components (SvgIcon) - convert to React components using SVGR
           {
             resourceQuery: /react/,
-            type: 'asset/source'
+            use: ['@svgr/webpack']
           },
           // For CSS and other uses - treat as files
           {
