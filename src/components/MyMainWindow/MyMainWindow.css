@@ -179,6 +179,7 @@ section {
 
 .main-section {
   justify-content: space-between;
+  position: relative;
 }
 
 /* Forms */
@@ -369,66 +370,6 @@ form {
   }
 }
 
-/* Cards Section */
-.cards-section {
-  display: grid;
-  grid-template-columns: 50% 50%;
-  max-width: 400px;
-  gap: var(--spacing);
-
-  .card {
-    color: var(--dark);
-    background: var(--primary);
-    border: 1px solid var(--gray);
-    border-radius: calc(6 * var(--radius));
-    padding: var(--spacing);
-    padding-left: calc(1.5 * var(--spacing));
-    text-align: start;
-
-    &.card-secondary {
-      background: #fff;
-    }
-
-    .card-header {
-      display: flex;
-      flex-flow: row;
-      justify-content: space-between;
-      gap: calc(1.5 * var(--spacing));
-      h4 {
-        margin-top: calc(0.5 * var(--spacing));
-        text-transform: none;
-      }
-
-      .btn-icon {
-        border-radius: 100%;
-        padding: calc(1 * var(--spacing));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--dark);
-        color: var(--light);
-        svg {
-          height: 18px;
-          width: 18px;
-        }
-
-        &.btn-icon-secondary {
-          background: #fff;
-          color: var(--dark);
-          border: 1px solid #999;
-        }
-      }
-    }
-    p {
-      margin-bottom: 0;
-      margin-top: calc(2 * var(--spacing));
-      color: var(--dark);
-      font-weight: 800;
-      font-size: 1.75em;
-    }
-  }
-}
-
 /* Ad / Debug Section */
 .ad-section {
   border: 1px solid var(--gray);
@@ -476,35 +417,6 @@ form {
   }
 }
 
-.settings-grid {
-  display: flex;
-  flex-direction: column;
-  gap: calc(0.25 * var(--spacing));
-}
-
-.setting-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: calc(0.25 * var(--spacing)) 0;
-  border-bottom: 1px solid var(--secondary);
-}
-
-.setting-row:last-child {
-  border-bottom: none;
-}
-
-.setting-label {
-  color: var(--secondary);
-}
-
-.setting-row:first-child .setting-label {
-  color: var(--primary);
-}
-
-.setting-value {
-  color: var(--light);
-}
 
 /* Sensitivity */
 .sensitivity-suggestion {

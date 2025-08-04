@@ -1,0 +1,180 @@
+.settings-flow {
+  width: 100%;
+  max-width: 600px;
+  height: 100%;
+  margin: 0 auto;
+  padding: calc(2 * var(--spacing));
+  display: flex;
+  flex-flow: column;
+}
+
+.settings-progress {
+  display: flex;
+  justify-content: center;
+  gap: calc(2 * var(--spacing));
+  margin-bottom: calc(3 * var(--spacing));
+}
+
+.progress-step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--dark);
+  color: var(--light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 2px solid var(--primary);
+  transition: all 0.3s ease;
+}
+
+.progress-step.active {
+  background: var(--primary);
+  color: var(--dark);
+}
+
+.settings-step {
+  text-align: center;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+.settings-step h2 {
+  margin-bottom: var(--spacing);
+  color: var(--light);
+}
+
+.settings-step p {
+  margin-bottom: calc(2 * var(--spacing));
+  color: var(--light);
+  opacity: 0.8;
+}
+
+.choice-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: calc(1 * var(--spacing));
+  margin-top: calc(2 * var(--spacing));
+  height: 100%;
+
+  .btn {
+    height: 150px;
+    padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
+    border-radius: calc(3.5 * var(--radius));
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+.form-group {
+  text-align: left;
+  margin: calc(2 * var(--spacing)) 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--spacing);
+  color: var(--light);
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: var(--spacing);
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  background: var(--dark);
+  color: var(--light);
+  font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--light);
+}
+
+.form-group small {
+  display: block;
+  margin-top: calc(0.5 * var(--spacing));
+  color: var(--light);
+  opacity: 0.6;
+  font-size: 0.875rem;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.settings-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing);
+  margin-top: calc(2 * var(--spacing));
+}
+
+.settings-btn {
+  padding: var(--spacing) calc(2 * var(--spacing));
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 100px;
+}
+
+.settings-btn-back {
+  background: var(--dark);
+  color: var(--light);
+  border: 1px solid var(--light);
+}
+
+.settings-btn-back:hover:not(:disabled) {
+  background: var(--light);
+  color: var(--dark);
+}
+
+.settings-btn-next {
+  background: var(--primary);
+  color: var(--dark);
+}
+
+.settings-btn-next:hover:not(:disabled) {
+  background: var(--primary);
+  opacity: 0.9;
+}
+
+.settings-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.message {
+  margin-top: calc(2 * var(--spacing));
+  padding: var(--spacing);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.message.success {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.message.error {
+  background: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+  border: 1px solid #f44336;
+}

@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import Settings from '../Settings/Settings';
 import { SvgIcon } from '../SvgIcon/SvgIcon';
 import { Onboarding } from '../Onboarding';
-import { EdpiModal } from '../EdpiModal';
+import { CardButton } from '../CardButton/CardButton';
+import { UserPreferencesContent } from '../CardButton/UserPreferencesContent';
+import { SecondaryCardContent } from '../CardButton/SecondaryCardContent';
 import './MyMainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
@@ -119,8 +121,23 @@ export const MyMainWindow: React.FC = () => {
     knowsEdpi: null
   });
 
-  // Modal state
-  const [showEdpiModal, setShowEdpiModal] = useState<boolean>(false);
+  // Card state
+  const [isUserPreferencesCardOpen, setIsUserPreferencesCardOpen] = useState<boolean>(false);
+  const [isSecondaryCardOpen, setIsSecondaryCardOpen] = useState<boolean>(false);
+  const [showUserPreferencesForm, setShowUserPreferencesForm] = useState<boolean>(false);
+  const [userPreferencesFormData, setUserPreferencesFormData] = useState({
+    selectedGame: '',
+    sensitivity: '',
+    dpi: ''
+  });
+  const [userPreferencesSettingsData, setUserPreferencesSettingsData] = useState({
+    selectedGame: '',
+    sensitivity: '',
+    dpi: '',
+    edpi: '',
+    knowsEdpi: null as boolean | null
+  });
+  const [userPreferencesSettingsStep, setUserPreferencesSettingsStep] = useState(1);
 
   // cm/360° state
   const [cm360, setCm360] = useState<number | null>(null);
@@ -447,7 +464,8 @@ export const MyMainWindow: React.FC = () => {
       // Update canonical settings state
       const newSettings = { game: selectedGame, sensitivity: sensitivityNum, dpi: dpiNum, edpi: sensitivityNum * dpiNum };
       setCanonicalSettings(newSettings);
-      setMessage('Canonical settings saved successfully!');
+      setMessage('eDPI saved successfully!');
+      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error saving canonical settings:', error);
       setMessage('Error saving settings');
@@ -534,15 +552,123 @@ export const MyMainWindow: React.FC = () => {
     }));
   };
 
-  const handleOpenEdpiModal = () => {
-    setShowEdpiModal(true);
+  const handleOpenUserPreferencesCard = () => {
+    setIsUserPreferencesCardOpen(true);
+    setShowUserPreferencesForm(false);
+    setUserPreferencesFormData({
+      selectedGame: canonicalSettings?.game || '',
+      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
+      dpi: canonicalSettings?.dpi?.toString() || ''
+    });
   };
 
-  const handleCloseEdpiModal = () => {
-    setShowEdpiModal(false);
+  const handleCloseUserPreferencesCard = () => {
+    setIsUserPreferencesCardOpen(false);
+    setShowUserPreferencesForm(false);
+    setUserPreferencesFormData({ selectedGame: '', sensitivity: '', dpi: '' });
   };
 
-    const fetchCanonicalCm360 = async () => {
+  const handleShowUserPreferencesForm = () => {
+    setShowUserPreferencesForm(true);
+    // Initialize settings data with current values
+    setUserPreferencesSettingsData({
+      selectedGame: canonicalSettings?.game || '',
+      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
+      dpi: canonicalSettings?.dpi?.toString() || '',
+      edpi: canonicalSettings?.edpi?.toString() || '',
+      knowsEdpi: null
+    });
+    setUserPreferencesSettingsStep(1);
+  };
+
+  const handleCancelUserPreferencesForm = () => {
+    setShowUserPreferencesForm(false);
+    setUserPreferencesFormData({
+      selectedGame: canonicalSettings?.game || '',
+      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
+      dpi: canonicalSettings?.dpi?.toString() || ''
+    });
+    // Reset settings flow data
+    setUserPreferencesSettingsData({
+      selectedGame: canonicalSettings?.game || '',
+      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
+      dpi: canonicalSettings?.dpi?.toString() || '',
+      edpi: canonicalSettings?.edpi?.toString() || '',
+      knowsEdpi: null
+    });
+    setUserPreferencesSettingsStep(1);
+  };
+
+  const handleUserPreferencesNext = async () => {
+    if (userPreferencesSettingsData.knowsEdpi === true && userPreferencesSettingsData.edpi) {
+      // User knows eDPI - save settings
+      const edpiNum = parseFloat(userPreferencesSettingsData.edpi);
+      if (isNaN(edpiNum) || edpiNum <= 0) {
+        setMessage('Please enter a valid eDPI value');
+        setTimeout(() => setMessage(''), 3000);
+        return;
+      }
+
+      // Calculate sensitivity and DPI from eDPI (assuming 800 DPI as default)
+      const defaultDpi = 800;
+      const calculatedSensitivity = (edpiNum / defaultDpi).toFixed(3);
+
+      const success = await handleSaveSettingsFromCard(
+        canonicalSettings?.game || 'Unknown',
+        parseFloat(calculatedSensitivity),
+        defaultDpi,
+        'eDPI Updated'
+      );
+
+      if (success) {
+        setShowUserPreferencesForm(false);
+        setUserPreferencesSettingsStep(1);
+      }
+    } else if (userPreferencesSettingsData.knowsEdpi === false) {
+      if (userPreferencesSettingsStep < 3) {
+        setUserPreferencesSettingsStep(userPreferencesSettingsStep + 1);
+      } else {
+        // Final step - save settings
+        if (!userPreferencesSettingsData.selectedGame || !userPreferencesSettingsData.sensitivity || !userPreferencesSettingsData.dpi) {
+          setMessage('Please fill in all fields');
+          setTimeout(() => setMessage(''), 3000);
+          return;
+        }
+
+        const success = await handleSaveSettingsFromCard(
+          userPreferencesSettingsData.selectedGame,
+          parseFloat(userPreferencesSettingsData.sensitivity),
+          parseInt(userPreferencesSettingsData.dpi),
+          'eDPI Updated'
+        );
+
+        if (success) {
+          setShowUserPreferencesForm(false);
+          setUserPreferencesSettingsStep(1);
+        }
+      }
+    }
+  };
+
+  const handleUserPreferencesBack = () => {
+    if (userPreferencesSettingsStep > 1) {
+      setUserPreferencesSettingsStep(userPreferencesSettingsStep - 1);
+    } else if (userPreferencesSettingsData.knowsEdpi !== null) {
+      // Go back to initial choice
+      setUserPreferencesSettingsData(prev => ({ ...prev, knowsEdpi: null }));
+      setUserPreferencesSettingsStep(1);
+    }
+  };
+
+  const handleOpenSecondaryCard = () => {
+    setIsSecondaryCardOpen(true);
+  };
+
+  const handleCloseSecondaryCard = () => {
+    setIsSecondaryCardOpen(false);
+  };
+
+  const fetchCanonicalCm360 = async () => {
     if (canonicalSettings && window.sensitivityConverter) {
       try {
         const cm360Value = await window.sensitivityConverter.getCanonicalCm360();
@@ -556,19 +682,23 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-  const handleResetSettingsFromModal = () => {
-    setShowEdpiModal(false);
+  const handleResetSettingsFromCard = () => {
+    setIsUserPreferencesCardOpen(false);
     handleResetCanonicalSettings();
   };
 
-  const handleSaveSettingsFromModal = async (game: string, sensitivity: number, dpi: number): Promise<boolean> => {
+    const handleSaveSettingsFromCard = async (game: string, sensitivity: number, dpi: number, customMessage?: string): Promise<boolean> => {
     try {
       const success = await window.settings.setCanonicalSettings(game, sensitivity, dpi);
       if (success) {
         // Reload data to update the UI
         await loadAllData();
-        setMessage('Settings saved successfully!');
-        setTimeout(() => setMessage(''), 3000);
+        setShowUserPreferencesForm(false);
+        // Show success message in the card content (not in SettingsFlow)
+        if (customMessage) {
+          setMessage(customMessage);
+          setTimeout(() => setMessage(''), 3000);
+        }
       } else {
         setMessage('Error saving settings');
         setTimeout(() => setMessage(''), 3000);
@@ -580,6 +710,17 @@ export const MyMainWindow: React.FC = () => {
       setTimeout(() => setMessage(''), 3000);
       return false;
     }
+  };
+
+  const handleSubmitUserPreferencesForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userPreferencesFormData.selectedGame || !userPreferencesFormData.sensitivity || !userPreferencesFormData.dpi) return;
+
+    const success = await handleSaveSettingsFromCard(
+      userPreferencesFormData.selectedGame,
+      parseFloat(userPreferencesFormData.sensitivity),
+      parseInt(userPreferencesFormData.dpi)
+    );
   };
 
   const handleRestartOnboarding = async () => {
@@ -611,7 +752,7 @@ export const MyMainWindow: React.FC = () => {
       }
 
       // For direct eDPI input, we need to set a default game and calculate sensitivity/DPI
-      const defaultGame = 'Counter-Strike 2';
+      const defaultGame = 'Valorant';
       const defaultDpi = 800;
       const calculatedSensitivity = edpiNum / defaultDpi;
 
@@ -636,7 +777,8 @@ export const MyMainWindow: React.FC = () => {
         setShowOnboarding(false);
         setOnboardingStep(1);
         setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
-        setMessage('Settings saved successfully!');
+        setMessage('eDPI saved successfully!');
+        setTimeout(() => setMessage(''), 3000);
       } catch (error) {
         console.error('Error saving onboarding settings:', error);
         setMessage('Error saving settings');
@@ -686,7 +828,8 @@ export const MyMainWindow: React.FC = () => {
       setShowOnboarding(false);
       setOnboardingStep(1);
       setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '800', edpi: '', knowsEdpi: null });
-      setMessage('Settings saved successfully!');
+      setMessage('eDPI saved successfully!');
+      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error saving onboarding settings:', error);
       setMessage('Error saving settings');
@@ -746,9 +889,9 @@ export const MyMainWindow: React.FC = () => {
                 <section className="main-section">
                   <div>
                     <h2>Your ready to go!</h2>
-                    <p>Your eDPI is currently set to {canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}.</p>
-                    <p>CM/360 is currently set to {cm360 !== null ? `${cm360} cm` : 'Calculating...'}.</p>
-                    <p>Launch a game to get started and we'll recommend a sensitivity for you based of your eDPI.</p>
+                    {/* <p>Your eDPI is currently set to {canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}.</p>
+                    <p>CM/360 is currently set to {cm360 !== null ? `${cm360} cm` : 'Calculating...'}.</p> */}
+                    <p>Launch a game to get started and we'll recommend a sensitivity for you based on your eDPI.</p>
                   </div>
 
                   {/* Game Detection Section */}
@@ -830,24 +973,49 @@ export const MyMainWindow: React.FC = () => {
                   </div>
 
                   <div className="cards-section">
-                    <button className="card card-primary edpi-card" onClick={handleOpenEdpiModal}>
-                      <div className="card-header">
-                        <h4 className="">eDPI</h4>
-                        <div className="btn-icon">
-                          <SvgIcon name="arrow-north-east" />
-                        </div>
-                      </div>
-                      <p>{canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}</p>
-                    </button>
-                    <div className="card card-secondary">
-                      <div className="card-header">
-                        <h4 className="">Card 2</h4>
-                        <div className="btn-icon btn-icon-secondary">
-                          <SvgIcon name="arrow-north-east" />
-                        </div>
-                      </div>
-                      <p>Content</p>
-                    </div>
+                    <CardButton
+                      title="eDPI"
+                      value={canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}
+                      iconName="arrow-north-east"
+                      isOpen={isUserPreferencesCardOpen}
+                      onToggle={handleOpenUserPreferencesCard}
+                      onClose={handleCloseUserPreferencesCard}
+                      className="user-preferences"
+                      contentTitle="Preferences"
+                    >
+                      <UserPreferencesContent
+                        showForm={showUserPreferencesForm}
+                        canonicalSettings={canonicalSettings}
+                        cm360={cm360}
+                        games={games}
+                        settingsData={userPreferencesSettingsData}
+                        settingsStep={userPreferencesSettingsStep}
+                        isLoading={isLoading}
+                        message={message}
+                        onDataChange={(field: string, value: string) =>
+                          setUserPreferencesSettingsData(prev => ({
+                            ...prev,
+                            [field]: field === 'knowsEdpi' ? value === 'true' : value
+                          }))
+                        }
+                        onNext={handleUserPreferencesNext}
+                        onBack={handleUserPreferencesBack}
+                        onShowForm={handleShowUserPreferencesForm}
+                        onCancelForm={handleCancelUserPreferencesForm}
+                      />
+                    </CardButton>
+
+                    <CardButton
+                      title="Card 2"
+                      value="Content"
+                      iconName="arrow-north-east"
+                      isOpen={isSecondaryCardOpen}
+                      onToggle={handleOpenSecondaryCard}
+                      onClose={handleCloseSecondaryCard}
+                      className="card-secondary"
+                    >
+                      <SecondaryCardContent />
+                    </CardButton>
                   </div>
                 </section>
 
@@ -861,17 +1029,7 @@ export const MyMainWindow: React.FC = () => {
         )}
       </main>
 
-      <EdpiModal
-        isOpen={showEdpiModal}
-        canonicalSettings={canonicalSettings}
-        cm360={cm360}
-        games={games}
-        onClose={handleCloseEdpiModal}
-        onResetSettings={handleResetSettingsFromModal}
-        onSaveSettings={handleSaveSettingsFromModal}
-        isLoading={isLoading}
-        message={message}
-      />
+
     </div >
   );
 };

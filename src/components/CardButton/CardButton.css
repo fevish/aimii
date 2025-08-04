@@ -1,0 +1,186 @@
+/* CardButton Component Styles */
+
+.card-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1;
+}
+
+/* Cards Section */
+.cards-section {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  max-width: 400px;
+  gap: var(--spacing);
+
+  .card-button {
+    cursor: pointer;
+    color: var(--dark);
+    background: var(--primary);
+    border: 1px solid var(--gray);
+    border-radius: calc(6 * var(--radius));
+    padding: var(--spacing);
+    padding-left: calc(1.5 * var(--spacing));
+    text-align: start;
+    transition: all 0.3s ease;
+
+    &.card-secondary {
+      background: #fff;
+    }
+
+    .card-content {
+      cursor: default;
+      position: absolute;
+      display: flex;
+      flex-flow: column;
+      left: var(--spacing);
+      bottom: var(--spacing);
+      width: 0;
+      height: 0;
+      overflow: hidden;
+      transition: all 0.75s cubic-bezier(.19, 1, .22, 1);
+      border-radius: calc(6 * var(--radius));
+      z-index: 1;
+      padding: var(--spacing);
+      padding-left: calc(1.5 * var(--spacing));
+
+      .card-header {
+        margin-bottom: calc(2 * var(--spacing));
+
+        h4 {
+          font-size: 1.5em;
+        }
+      }
+
+      .current-settings {
+        font-size: 1.7em;
+        display: flex;
+        flex-flow: column;
+        height: 100%;
+
+        p {
+          color: var(--dark);
+          font-size: 0.8em;
+          font-weight: 800;
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .settings-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: calc(2 * var(--spacing)) calc(0.25 * var(--spacing));
+          padding-left: calc(2.5 * var(--spacing));
+        }
+
+        .setting-row {
+          display: flex;
+          flex-flow: column;
+          padding: calc(0.25 * var(--spacing)) 0;
+        }
+
+        .setting-label {
+          color: var(--dark);
+          font-size: 0.65em;
+          opacity: 0.85;
+          margin-bottom: calc(0.75 * var(--spacing));
+        }
+
+        .main-setting {
+          font-weight: 800;
+          margin-bottom: auto;
+
+          .setting-label {
+            font-size: 0.5em;
+            line-height: 80%;
+          }
+          .setting-value {
+            font-size: 5em;
+            margin-left: calc(2.1 * var(--spacing));
+          }
+        }
+
+        .setting-value {
+          color: var(--dark);
+        }
+      }
+    }
+
+    &:not(.card-open) {
+      .card-content {
+        padding: 0;
+        border: none;
+      }
+    }
+
+    /* Expanded card styles */
+    &.card-open .card-content {
+      background-color: inherit;
+      width: calc(100% - var(--spacing));
+      height: calc(100% - var(--spacing));
+    }
+
+    .card-header {
+      display: flex;
+      flex-flow: row;
+      justify-content: space-between;
+      gap: calc(1.5 * var(--spacing));
+
+      h4 {
+        margin-top: calc(0.5 * var(--spacing));
+        text-transform: none;
+      }
+
+      .btn-icon {
+        border-radius: 100%;
+        padding: calc(1 * var(--spacing));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--dark);
+        color: var(--light);
+
+        svg {
+          height: 18px;
+          width: 18px;
+
+          path {
+            fill: currentColor;
+          }
+        }
+      }
+    }
+
+    &.card-secondary {
+      .btn-icon {
+        background: #fff;
+        color: var(--dark);
+        border: 1px solid #999;
+      }
+    }
+
+    >p {
+      margin-bottom: 0;
+      margin-top: calc(2 * var(--spacing));
+      color: var(--dark);
+      font-weight: 800;
+      font-size: 1.75em;
+    }
+
+
+    .settings-flow {
+      background: var(--dark);
+      border-radius: calc(3 * var(--radius));
+
+      p {
+        color: var(--primary)
+      }
+
+      .choice-buttons {}
+    }
+  }
+}

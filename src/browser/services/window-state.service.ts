@@ -6,7 +6,7 @@ import * as path from 'path';
 export const WINDOW_CONFIG = {
   mainWindow: {
     width: 1000,
-    height: 500,
+    height: 550,
     title: 'aimii',
     resizable: false,
     frame: false,
