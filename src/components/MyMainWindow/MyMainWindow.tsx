@@ -889,9 +889,9 @@ export const MyMainWindow: React.FC = () => {
                 <section className="main-section">
                   <div>
                     <h2>Your ready to go!</h2>
-                    <p>Your eDPI is currently set to {canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}.</p>
-                    <p>CM/360 is currently set to {cm360 !== null ? `${cm360} cm` : 'Calculating...'}.</p>
-                    <p>Launch a game to get started and we'll recommend a sensitivity for you based of your eDPI.</p>
+                    {/* <p>Your eDPI is currently set to {canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}.</p>
+                    <p>CM/360 is currently set to {cm360 !== null ? `${cm360} cm` : 'Calculating...'}.</p> */}
+                    <p>Launch a game to get started and we'll recommend a sensitivity for you based on your eDPI.</p>
                   </div>
 
                   {/* Game Detection Section */}
@@ -981,7 +981,7 @@ export const MyMainWindow: React.FC = () => {
                       onToggle={handleOpenUserPreferencesCard}
                       onClose={handleCloseUserPreferencesCard}
                       className="user-preferences"
-                      contentTitle="Your Preferences"
+                      contentTitle="Preferences"
                     >
                       <UserPreferencesContent
                         showForm={showUserPreferencesForm}

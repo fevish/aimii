@@ -501,17 +501,19 @@ const Settings: React.FC = () => {
           <div className="theme-controls">
             <div className="form-group select-theme">
               <label htmlFor="theme-select">Select Theme</label>
-              <select
-                id="theme-select"
-                value={currentTheme}
-                onChange={handleThemeChange}
-              >
-                {availableThemes.map(theme => (
-                  <option key={theme.value} value={theme.value}>
-                    {theme.label}
-                  </option>
-                ))}
-              </select>
+              <div className="select-wrapper">
+                <select
+                  id="theme-select"
+                  value={currentTheme}
+                  onChange={handleThemeChange}
+                >
+                  {availableThemes.map(theme => (
+                    <option key={theme.value} value={theme.value}>
+                      {theme.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </section>
