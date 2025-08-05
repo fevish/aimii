@@ -2,11 +2,32 @@ import { BrowserWindow, app as electronApp } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 
+// Window configuration constants
+export const WINDOW_CONFIG = {
+  mainWindow: {
+    width: 1000,
+    height: 550,
+    title: 'aimii',
+    resizable: false,
+    frame: false,
+    showOnStartup: false
+  },
+  widget: {
+    width: 300,
+    height: 200,
+    alwaysOnTop: true,
+    transparent: true,
+    frame: false
+  },
+  devTools: {
+    mode: 'detach',
+    autoOpen: false
+  }
+} as const;
+
 interface WindowState {
   x: number;
   y: number;
-  width: number;
-  height: number;
   isMaximized: boolean;
   isMinimized: boolean;
   devToolsOpen: boolean;
@@ -17,8 +38,6 @@ export class WindowStateService {
   private defaultState: WindowState = {
     x: 100,
     y: 100,
-    width: 900,
-    height: 500,
     isMaximized: false,
     isMinimized: false,
     devToolsOpen: false
@@ -42,8 +61,6 @@ export class WindowStateService {
       const state: WindowState = {
         x: bounds.x,
         y: bounds.y,
-        width: bounds.width,
-        height: bounds.height,
         isMaximized,
         isMinimized,
         devToolsOpen
@@ -87,8 +104,8 @@ export class WindowStateService {
       window.setBounds({
         x: state.x,
         y: state.y,
-        width: state.width,
-        height: state.height
+        width: WINDOW_CONFIG.mainWindow.width,
+        height: WINDOW_CONFIG.mainWindow.height
       });
     }
 

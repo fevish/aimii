@@ -6,10 +6,12 @@ module.exports = {
   mode: 'development',
   devtool: 'source-map',
   watch: false,
+  context: __dirname,
   watchOptions: {
     ignored: /node_modules/,
     aggregateTimeout: 300,
-    poll: 1000,
+    // Use native file watching instead of polling
+    poll: false,
     // Disable following symlinks and restrict to project directory
     followSymlinks: false
   },
@@ -24,12 +26,33 @@ module.exports = {
       // CSS loader for external CSS files
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
+      },
+      // SVG loader - handle SVGs differently based on usage
+      {
+        test: /\.svg$/,
+        oneOf: [
+          // For React components (SvgIcon) - convert to React components using SVGR
+          {
+            resourceQuery: /react/,
+            use: ['@svgr/webpack']
+          },
+          // For CSS and other uses - treat as files
+          {
+            type: 'asset/resource',
+            generator: {
+              filename: 'assets/svg/[name][ext]'
+            }
+          }
+        ]
       },
     ],
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.json', '.js', '.css'],
+    extensions: ['.ts', '.tsx', '.json', '.js', '.css', '.svg'],
   },
 
   output: {
@@ -44,6 +67,10 @@ module.exports = {
         {
           from: 'public/icons/icon.ico',
           to: 'icon.ico'
+        },
+        {
+          from: 'src/assets/svg',
+          to: 'assets/svg'
         }
       ]
     })

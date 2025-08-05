@@ -1,0 +1,23 @@
+/* Onboarding Wrapper Styles */
+
+.my-main-window.onboarding .app-content {
+  grid-template-columns: 1fr;
+}
+
+.onboarding-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: var(--spacing);
+}
+
+.onboarding-container {
+  background: var(--dark);
+  border-radius: var(--radius);
+  padding: calc(2 * var(--spacing));
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid var(--secondary);
+}

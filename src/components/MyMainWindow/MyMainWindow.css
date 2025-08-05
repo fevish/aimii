@@ -68,12 +68,11 @@ header {
     }
 
     &.discord-btn::before {
-      mask-image: url('../../assets/images/discord.svg');
+      mask-image: url('../../assets/svg/discord.svg');
       mask-size: 16px;
     }
   }
 }
-
 
 .app-header h1 {
   margin: 0;
@@ -148,7 +147,7 @@ main {
   padding-top: 0;
   display: grid;
   gap: var(--spacing);
-  grid-template-columns: 70% auto;
+  grid-template-columns: auto 400px;
   margin: 0 auto;
   overflow-x: hidden;
   overflow-y: auto;
@@ -178,6 +177,82 @@ section {
   flex-flow: column;
 }
 
+.main-section {
+  justify-content: space-between;
+  position: relative;
+
+  p {
+    font-size: 1.2em;
+  }
+
+  .cool-text {
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .info-section {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    flex: 1;
+
+    h2 {
+      margin-bottom: calc(2 * var(--spacing));
+    }
+
+    h3 {
+      font-size: 3em;
+    }
+
+    h4 {
+      font-size: 4.5rem;
+      margin-left: calc(2.1 * var(--spacing));
+      margin-bottom: auto;
+    }
+  }
+}
+
+/* Settings Grid */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(2 * var(--spacing)) calc(0.25 * var(--spacing));
+  padding-left: calc(2.5 * var(--spacing));
+  font-size: 1.7em;
+}
+
+.setting-row {
+  display: flex;
+  flex-flow: column;
+  padding: calc(0.25 * var(--spacing)) 0;
+}
+
+.setting-label {
+  color: var(--primary);
+  font-size: 0.65em;
+  opacity: 0.7;
+  margin-bottom: calc(0.75 * var(--spacing));
+}
+
+.main-setting {
+  font-weight: 800;
+  margin-bottom: auto;
+
+  .setting-label {
+    font-size: 0.5em;
+    line-height: 80%;
+  }
+
+  .setting-value {
+    font-size: 6rem;
+    margin-left: calc(2.1 * var(--spacing));
+  }
+}
+
+.setting-value {
+  color: var(--primary);
+}
+
 /* Forms */
 form {
   display: flex;
@@ -204,7 +279,6 @@ form {
 }
 
 /* Game section */
-
 .current-game-info {
   background: var(--dark);
   border-radius: var(--radius);
@@ -231,12 +305,7 @@ form {
   color: var(--secondary);
 }
 
-.no-game p {
-  color: var(--secondary);
-}
-
 /* Multiple Games */
-
 .sensitivity-suggestion {
   position: relative;
 }
@@ -372,16 +441,29 @@ form {
   }
 }
 
+/* Ad / Debug Section */
+.ad-section {
+  border: 1px solid var(--gray);
+  border-radius: var(--radius);
+  padding: var(--spacing);
+  height: 300px;
+}
+
+
+
 /* Notes Section */
 .notes-section {
+  margin-top: auto;
   grid-column: span 2;
-  font-size: 0.95em;
+  font-size: 0.8em;
   padding-top: 0;
   padding-bottom: 0;
   justify-content: flex-end;
+  opacity: 0.8;
 
-  h4 {
-    margin-bottom: calc(0.5 * var(--spacing));
+  h3 {
+    margin-bottom: calc(0.75 * var(--spacing));
+    font-size: 1.25em !important;
   }
 }
 
@@ -408,35 +490,6 @@ form {
   }
 }
 
-.settings-grid {
-  display: flex;
-  flex-direction: column;
-  gap: calc(0.25 * var(--spacing));
-}
-
-.setting-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: calc(0.25 * var(--spacing)) 0;
-  border-bottom: 1px solid var(--secondary);
-}
-
-.setting-row:last-child {
-  border-bottom: none;
-}
-
-.setting-label {
-  color: var(--secondary);
-}
-
-.setting-row:first-child .setting-label {
-  color: var(--primary);
-}
-
-.setting-value {
-  color: var(--light);
-}
 
 /* Sensitivity */
 .sensitivity-suggestion {
@@ -465,11 +518,6 @@ form {
 .cm360-info {
   margin: 0;
   color: var(--secondary);
-}
-
-/* Utilities */
-.help-text {
-  color: var(--secondary) !important;
 }
 
 .debug-section {

@@ -30,6 +30,7 @@ interface CanonicalSettings {
   game: string;
   sensitivity: number;
   dpi: number;
+  edpi: number;
 }
 
 declare global {
@@ -69,8 +70,8 @@ const Settings: React.FC = () => {
 
   // Available themes
   const availableThemes = [
-    { value: 'default', label: 'Default (Monochrome)' },
-    { value: 'neon', label: 'Neon (Green)' }
+    { value: 'default', label: 'Default (Green)' },
+    { value: 'high-contrast', label: 'High Contrast' }
   ];
 
   useEffect(() => {
@@ -110,7 +111,7 @@ const Settings: React.FC = () => {
     const htmlElement = document.documentElement;
 
     // Remove all theme classes
-    htmlElement.classList.remove('default', 'neon');
+    htmlElement.classList.remove('default', 'high-contrast');
 
     // Add the selected theme class
     if (theme !== 'default') {
@@ -500,17 +501,19 @@ const Settings: React.FC = () => {
           <div className="theme-controls">
             <div className="form-group select-theme">
               <label htmlFor="theme-select">Select Theme</label>
-              <select
-                id="theme-select"
-                value={currentTheme}
-                onChange={handleThemeChange}
-              >
-                {availableThemes.map(theme => (
-                  <option key={theme.value} value={theme.value}>
-                    {theme.label}
-                  </option>
-                ))}
-              </select>
+              <div className="select-wrapper">
+                <select
+                  id="theme-select"
+                  value={currentTheme}
+                  onChange={handleThemeChange}
+                >
+                  {availableThemes.map(theme => (
+                    <option key={theme.value} value={theme.value}>
+                      {theme.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </section>

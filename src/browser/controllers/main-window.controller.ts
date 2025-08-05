@@ -1,6 +1,7 @@
 import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
+import { WINDOW_CONFIG } from '../services/window-state.service';
 
 import { WidgetWindowController } from './widget-window.controller';
 import { OverlayService } from '../services/overlay.service';
@@ -92,6 +93,13 @@ export class MainWindowController {
     this.browserWindow?.webContents?.send('console-message', message, ...args);
   }
 
+  /**
+   * Get the browser window instance for external access
+   */
+  public getBrowserWindow(): BrowserWindow | null {
+    return this.browserWindow;
+  }
+
   //----------------------------------------------------------------------------
   private logPackageManagerErrors(e: any, packageName: any, ...args: any[]) {
     this.printLogMessage(
@@ -132,15 +140,15 @@ export class MainWindowController {
     const appIcon = this.loadAppIcon();
 
     this.browserWindow = new BrowserWindow({
-      width: savedState.width,
-      height: savedState.height,
+      width: WINDOW_CONFIG.mainWindow.width,
+      height: WINDOW_CONFIG.mainWindow.height,
       x: savedState.x,
       y: savedState.y,
-      frame: false, // Hide the default window frame
-      title: 'aimii',
+      frame: WINDOW_CONFIG.mainWindow.frame, // Hide the default window frame
+      title: WINDOW_CONFIG.mainWindow.title,
       icon: appIcon, // Use native image for better icon handling
-      show: false, // Don't show until we've set up the state
-      resizable: false, // Disable window resizing
+      show: WINDOW_CONFIG.mainWindow.showOnStartup, // Don't show until we've set up the state
+      resizable: WINDOW_CONFIG.mainWindow.resizable, // Disable window resizing
       webPreferences: {
         // NOTE: nodeIntegration and contextIsolation are required for this app
         // to enable IPC communication between main and renderer processes
@@ -171,6 +179,12 @@ export class MainWindowController {
     this.browserWindow.webContents.on('before-input-event', (event, input) => {
       if (input.key === 'F11') {
         event.preventDefault();
+      }
+
+      // Manual reload hotkey in development (Ctrl+Shift+R)
+      if (process.env.NODE_ENV === 'development' && input.control && input.shift && input.key === 'R') {
+        console.log('Manual reload triggered');
+        this.browserWindow?.webContents.reload();
       }
     });
 
@@ -285,21 +299,27 @@ export class MainWindowController {
 
     // Canonical settings IPC handlers
     ipcMain.handle('settings-get-canonical', () => {
-      return this.settingsService.getCanonicalSettings();
+      const settings = this.settingsService.getCanonicalSettings();
+      // Ensure edpi is included for frontend compatibility
+      if (settings && !settings.edpi) {
+        settings.edpi = settings.sensitivity * settings.dpi;
+      }
+      return settings;
     });
 
     ipcMain.handle('settings-set-canonical', (event, game: string, sensitivity: number, dpi: number) => {
       this.settingsService.setCanonicalSettings(game, sensitivity, dpi);
-      this.printLogMessage(`Canonical settings saved: ${game}, sensitivity: ${sensitivity}, DPI: ${dpi}`);
+      const edpi = sensitivity * dpi;
+      this.printLogMessage(`Canonical settings saved: ${game}, sensitivity: ${sensitivity}, DPI: ${dpi}, eDPI: ${edpi}`);
 
       // Notify main window about settings change
       if (this.browserWindow && !this.browserWindow.isDestroyed()) {
         this.browserWindow.webContents.send('canonical-settings-changed');
       }
 
-      // Notify widget about settings change (pass the new settings)
+      // Notify widget about settings change (pass the new settings with edpi)
       if (this.widgetController?.overlayBrowserWindow) {
-        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', { game, sensitivity, dpi });
+        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', { game, sensitivity, dpi, edpi });
       }
 
       return true;
@@ -381,6 +401,10 @@ export class MainWindowController {
 
     ipcMain.handle('sensitivity-get-all-conversions', () => {
       return this.sensitivityConverterService.getAllConversionsFromCanonical();
+    });
+
+    ipcMain.handle('sensitivity-get-canonical-cm360', () => {
+      return this.sensitivityConverterService.getCanonicalCm360();
     });
 
     ipcMain.handle('sensitivity-convert', (event, fromGame: string, toGame: string, sensitivity: number, dpi: number) => {

@@ -145,6 +145,9 @@ contextBridge.exposeInMainWorld('sensitivityConverter', {
   },
   convert: (fromGame: string, toGame: string, sensitivity: number, dpi: number) => {
     return ipcRenderer.invoke('sensitivity-convert', fromGame, toGame, sensitivity, dpi);
+  },
+  getCanonicalCm360: () => {
+    return ipcRenderer.invoke('sensitivity-get-canonical-cm360');
   }
 });
 

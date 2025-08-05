@@ -82,6 +82,29 @@ export class SensitivityConverterService {
   }
 
   /**
+   * Get cm/360° for canonical settings
+   */
+  public getCanonicalCm360(): number | null {
+    const canonicalSettings = this.settingsService.getCanonicalSettings();
+    if (!canonicalSettings) {
+      return null;
+    }
+
+    const gameData = this.gamesService.getGameByName(canonicalSettings.game);
+    if (!gameData) {
+      return null;
+    }
+
+    const cm360 = this.gamesService.calculateCm360(
+      gameData,
+      canonicalSettings.sensitivity,
+      canonicalSettings.dpi
+    );
+
+    return Math.round(cm360 * 100) / 100; // Round to 2 decimal places
+  }
+
+  /**
    * Get all possible conversions from canonical settings to all supported games
    */
   public getAllConversionsFromCanonical(): SensitivityConversion[] {
