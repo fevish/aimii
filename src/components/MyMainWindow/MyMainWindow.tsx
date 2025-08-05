@@ -948,7 +948,9 @@ export const MyMainWindow: React.FC = () => {
               Settings
             </button>
             <button className="tab-button btn-icon discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>Discord</button>
-            <button className="tab-button" onClick={handleRestartOnboarding} title="Restart Onboarding (Clear Settings)">Restart</button>
+            <button className="tab-button" onClick={handleRestartOnboarding} title="Restart App and Clear Settings">
+              Kill Switch
+            </button>
           </nav>
           <div className="window-controls">
             <button onClick={handleMinimize} className="window-control-btn minimize-btn">_</button>
@@ -996,7 +998,7 @@ export const MyMainWindow: React.FC = () => {
                             <li>
                               <p>
                                 <b>This app is very early access</b>
-                                <br/>
+                                <br />
                                 Features may change or break. Please report bugs to
                                 &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
                               </p>
