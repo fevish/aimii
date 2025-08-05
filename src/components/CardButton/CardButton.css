@@ -31,6 +31,10 @@
 
     &.card-secondary {
       background: #fff;
+      pointer-events: none;
+      .btn-icon {
+        visibility: hidden;
+      }
     }
 
     .card-content {

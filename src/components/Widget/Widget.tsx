@@ -238,7 +238,7 @@ const Widget: React.FC = () => {
     const htmlElement = document.documentElement;
 
     // Remove all theme classes
-    htmlElement.classList.remove('default', 'neon');
+    htmlElement.classList.remove('default', 'high-contrast');
 
     // Add the selected theme class
     if (theme !== 'default') {

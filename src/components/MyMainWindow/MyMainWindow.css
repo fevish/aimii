@@ -453,15 +453,16 @@ form {
 
 /* Notes Section */
 .notes-section {
-  margin-top: calc(2 * var(--spacing));
+  margin-top: auto;
   grid-column: span 2;
-  font-size: 0.95em;
+  font-size: 0.8em;
   padding-top: 0;
   padding-bottom: 0;
   justify-content: flex-end;
 
-  h4 {
-    margin-bottom: calc(0.5 * var(--spacing));
+  h3 {
+    margin-bottom: calc(0.75 * var(--spacing));
+    font-size: 1.25em !important;
   }
 }
 

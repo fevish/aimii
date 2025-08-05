@@ -70,8 +70,8 @@ const Settings: React.FC = () => {
 
   // Available themes
   const availableThemes = [
-    { value: 'default', label: 'Default (Monochrome)' },
-    { value: 'neon', label: 'Neon (Green)' }
+    { value: 'default', label: 'Default (Green)' },
+    { value: 'high-contrast', label: 'High Contrast' }
   ];
 
   useEffect(() => {
@@ -111,7 +111,7 @@ const Settings: React.FC = () => {
     const htmlElement = document.documentElement;
 
     // Remove all theme classes
-    htmlElement.classList.remove('default', 'neon');
+    htmlElement.classList.remove('default', 'high-contrast');
 
     // Add the selected theme class
     if (theme !== 'default') {
@@ -554,25 +554,6 @@ const Settings: React.FC = () => {
           </div>
         </div>
       )}
-
-      <div className="notes-section">
-        <h4>Early Access Notes</h4>
-        <ul>
-          <li>
-            <p>
-              <b>In-game widget will not work in all games.</b>
-              <br />
-              Some of our supported games eg. Counter-Strike 2 do not support in-game overlays.
-            </p>
-          </li>
-          <li>
-            <p>
-              This app is very early access, features may change or break. Please report bugs to
-              &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
-            </p>
-          </li>
-        </ul>
-      </div>
     </div>
   );
 };

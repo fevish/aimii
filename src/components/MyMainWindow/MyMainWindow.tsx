@@ -508,7 +508,7 @@ export const MyMainWindow: React.FC = () => {
     const htmlElement = document.documentElement;
 
     // Remove all theme classes
-    htmlElement.classList.remove('default', 'neon');
+    htmlElement.classList.remove('default', 'high-contrast');
 
     // Add the selected theme class
     if (theme !== 'default') {
@@ -978,10 +978,32 @@ export const MyMainWindow: React.FC = () => {
                   <div className="info-section">
                     {/* Default state - no games detected */}
                     {!currentGame && (
-                      <div>
+                      <>
                         <h2>Your ready to go!</h2>
                         <p>Launch a game to get started and we'll recommend a sensitivity for you based on your eDPI.</p>
-                      </div>
+
+
+                        <div className="notes-section">
+                          <h3>Early Access Notes</h3>
+                          <ul>
+                            <li>
+                              <p>
+                                <b>In-game widget will not work in all games.</b>
+                                <br />
+                                Some of our supported games eg. Counter-Strike 2 do not support in-game overlays.
+                              </p>
+                            </li>
+                            <li>
+                              <p>
+                                <b>This app is very early access</b>
+                                <br/>
+                                Features may change or break. Please report bugs to
+                                &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
+                              </p>
+                            </li>
+                          </ul>
+                        </div>
+                      </>
                     )}
 
                     {/* Single game detected */}
@@ -1049,12 +1071,14 @@ export const MyMainWindow: React.FC = () => {
                     </CardButton>
 
                     <CardButton
-                      title="Card 2"
-                      value="Content"
+                      title="Placeholder"
+                      value="WIP"
                       iconName="arrow-north-east"
                       isOpen={isSecondaryCardOpen}
-                      onToggle={handleOpenSecondaryCard}
-                      onClose={handleCloseSecondaryCard}
+                      // onToggle={handleOpenSecondaryCard}
+                      // onClose={handleCloseSecondaryCard}
+                      onToggle={() => { }}
+                      onClose={() => { }}
                       className="card-secondary"
                     >
                       <SecondaryCardContent />
