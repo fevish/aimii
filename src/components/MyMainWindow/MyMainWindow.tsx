@@ -671,6 +671,7 @@ export const MyMainWindow: React.FC = () => {
   const fetchCanonicalCm360 = async () => {
     if (canonicalSettings && window.sensitivityConverter) {
       try {
+        // CM/360° is universal for a given eDPI - it doesn't change between games
         const cm360Value = await window.sensitivityConverter.getCanonicalCm360();
         setCm360(cm360Value);
       } catch (error) {
@@ -687,7 +688,7 @@ export const MyMainWindow: React.FC = () => {
     handleResetCanonicalSettings();
   };
 
-    const handleSaveSettingsFromCard = async (game: string, sensitivity: number, dpi: number, customMessage?: string): Promise<boolean> => {
+  const handleSaveSettingsFromCard = async (game: string, sensitivity: number, dpi: number, customMessage?: string): Promise<boolean> => {
     try {
       const success = await window.settings.setCanonicalSettings(game, sensitivity, dpi);
       if (success) {
@@ -838,11 +839,98 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
+  // Reusable component for game information display
+  const GameInfo = ({
+    title,
+    gameName,
+    suggestedSensitivity,
+    canonicalSettings,
+    cm360,
+    showNavigation = false,
+    onPrevious,
+    onNext,
+    canNavigate
+  }: {
+    title: string;
+    gameName?: string;
+    suggestedSensitivity: SensitivityConversion | null;
+    canonicalSettings: CanonicalSettings | null;
+    cm360: number | null;
+    showNavigation?: boolean;
+    onPrevious?: () => void;
+    onNext?: () => void;
+    canNavigate?: boolean;
+  }) => (
+    <>
+      <h2>{title}</h2>
+      {suggestedSensitivity ? (
+        <>
+          <p className="cool-text">// Converted Sensitivity</p>
+          <h4>{suggestedSensitivity.suggestedSensitivity}</h4>
+        </>
+      ) : (
+        <>
+          <p className="cool-text">// Current Sensitivity</p>
+          <h4>{canonicalSettings?.sensitivity}</h4>
+        </>
+      )}
+
+      <div className="settings-grid">
+        <div className="setting-row">
+          <span className="setting-label">Current Game</span>
+          <span className="setting-value">{gameName}</span>
+        </div>
+        <div className="setting-row">
+          <span className="setting-label">
+            {suggestedSensitivity ? 'Recommended Sensitivity' : 'Sensitivity'}
+          </span>
+          <span className="setting-value">
+            {suggestedSensitivity ? suggestedSensitivity.suggestedSensitivity : canonicalSettings?.sensitivity}
+          </span>
+        </div>
+        <div className="setting-row">
+          <span className="setting-label">DPI</span>
+          <span className="setting-value">{canonicalSettings?.dpi}</span>
+        </div>
+        <div className="setting-row">
+          <span className="setting-label">CM/360°</span>
+          <span className="setting-value">
+            {suggestedSensitivity
+              ? `${suggestedSensitivity.cm360} cm`
+              : cm360 !== null
+                ? `${cm360} cm`
+                : 'Calculating...'
+            }
+          </span>
+        </div>
+      </div>
+
+      {showNavigation && (
+        <div className="multi-games-nav">
+          <button
+            className="nav-arrow prev-arrow"
+            onClick={onPrevious}
+            disabled={!canNavigate}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
+          </button>
+          <button
+            className="nav-arrow next-arrow"
+            onClick={onNext}
+            disabled={!canNavigate}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
+          </button>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className={`my-main-window ${showOnboarding ? 'onboarding' : ''}`}>
       <header className="app-header">
         <div className="app-logo">
-          <h1>aimii</h1>
+          <h1>aimii.app</h1>
           <span className="version">v{process.env.APP_VERSION}</span>
         </div>
         <div className="header-controls">
@@ -887,89 +975,44 @@ export const MyMainWindow: React.FC = () => {
             ) : (
               <>
                 <section className="main-section">
-                  <div>
-                    <h2>Your ready to go!</h2>
-                    {/* <p>Your eDPI is currently set to {canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}.</p>
-                    <p>CM/360 is currently set to {cm360 !== null ? `${cm360} cm` : 'Calculating...'}.</p> */}
-                    <p>Launch a game to get started and we'll recommend a sensitivity for you based on your eDPI.</p>
-                  </div>
+                  <div className="info-section">
+                    {/* Default state - no games detected */}
+                    {!currentGame && (
+                      <div>
+                        <h2>Your ready to go!</h2>
+                        <p>Launch a game to get started and we'll recommend a sensitivity for you based on your eDPI.</p>
+                      </div>
+                    )}
 
-                  {/* Game Detection Section */}
-                  <div className="current-game-section">
-                    <div className="current-game-info">
-                      {allDetectedGames.length > 1 ? (
-                        <div className="multiple-games-detected">
-                          {currentGame && (
-                            <div className="selected-game-info">
-                              <div className="game-navigation">
-                                <div className="game-display">
-                                  <p>Games Detected: <b className="game-name">{currentGame?.name}</b></p>
-                                </div>
-                                <div className="multi-games-nav">
-                                  <button
-                                    className="nav-arrow prev-arrow"
-                                    onClick={handlePreviousGame}
-                                    disabled={allDetectedGames.length <= 1}
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
-                                  </button>
-                                  <button
-                                    className="nav-arrow next-arrow"
-                                    onClick={handleNextGame}
-                                    disabled={allDetectedGames.length <= 1}
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="sensitivity-suggestion">
-                                {suggestedSensitivity ? (
-                                  <>
-                                    <p>
-                                      Converted Sensitivity
-                                    </p>
-                                    <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                                  </>
-                                ) : (
-                                  <>
-                                    <p>
-                                      Sensitivity
-                                    </p>
-                                    <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ) : allDetectedGames.length === 1 && currentGame ? (
-                        <div className="game-detected">
-                          <div className="game-display">
-                            <p>Game Detected: <b>{currentGame?.name}</b></p>
-                          </div>
-                          {suggestedSensitivity ? (
-                            <div className="sensitivity-suggestion">
-                              <p>
-                                Converted Sensitivity
-                              </p>
-                              <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                            </div>
-                          ) : (
-                            <div className="sensitivity-suggestion">
-                              <p>
-                                Sensitivity
-                              </p>
-                              <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="no-game">
-                          <p>No supported game detected</p>
-                          <p className="mt-0 mb-0">Launch a supported game to see sensitivity conversion options</p>
-                        </div>
-                      )}
-                    </div>
+                    {/* Single game detected */}
+                    {currentGame && allDetectedGames.length === 1 && (
+                      <GameInfo
+                        title="Supported Game Detected"
+                        gameName={currentGame.name}
+                        suggestedSensitivity={suggestedSensitivity}
+                        canonicalSettings={canonicalSettings}
+                        cm360={cm360}
+                        showNavigation={allDetectedGames.length > 1}
+                        onPrevious={handlePreviousGame}
+                        onNext={handleNextGame}
+                        canNavigate={allDetectedGames.length > 1}
+                      />
+                    )}
+
+                    {/* Multiple games detected */}
+                    {currentGame && allDetectedGames.length > 1 && (
+                      <GameInfo
+                        title="Multiple Games Detected"
+                        gameName={currentGame.name}
+                        suggestedSensitivity={suggestedSensitivity}
+                        canonicalSettings={canonicalSettings}
+                        cm360={cm360}
+                        showNavigation={allDetectedGames.length > 1}
+                        onPrevious={handlePreviousGame}
+                        onNext={handleNextGame}
+                        canNavigate={allDetectedGames.length > 1}
+                      />
+                    )}
                   </div>
 
                   <div className="cards-section">

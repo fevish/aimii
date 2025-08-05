@@ -180,6 +180,77 @@ section {
 .main-section {
   justify-content: space-between;
   position: relative;
+
+  p {
+    font-size: 1.2em;
+  }
+
+  .cool-text {
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .info-section {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    flex: 1;
+
+    h2 {
+      margin-bottom: calc(2 * var(--spacing));
+    }
+
+    h3 {
+      font-size: 3em;
+    }
+
+    h4 {
+      font-size: 4.5rem;
+      margin-left: calc(2.1 * var(--spacing));
+      margin-bottom: auto;
+    }
+  }
+}
+
+/* Settings Grid */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(2 * var(--spacing)) calc(0.25 * var(--spacing));
+  padding-left: calc(2.5 * var(--spacing));
+  font-size: 1.7em;
+}
+
+.setting-row {
+  display: flex;
+  flex-flow: column;
+  padding: calc(0.25 * var(--spacing)) 0;
+}
+
+.setting-label {
+  color: var(--primary);
+  font-size: 0.65em;
+  opacity: 0.7;
+  margin-bottom: calc(0.75 * var(--spacing));
+}
+
+.main-setting {
+  font-weight: 800;
+  margin-bottom: auto;
+
+  .setting-label {
+    font-size: 0.5em;
+    line-height: 80%;
+  }
+
+  .setting-value {
+    font-size: 6rem;
+    margin-left: calc(2.1 * var(--spacing));
+  }
+}
+
+.setting-value {
+  color: var(--primary);
 }
 
 /* Forms */

@@ -1,5 +1,5 @@
 {
-  "name": "aimii",
+  "name": "aimii.app",
   "version": "0.0.5",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
