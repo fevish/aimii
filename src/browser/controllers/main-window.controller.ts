@@ -6,7 +6,6 @@ import { WINDOW_CONFIG } from '../services/window-state.service';
 import { WidgetWindowController } from './widget-window.controller';
 import { OverlayService } from '../services/overlay.service';
 import { overwolf } from '@overwolf/ow-electron';
-import { OverlayHotkeysService } from '../services/overlay-hotkeys.service';
 
 import { setMainWindowForConsole } from '../index';
 import { GamesService } from '../services/games.service';
@@ -33,7 +32,6 @@ export class MainWindowController {
     private readonly gepService: GameEventsService,
     private readonly overlayService: OverlayService,
     private readonly createWidgetWinController: () => WidgetWindowController,
-    private readonly overlayHotkeysService: OverlayHotkeysService,
     private readonly gamesService: GamesService,
     private readonly settingsService: SettingsService,
     private readonly currentGameService: CurrentGameService,
@@ -46,8 +44,6 @@ export class MainWindowController {
 
     gepService.on('log', this.printLogMessage.bind(this));
     overlayService.on('log', this.printLogMessage.bind(this));
-
-    overlayHotkeysService.on('log', this.printLogMessage.bind(this));
 
     owElectronApp.overwolf.packages.on('crashed', (e: any, ...args: any[]) => {
       this.printLogMessage('package crashed', ...args);
@@ -241,7 +237,7 @@ export class MainWindowController {
     });
   }
 
-    /**
+  /**
    * Handle window close event - minimize to tray instead of closing
    */
   private setupWindowCloseHandler(): void {
@@ -428,7 +424,7 @@ export class MainWindowController {
     });
 
     ipcMain.handle('restart-initialization', async () => {
-      this.printLogMessage('=== Re-initializing AIMII ===');
+      this.printLogMessage('=== Re-initializing aimii ===');
 
       // Get enabled games from games.json
       const gameIds = this.gamesService.getEnabledGameIds();

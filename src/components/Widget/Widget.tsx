@@ -162,13 +162,8 @@ const Widget: React.FC = () => {
     // Listen for canonical settings changes
     const handleCanonicalSettingsChanged = (settings: any) => {
       console.log('[Widget] Canonical settings changed event received:', settings);
-
-      // Refresh all data when canonical settings change
-      // This ensures the widget updates properly when the canonical game changes
       fetchData();
     };
-
-    // Listen for canonical settings change events from main process
     ipcRenderer.on('canonical-settings-changed', handleCanonicalSettingsChanged);
 
     // Listen for theme changes
@@ -176,8 +171,6 @@ const Widget: React.FC = () => {
       console.log('[Widget] Theme changed event received:', theme);
       applyTheme(theme);
     };
-
-    // Listen for theme change events from main process
     ipcRenderer.on('theme-changed', handleThemeChanged);
 
     // Listen for hotkey change events
@@ -185,26 +178,19 @@ const Widget: React.FC = () => {
       console.log('[Widget] Hotkey changed event received:', id, updatedHotkey);
       if (id === 'widget-toggle') {
         console.log('[Widget] Widget hotkey changed, refreshing display...');
-        fetchHotkeyInfo(); // Refresh hotkey info when widget hotkey changes
+        fetchHotkeyInfo();
       }
     };
 
     const handleHotkeysReset = () => {
       console.log('[Widget] Hotkeys reset event received');
       console.log('[Widget] Refreshing hotkey display...');
-      fetchHotkeyInfo(); // Refresh hotkey info when hotkeys are reset
+      fetchHotkeyInfo();
     };
 
     // Listen for hotkey change events from main process
     ipcRenderer.on('hotkey-changed', handleHotkeyChanged);
     ipcRenderer.on('hotkeys-reset', handleHotkeysReset);
-
-    // Fallback: reduced frequency polling for canonical settings changes
-    // (since settings changes don't have events)
-    const settingsInterval = setInterval(fetchCanonicalSettings, 10000); // Check settings every 10 seconds
-
-    // Fallback: poll for hotkey changes every 5 seconds (in case events don't work)
-    const hotkeyInterval = setInterval(fetchHotkeyInfo, 5000); // Check hotkey every 5 seconds
 
     // Add hotkey listeners for dev tools
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -227,8 +213,6 @@ const Widget: React.FC = () => {
       ipcRenderer.removeListener('theme-changed', handleThemeChanged);
       ipcRenderer.removeListener('hotkey-changed', handleHotkeyChanged);
       ipcRenderer.removeListener('hotkeys-reset', handleHotkeysReset);
-      clearInterval(settingsInterval);
-      clearInterval(hotkeyInterval);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);

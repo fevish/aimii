@@ -102,7 +102,8 @@ export class Application {
       if (this.overlayService.overlayApi) {
         // Listen for game injection events
         this.overlayService.overlayApi.on('game-injected', (gameInfo: GameInfo) => {
-          const gameData = this.gamesService.getGameByOwId(gameInfo.id?.toString() || '');
+          const owId = gameInfo.classId ?? gameInfo.id; // Fallback to id if classId missing
+          const gameData = this.gamesService.getGameByOwId(owId?.toString() || '');
           const gameName = gameData?.game || gameInfo.name || 'Unknown Game';
 
           this.mainWindowController.printLogMessage('Game injected, creating widget:', gameName);
@@ -113,7 +114,8 @@ export class Application {
 
         // Listen for game exit to clean up
         this.overlayService.overlayApi.on('game-exit', (gameInfo: GameInfo) => {
-          const gameData = this.gamesService.getGameByOwId(gameInfo.id?.toString() || '');
+          const owId = gameInfo.classId ?? gameInfo.id;
+          const gameData = this.gamesService.getGameByOwId(owId?.toString() || '');
           const gameName = gameData?.game || gameInfo.name || 'Unknown Game';
 
           this.mainWindowController.printLogMessage('Game exited:', gameName);
@@ -127,9 +129,9 @@ export class Application {
    */
   private async createGameWidget() {
     try {
-      this.mainWindowController.printLogMessage('Creating AIMII widget...');
+      this.mainWindowController.printLogMessage('Creating aimii widget...');
       await this.mainWindowController.createWidgetWindow();
-      this.mainWindowController.printLogMessage('AIMII widget created successfully!');
+      this.mainWindowController.printLogMessage('aimii widget created successfully!');
     } catch (error) {
       this.mainWindowController.printLogMessage('Error creating widget:', error);
     }

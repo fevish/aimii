@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 import {app as ElectronApp } from 'electron';
 import { Application } from "./application";
-import { OverlayHotkeysService } from './services/overlay-hotkeys.service';
 import { OverlayService } from './services/overlay.service';
 import { GameEventsService } from './services/gep.service';
 import { MainWindowController } from './controllers/main-window.controller';
@@ -87,7 +86,6 @@ export const setMainWindowForConsole = (window: BrowserWindow) => {
  */
 const bootstrap = (): Application => {
   const overlayService = new OverlayService();
-  const overlayHotkeysService = new OverlayHotkeysService(overlayService);
   const gepService = new GameEventsService();
 
   const settingsService = new SettingsService();
@@ -113,7 +111,6 @@ const bootstrap = (): Application => {
     gepService,
     overlayService,
     createWidgetWindowControllerFactory,
-    overlayHotkeysService,
     gamesService,
     settingsService,
     currentGameService,
