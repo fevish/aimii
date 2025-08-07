@@ -3,17 +3,11 @@ description: Project context and rules for overwolf-electron sample and custom a
 globs:
 alwaysApply: true
 ---
-description: Project context and rules for overwolf-electron sample and custom app development.
-globs:
-  - "**/*"
-alwaysApply: true
+
+- This app used to be named AIMII uppercase but it should always be called aimii lower case in every context
 - This project is based on the overwolf-electron sample app (NOT Overwolf Native).
 - All code and configuration is for overwolf-electron, not native Overwolf.
 - Game events and in-game overlays are confirmed to work in this setup.
-- The existing sample app files are to be kept for reference on how to use overwolf-electron APIs, game events, and overlays.
-- When building new features or the new app, use the sample files as reference only; new app code should be completely separate.
-- Do not remove or modify the sample files unless explicitly requested; they serve as a working reference for overwolf-electron usage.
-- Never use inline styles in any code. Always use a CSS file
 
 ## aimii - Mouse Sensitivity Normalizer App
 
@@ -210,12 +204,7 @@ gepService.on('game-detected', (gameId, name, gameInfo) => {
 - Debounced operations to prevent excessive calls
 
 ### Styling System
-- Never create css files or in-line styling, let the developer handle all styling unless specifically prompted
-- Dark theme: `#23272e` backgrounds, `#181a20` darker areas, `#e0e0e0` text
-- Yellow accent color: `#ffb347` for highlights and active states
-- Glassmorphism effects with backdrop-filter
-- No inline styles - external CSS only
-- Consistent styling between main window and widget
+- No inline styles. The assistant will not create styles unless specifically prompted; when requested, use external CSS (or the project's preferred styling method) only.
 
 ### Development Patterns
 - TypeScript interfaces for all data structures
@@ -224,39 +213,6 @@ gepService.on('game-detected', (gameId, name, gameInfo) => {
 - Event-driven communication over polling
 - Centralized configuration (hotkeys, themes, etc.)
 - Performance-first approach with debouncing and memoization
-
-### File Structure
-```
-src/
-├── browser/
-│   ├── services/          # Core business logic
-│   │   ├── current-game.service.ts      # Game detection with GEP-overlay coordination
-│   │   ├── gep.service.ts               # High-performance game events provider
-│   │   ├── overlay.service.ts           # Optimized overlay API management
-│   │   ├── sensitivity-converter.service.ts # Cross-game calculations
-│   │   ├── games.service.ts             # Game configuration management
-│   │   ├── settings.service.ts          # Persistent settings storage
-│   │   ├── overlay-hotkeys.service.ts   # Hotkey management
-│   │   ├── hotkey.service.ts            # Centralized hotkey management
-│   │   ├── custom-game-detector.service.ts # Fallback game detection
-│   │   └── window-state.service.ts      # Window state persistence
-│   ├── controllers/       # IPC and window management
-│   │   ├── main-window.controller.ts    # Central coordination hub
-│   │   └── widget-window.controller.ts  # Overlay widget management
-│   └── index.ts          # Dependency injection setup
-├── components/
-│   ├── MyMainWindow/     # Main application UI
-│   ├── Widget/           # Overlay widget UI
-│   ├── Settings/         # Settings management UI
-│   └── OverwolfTerminal/ # Empty directory (demo removed)
-├── data/
-│   └── games.data.ts     # Game configuration data (TypeScript)
-├── preload/              # Context bridge APIs
-├── assets/               # Static assets (fonts, images)
-├── global.css            # Global styles
-├── my-main.tsx          # Main window entry point
-└── widget.tsx           # Widget entry point
-```
 
 ### Performance Optimizations (Recent)
 - **Removed 2-second delay** from overlay registration for faster injection (confirmed)
@@ -323,7 +279,9 @@ This ensures the rules remain accurate and helpful for future development.
 - **Overlay Input Service**: Removed exclusive mode demo functionality
 - **Demo-related IPC handlers**: Cleaned up demo-specific IPC communication
 
+This ensures the rules remain accurate and helpful for future development.
 
-
+This ensures the rules remain accurate and helpful for future development.
+- **Demo-related IPC handlers**: Cleaned up demo-specific IPC communication
 
 This ensures the rules remain accurate and helpful for future development.
