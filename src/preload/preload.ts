@@ -1,24 +1,24 @@
-console.log('** preload **')
-const { contextBridge, ipcRenderer  } = require('electron');
+console.log('** preload **');
+const { contextBridge, ipcRenderer } = require('electron');
 
 async function initialize () {
   function replaceText (selector: string, text: string) {
-   const element = document.querySelector<HTMLElement>(selector);
-   if (element) {
-     element.innerText = text;
-   }
- }
+    const element = document.querySelector<HTMLElement>(selector);
+    if (element) {
+      element.innerText = text;
+    }
+  }
 
- replaceText('.electron-version', `ow-electron v${process.versions.electron}`);
+  replaceText('.electron-version', `ow-electron v${process.versions.electron}`);
 }
 
 contextBridge.exposeInMainWorld('app', {
- initialize
+  initialize
 });
 
 contextBridge.exposeInMainWorld('gep', {
   onMessage: (func: (...args: any[]) => void) => {
-    ipcRenderer.on('console-message',(e: any, ...args: any[]) => {
+    ipcRenderer.on('console-message', (e: any, ...args: any[]) => {
       // Log to Chrome console instead of terminal
       console.log(...args);
       func(...args);
@@ -37,9 +37,6 @@ contextBridge.exposeInMainWorld('gep', {
     return ipcRenderer.invoke('restart-initialization');
   },
 });
-
-
-
 
 
 contextBridge.exposeInMainWorld('electronAPI', {

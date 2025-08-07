@@ -33,8 +33,8 @@ export const SensitivityInputStep: React.FC<SensitivityInputStepProps> = ({
           id={inputId}
           type="text"
           value={sensitivity}
-          onChange={(e) => onDataChange('sensitivity', e.target.value)}
-          onKeyDown={(e) => {
+          onChange={e => onDataChange('sensitivity', e.target.value)}
+          onKeyDown={e => {
             if (e.key === 'Enter' && sensitivity) {
               onNext();
             }

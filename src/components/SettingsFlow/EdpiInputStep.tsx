@@ -31,8 +31,8 @@ export const EdpiInputStep: React.FC<EdpiInputStepProps> = ({
           id={inputId}
           type="text"
           value={edpi}
-          onChange={(e) => onDataChange('edpi', e.target.value)}
-          onKeyDown={(e) => {
+          onChange={e => onDataChange('edpi', e.target.value)}
+          onKeyDown={e => {
             if (e.key === 'Enter' && edpi) {
               onNext();
             }

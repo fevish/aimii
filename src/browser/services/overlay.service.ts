@@ -18,6 +18,7 @@ export class OverlayService extends EventEmitter {
     if (!this.isOverlayReady) {
       return null;
     }
+
     return (app.overwolf.packages as any).overlay as IOverwolfOverlayApi;
   }
 
@@ -38,6 +39,7 @@ export class OverlayService extends EventEmitter {
     if (!this.overlayApi) {
       throw new Error('Overlay API not ready');
     }
+
     const overlay = await this.overlayApi.createWindow(options);
     return overlay;
   }
@@ -56,6 +58,7 @@ export class OverlayService extends EventEmitter {
     if (!this.overlayApi) {
       throw new Error('Overlay API not ready');
     }
+
     await this.overlayApi.registerGames(filter);
 
     this.log('overlay is registered');
@@ -89,7 +92,7 @@ export class OverlayService extends EventEmitter {
     }
   }
 
-  //----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   private startOverlayWhenPackageReady() {
     app.overwolf.packages.on('ready', (e, packageName, version) => {
       if (packageName !== 'overlay') {
@@ -101,7 +104,7 @@ export class OverlayService extends EventEmitter {
     });
   }
 
-  //----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   // must be called after package is 'ready' (i.e loaded)
   private async startOverlay(version: string) {
     if (!this.overlayApi) {
@@ -143,14 +146,14 @@ export class OverlayService extends EventEmitter {
       this.emit('injection-decision-handling', event, gameInfo);
 
       // or just call
-      //event.inject();
+      // event.inject();
     });
 
     this.overlayApi.on('game-injection-error', (gameInfo, error) => {
       this.log('game-injection-error', error, gameInfo);
     });
 
-    this.overlayApi.on('game-injected', (gameInfo) => {
+    this.overlayApi.on('game-injected', gameInfo => {
       this.log('new game injected!', gameInfo);
     });
 
@@ -162,16 +165,16 @@ export class OverlayService extends EventEmitter {
       this.log('game window info changed', reason, window);
     });
 
-    this.overlayApi.on('game-input-interception-changed', (info) => {
+    this.overlayApi.on('game-input-interception-changed', info => {
       this.log('overlay input interception changed', info);
     });
 
-    this.overlayApi.on('game-input-exclusive-mode-changed', (info) => {
+    this.overlayApi.on('game-input-exclusive-mode-changed', info => {
       this.log('overlay input exclusive mode changed', info);
     });
 
     // Add game exit event listener for better cleanup
-    this.overlayApi.on('game-exit', (gameInfo) => {
+    this.overlayApi.on('game-exit', gameInfo => {
       this.log('game exit detected', gameInfo);
       this.emit('game-exit', gameInfo);
     });

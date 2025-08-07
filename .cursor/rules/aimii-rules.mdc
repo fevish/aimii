@@ -4,15 +4,16 @@ globs:
 alwaysApply: true
 ---
 
-- This app used to be named AIMII uppercase but it should always be called aimii lower case in every context
+- This app used to be named aimii uppercase but it should always be called aimii lower case in every context
 - This project is based on the overwolf-electron sample app (NOT Overwolf Native).
 - All code and configuration is for overwolf-electron, not native Overwolf.
 - Game events and in-game overlays are confirmed to work in this setup.
+- The assistant is never allowed to make git commits.
 
 ## aimii - Mouse Sensitivity Normalizer App
 
 ### Project Overview
-AIMII is a complete overwolf-electron mouse sensitivity normalizer application with real-time game detection, event-driven architecture, and both main window and overlay widget interfaces. The app is optimized for maximum performance with minimal latency.
+aimii is a complete overwolf-electron mouse sensitivity normalizer application with real-time game detection, event-driven architecture, and both main window and overlay widget interfaces. The app is optimized for maximum performance with minimal latency.
 
 ### Core Architecture
 

@@ -40,11 +40,11 @@ export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
           <select
             id={inputId}
             value={selectedGame}
-            onChange={(e) => onDataChange('selectedGame', e.target.value)}
+            onChange={e => onDataChange('selectedGame', e.target.value)}
             required
           >
             <option value="">Select a Game</option>
-            {games.map((game) => (
+            {games.map(game => (
               <option key={game.game} value={game.game}>
                 {game.game}
               </option>

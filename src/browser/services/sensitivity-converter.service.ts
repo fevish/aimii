@@ -1,6 +1,6 @@
-import { GamesService } from "./games.service";
-import { SettingsService } from "./settings.service";
-import { CurrentGameService } from "./current-game.service";
+import { GamesService } from './games.service';
+import { SettingsService } from './settings.service';
+import { CurrentGameService } from './current-game.service';
 
 export interface SensitivityConversion {
   fromGame: string;

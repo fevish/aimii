@@ -185,6 +185,7 @@ export class SettingsService {
       if (!(key in current) || typeof current[key] !== 'object') {
         current[key] = {};
       }
+
       current = current[key];
     }
 

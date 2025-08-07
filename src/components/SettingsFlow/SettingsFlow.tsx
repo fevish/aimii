@@ -80,11 +80,14 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
 
     if (settingsData.knowsEdpi === true) {
       return !!settingsData.edpi;
-    } else if (settingsData.knowsEdpi === false) {
+    }
+
+    if (settingsData.knowsEdpi === false) {
       if (currentStep === 1) return !!settingsData.selectedGame;
       if (currentStep === 2) return !!settingsData.sensitivity;
       if (currentStep === 3) return !!settingsData.dpi;
     }
+
     return false;
   };
 
@@ -93,9 +96,12 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
 
     if (settingsData.knowsEdpi === true) {
       return 'Continue';
-    } else if (settingsData.knowsEdpi === false) {
+    }
+
+    if (settingsData.knowsEdpi === false) {
       return currentStep === 3 ? 'Complete' : 'Next';
     }
+
     return 'Next';
   };
 

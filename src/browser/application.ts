@@ -13,7 +13,8 @@ export class Application {
     private readonly overlayService: OverlayService,
     private readonly gepService: GameEventsService,
     private readonly mainWindowController: MainWindowController,
-    private readonly gamesService: GamesService) {
+    private readonly gamesService: GamesService
+  ) {
 
     overlayService.on('ready', this.onOverlayServiceReady.bind(this));
 
@@ -59,6 +60,7 @@ export class Application {
         if (mainWindow.isMinimized()) {
           mainWindow.restore();
         }
+
         mainWindow.focus();
       }
     });

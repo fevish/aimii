@@ -44,6 +44,7 @@ const Widget: React.FC = () => {
         if (prevGame.id === gameInfo.id && prevGame.name === gameInfo.name && prevGame.isSupported === gameInfo.isSupported) {
           return prevGame; // No change, keep previous state
         }
+
         return gameInfo;
       });
     } catch (error) {
@@ -66,6 +67,7 @@ const Widget: React.FC = () => {
             prevSettings.dpi === settings.dpi) {
           return prevSettings; // No change, keep previous state
         }
+
         return settings;
       });
     } catch (error) {
@@ -101,6 +103,7 @@ const Widget: React.FC = () => {
             prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
           return prevSuggestion; // No change, keep previous state
         }
+
         return suggestion;
       });
     } catch (error) {
@@ -121,12 +124,18 @@ const Widget: React.FC = () => {
   };
 
   const fetchData = async () => {
-    await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchHotkeyInfo(), fetchSuggestedSensitivity(), fetchCanonicalCm360()]);
+    await Promise.all([
+      fetchCurrentGame(),
+      fetchCanonicalSettings(),
+      fetchHotkeyInfo(),
+      fetchSuggestedSensitivity(),
+      fetchCanonicalCm360()
+    ]);
   };
 
   // Check if current game matches canonical game
-  const isPlayingCanonicalGame = React.useMemo(() =>
-    currentGame && canonicalSettings &&
+  const isPlayingCanonicalGame = React.useMemo(
+    () => currentGame && canonicalSettings &&
     currentGame.name === canonicalSettings.game && currentGame.isSupported,
     [currentGame, canonicalSettings]
   );
@@ -146,6 +155,7 @@ const Widget: React.FC = () => {
         console.error('Error loading theme:', error);
       }
     };
+
     initializeTheme();
 
     // Set up IPC listener for game change events
@@ -164,6 +174,7 @@ const Widget: React.FC = () => {
       console.log('[Widget] Canonical settings changed event received:', settings);
       fetchData();
     };
+
     ipcRenderer.on('canonical-settings-changed', handleCanonicalSettingsChanged);
 
     // Listen for theme changes
@@ -171,6 +182,7 @@ const Widget: React.FC = () => {
       console.log('[Widget] Theme changed event received:', theme);
       applyTheme(theme);
     };
+
     ipcRenderer.on('theme-changed', handleThemeChanged);
 
     // Listen for hotkey change events
@@ -219,15 +231,8 @@ const Widget: React.FC = () => {
 
   // Theme application function
   const applyTheme = (theme: string) => {
-    const htmlElement = document.documentElement;
-
-    // Remove all theme classes
-    htmlElement.classList.remove('default', 'high-contrast');
-
-    // Add the selected theme class
-    if (theme !== 'default') {
-      htmlElement.classList.add(theme);
-    }
+    const { applyTheme: setTheme } = require('../../utils/theme');
+    setTheme(theme);
   };
 
   return (
@@ -248,32 +253,40 @@ const Widget: React.FC = () => {
         </button>
       </div>
       <div className="widget-content">
-        {isLoading ? (
-          <p className="game-status loading">Loading...</p>
-        ) : (
-          <div className="current-game-info">
-            <div className="game-display">
-              <p>Game Detected: <b className="game-name">{currentGame?.name}</b></p>
+        {isLoading
+          ? (
+            <p className="game-status loading">Loading...</p>
+          )
+          : (
+            <div className="current-game-info">
+              <div className="game-display">
+                <p>Game Detected: <b className="game-name">{currentGame?.name}</b></p>
+              </div>
+              {isPlayingCanonicalGame
+                ? (
+                  <div className="sensitivity-suggestion">
+                    <p>Sensitivity</p>
+                    <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
+                    {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
+                  </div>
+                )
+                : suggestedSensitivity
+                  ? (
+                    <div className="sensitivity-suggestion">
+                      <p>Converted Sensitivity</p>
+                      <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
+                      {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
+                    </div>
+                  )
+                  : !canonicalSettings
+                    ? (
+                      <div className="sensitivity-suggestion">
+                        <p>No canon game selected</p>
+                      </div>
+                    )
+                    : null}
             </div>
-            {isPlayingCanonicalGame ? (
-              <div className="sensitivity-suggestion">
-                <p>Sensitivity</p>
-                <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
-                {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
-              </div>
-            ) : suggestedSensitivity ? (
-              <div className="sensitivity-suggestion">
-                <p>Converted Sensitivity</p>
-                <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
-              </div>
-            ) : !canonicalSettings ? (
-              <div className="sensitivity-suggestion">
-                <p>No canon game selected</p>
-              </div>
-            ) : null}
-          </div>
-        )}
+          )}
       </div>
     </div>
   );

@@ -54,7 +54,7 @@ export class CustomGameDetectorService extends EventEmitter {
     }
   }
 
-          /**
+  /**
    * Check for running games using tasklist command
    */
   private checkRunningGames(): void {
@@ -64,7 +64,7 @@ export class CustomGameDetectorService extends EventEmitter {
         return;
       }
 
-            // Parse the CSV tasklist output to find game processes
+      // Parse the CSV tasklist output to find game processes
       const lines = stdout.split('\n').filter(line => line.trim());
       const gameProcesses = this.findGameProcessesFromCSV(lines);
 
@@ -81,17 +81,14 @@ export class CustomGameDetectorService extends EventEmitter {
     });
   }
 
-      /**
+  /**
    * Find game processes in the CSV tasklist output
    */
   private findGameProcessesFromCSV(lines: string[]): DetectedGame[] {
     const gameProcesses: DetectedGame[] = [];
 
-        // Get all enabled games with process names that DON'T have an owGameId (GEP will handle those)
-    const enabledGames = this.gamesService.getAllGames().filter(game =>
-      game.enable_for_app && game.processName && (!game.owGameId || game.owGameId === "0")
-    );
-
+    // Get all enabled games with process names that DON'T have an owGameId (GEP will handle those)
+    const enabledGames = this.gamesService.getAllGames().filter(game => game.enable_for_app && game.processName && (!game.owGameId || game.owGameId === '0'));
 
 
     lines.forEach(line => {
@@ -108,13 +105,10 @@ export class CustomGameDetectorService extends EventEmitter {
         const memoryUsage = matches[5];
 
 
-
         // Check if this process matches any of our enabled games
-        const matchingGame = enabledGames.find(game =>
-          game.processName && processName.toLowerCase() === game.processName.toLowerCase()
-        );
+        const matchingGame = enabledGames.find(game => game.processName && processName.toLowerCase() === game.processName.toLowerCase());
 
-                if (matchingGame) {
+        if (matchingGame) {
           gameProcesses.push({
             processName,
             pid,
@@ -132,7 +126,7 @@ export class CustomGameDetectorService extends EventEmitter {
    * Check if a specific process is running
    */
   public isProcessRunning(processName: string): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       exec('tasklist', (err, stdout) => {
         if (err) {
           console.error('Error checking process:', err);
@@ -157,7 +151,7 @@ export class CustomGameDetectorService extends EventEmitter {
    * Public method to check running games (for periodic verification)
    */
   public async verifyRunningGames(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       exec('tasklist /FO CSV', (err, stdout) => {
         if (err) {
           console.error('Error running tasklist:', err);

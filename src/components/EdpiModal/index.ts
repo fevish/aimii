@@ -1,1 +1,0 @@
-export { EdpiModal } from './EdpiModal';

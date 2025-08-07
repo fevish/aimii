@@ -31,8 +31,8 @@ export const DpiInputStep: React.FC<DpiInputStepProps> = ({
           id={inputId}
           type="text"
           value={dpi}
-          onChange={(e) => onDataChange('dpi', e.target.value)}
-          onKeyDown={(e) => {
+          onChange={e => onDataChange('dpi', e.target.value)}
+          onKeyDown={e => {
             if (e.key === 'Enter' && dpi) {
               onNext();
             }

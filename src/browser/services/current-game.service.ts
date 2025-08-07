@@ -1,6 +1,6 @@
-import { OverlayService } from "./overlay.service";
-import { GamesService } from "./games.service";
-import { CustomGameDetectorService } from "./custom-game-detector.service";
+import { OverlayService } from './overlay.service';
+import { GamesService } from './games.service';
+import { CustomGameDetectorService } from './custom-game-detector.service';
 import EventEmitter from 'events';
 
 /**
@@ -185,6 +185,7 @@ export class CurrentGameService extends EventEmitter {
       if (this.gamesService.getGameByOwId(normalizedGameId)) {
         event.inject();
       }
+
       this.scheduleUpdate();
     });
 
@@ -325,7 +326,7 @@ export class CurrentGameService extends EventEmitter {
           name: gameData.game,
           owGameName: gameData.owGameName,
           isSupported: true,
-          gameData: gameData,
+          gameData,
           detectionSource: 'gep'
         });
       }
@@ -358,9 +359,12 @@ export class CurrentGameService extends EventEmitter {
     const customGames: CurrentGameInfo[] = [];
 
     for (const detectedGame of detectedGames) {
-      const gameData = this.gamesService.getAllGames().find(game =>
-        game.processName && game.processName.toLowerCase() === detectedGame.processName.toLowerCase()
-      );
+      const gameData = this.gamesService
+        .getAllGames()
+        .find(game => (
+          game.processName &&
+          game.processName.toLowerCase() === detectedGame.processName.toLowerCase()
+        ));
 
       if (gameData) {
         customGames.push({
@@ -368,7 +372,7 @@ export class CurrentGameService extends EventEmitter {
           name: gameData.game,
           owGameName: gameData.owGameName,
           isSupported: gameData.enable_for_app,
-          gameData: gameData,
+          gameData,
           detectionSource: 'custom'
         });
       }

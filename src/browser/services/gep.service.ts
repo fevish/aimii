@@ -1,5 +1,5 @@
 import { app as electronApp } from 'electron';
-import { overwolf } from '@overwolf/ow-electron' // TODO: wil be @overwolf/ow-electron
+import { overwolf } from '@overwolf/ow-electron'; // TODO: wil be @overwolf/ow-electron
 import EventEmitter from 'events';
 
 const app = electronApp as overwolf.OverwolfApp;
@@ -28,7 +28,7 @@ export class GameEventsService extends EventEmitter {
    *  https://overwolf.github.io/api/electron/game-events/
    *   */
   public async registerGames(gepGamesId: number[]) {
-    this.emit('log', `GEP: register to game events for `, gepGamesId);
+    this.emit('log', 'GEP: register to game events for ', gepGamesId);
     this.gepGamesId = gepGamesId;
     this.gepGamesSet = new Set(gepGamesId); // Create Set for O(1) lookups
     this.emit('log', `GEP: Registered ${gepGamesId.length} games: ${gepGamesId.join(', ')}`);
@@ -45,13 +45,13 @@ export class GameEventsService extends EventEmitter {
    */
   public async setRequiredFeaturesForAllSupportedGames() {
     // Use Promise.all for parallel execution instead of sequential
-    await Promise.all(this.gepGamesId.map(async (gameId) => {
+    await Promise.all(this.gepGamesId.map(async gameId => {
       this.emit('log', `set-required-feature for: ${gameId}`);
       await this.gepApi.setRequiredFeatures(gameId, undefined);
     }));
   }
 
-    /**
+  /**
    * Check for already running games and detect them
    */
   public async checkForAlreadyRunningGames() {
@@ -117,7 +117,7 @@ export class GameEventsService extends EventEmitter {
    *
    */
   public async getInfoForActiveGame(): Promise<any> {
-    if (this.activeGame == 0) {
+    if (this.activeGame === 0) {
       return 'getInfo error - no active game';
     }
 
@@ -149,7 +149,7 @@ export class GameEventsService extends EventEmitter {
     });
   }
 
-    /**
+  /**
    * Register listeners for the GEP Package once it is ready
    *
    * @param {overwolf.packages.OverwolfGameEventPackage} gep The GEP Package instance
@@ -180,7 +180,7 @@ export class GameEventsService extends EventEmitter {
         return;
       }
 
-      /// if (gameInfo.isElevated) {
+      // / if (gameInfo.isElevated) {
       //   // Show message to User?
       //   return;
       // }
@@ -196,7 +196,7 @@ export class GameEventsService extends EventEmitter {
     });
 
     // Handle game exit for faster cleanup and detection
-    //@ts-ignore
+
     this.gepApi.on('game-exit', (e, gameId, processName, pid) => {
       this.emit('log', 'gep: game-exit', gameId, processName, pid);
 
@@ -216,7 +216,8 @@ export class GameEventsService extends EventEmitter {
     // If a game is detected running in elevated mode
     // **Note** - This fires AFTER `game-detected`
     this.gepApi.on('elevated-privileges-required', (e, gameId, ...args) => {
-      this.emit('log',
+      this.emit(
+        'log',
         'elevated-privileges-required',
         gameId,
         ...args

@@ -90,28 +90,28 @@ export class HotkeyService extends EventEmitter {
     } else if (hotkey.keyCode >= 106 && hotkey.keyCode <= 111) {
       // Numpad operators
       switch (hotkey.keyCode) {
-        case 106: keyName = 'Num *'; break;
-        case 107: keyName = 'Num +'; break;
-        case 109: keyName = 'Num -'; break;
-        case 110: keyName = 'Num .'; break;
-        case 111: keyName = 'Num /'; break;
-        default: keyName = `Num ${hotkey.keyCode}`; break;
+      case 106: keyName = 'Num *'; break;
+      case 107: keyName = 'Num +'; break;
+      case 109: keyName = 'Num -'; break;
+      case 110: keyName = 'Num .'; break;
+      case 111: keyName = 'Num /'; break;
+      default: keyName = `Num ${hotkey.keyCode}`; break;
       }
     } else {
       // Common keyboard characters
       switch (hotkey.keyCode) {
-        case 186: keyName = ';'; break;
-        case 187: keyName = '='; break;
-        case 188: keyName = ','; break;
-        case 189: keyName = '-'; break;
-        case 190: keyName = '.'; break;
-        case 191: keyName = '/'; break;
-        case 192: keyName = '`'; break;
-        case 219: keyName = '['; break;
-        case 220: keyName = '\\'; break;
-        case 221: keyName = ']'; break;
-        case 222: keyName = "'"; break;
-        default: keyName = `Key${hotkey.keyCode}`; break;
+      case 186: keyName = ';'; break;
+      case 187: keyName = '='; break;
+      case 188: keyName = ','; break;
+      case 189: keyName = '-'; break;
+      case 190: keyName = '.'; break;
+      case 191: keyName = '/'; break;
+      case 192: keyName = '`'; break;
+      case 219: keyName = '['; break;
+      case 220: keyName = '\\'; break;
+      case 221: keyName = ']'; break;
+      case 222: keyName = '\''; break;
+      default: keyName = `Key${hotkey.keyCode}`; break;
       }
     }
 

@@ -9,99 +9,11 @@ import { SecondaryCardContent } from '../CardButton/SecondaryCardContent';
 import './MyMainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
-
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
-
-interface CanonicalSettings {
-  game: string;
-  sensitivity: number;
-  dpi: number;
-  edpi: number;
-}
-
-interface HotkeyInfo {
-  keyCode: number;
-  modifiers: { ctrl: boolean; shift: boolean; alt: boolean };
-  displayText: string;
-}
-
-interface HotkeyConfig {
-  id: string;
-  keyCode: number;
-  modifiers: { ctrl: boolean; shift: boolean; alt: boolean };
-  displayText: string;
-}
-
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      APP_VERSION: string;
-    }
-  }
-  interface Window {
-    games: {
-      getAllGames: () => Promise<GameData[]>;
-      getEnabledGames: () => Promise<GameData[]>;
-      getGameSummary: () => Promise<string>;
-      getEnabledGameIds: () => Promise<number[]>;
-    };
-    settings: {
-      getCanonicalSettings: () => Promise<CanonicalSettings | null>;
-      setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => Promise<boolean>;
-      clearCanonicalSettings: () => Promise<boolean>;
-      hasCanonicalSettings: () => Promise<boolean>;
-      getTheme: () => Promise<string>;
-      setTheme: (theme: string) => Promise<boolean>;
-      onThemeChanged: (callback: (theme: string) => void) => void;
-      removeThemeListener: () => void;
-    };
-    currentGame: {
-      getCurrentGameInfo: () => Promise<CurrentGameInfo | null>;
-      getAllDetectedGames: () => Promise<CurrentGameInfo[]>;
-      setCurrentGame: (gameId: number) => Promise<boolean>;
-      isGameRunning: () => Promise<boolean>;
-      getCurrentGameName: () => Promise<string | null>;
-      isCurrentGameSupported: () => Promise<boolean>;
-      onGameChanged: (callback: (gameInfo: any) => void) => void;
-      removeGameChangedListener: () => void;
-    };
-    widget: {
-      createWidget: () => Promise<void>;
-      toggleWidget: () => Promise<void>;
-      getHotkeyInfo: () => Promise<HotkeyInfo>;
-    };
-    sensitivityConverter: {
-      getSuggestedForCurrentGame: () => Promise<SensitivityConversion | null>;
-      getAllConversions: () => Promise<SensitivityConversion[]>;
-      convert: (fromGame: string, toGame: string, sensitivity: number, dpi: number) => Promise<SensitivityConversion | null>;
-      getCanonicalCm360: () => Promise<number | null>;
-    };
-    windowControls: {
-      minimize: () => void;
-      close: () => void;
-    };
-    electronAPI?: {
-      openExternalUrl: (url: string) => Promise<boolean>;
-    };
-  }
-}
-
-
+import { GameData, CanonicalSettings, HotkeyInfo } from '../../types/app';
+import { GameInfo } from './GameInfo';
+import { useMainWindowData } from './useMainWindowData';
 
 export const MyMainWindow: React.FC = () => {
-  const [games, setGames] = useState<GameData[]>([]);
-  const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
-  const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
-  const [allDetectedGames, setAllDetectedGames] = useState<CurrentGameInfo[]>([]);
-  const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
-  const [hotkeyInfo, setHotkeyInfo] = useState<HotkeyInfo | null>(null);
   const [selectedGame, setSelectedGame] = useState<string>('');
   const [sensitivity, setSensitivity] = useState<string>('');
   const [dpi, setDpi] = useState<string>('800');
@@ -110,8 +22,24 @@ export const MyMainWindow: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'main' | 'settings'>('main');
   const [currentGameIndex, setCurrentGameIndex] = useState<number>(0);
 
+  const {
+    games,
+    canonicalSettings,
+    currentGame,
+    allDetectedGames,
+    suggestedSensitivity,
+    hotkeyInfo,
+    cm360,
+    showOnboarding,
+    setShowOnboarding,
+    setCanonicalSettings,
+    setSuggestedSensitivity,
+    loadAllDetectedGames,
+    loadAllData,
+    loadGameSpecificData
+  } = useMainWindowData();
+
   // Onboarding state
-  const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [onboardingStep, setOnboardingStep] = useState<number>(1);
   const [onboardingData, setOnboardingData] = useState({
     selectedGame: '',
@@ -138,9 +66,6 @@ export const MyMainWindow: React.FC = () => {
     knowsEdpi: null as boolean | null
   });
   const [userPreferencesSettingsStep, setUserPreferencesSettingsStep] = useState(1);
-
-  // cm/360° state
-  const [cm360, setCm360] = useState<number | null>(null);
 
   const handleMinimize = () => {
     window.windowControls.minimize();
@@ -169,220 +94,11 @@ export const MyMainWindow: React.FC = () => {
   };
 
   // Memoized values to prevent unnecessary recalculations
-  const isPlayingCanonicalGame = React.useMemo(() =>
-    currentGame && canonicalSettings &&
+  const isPlayingCanonicalGame = React.useMemo(
+    () => currentGame && canonicalSettings &&
     currentGame.name === canonicalSettings.game && currentGame.isSupported,
     [currentGame, canonicalSettings]
   );
-
-  // Consolidated data loading function
-  const loadAllData = React.useCallback(async () => {
-    try {
-      // Load all data in parallel for better performance
-      const [gamesData, settings, gameInfo, allGames, hotkey, hasSettings] = await Promise.all([
-        window.games.getEnabledGames(), // Changed from getAllGames() to getEnabledGames()
-        window.settings.getCanonicalSettings(),
-        window.currentGame.getCurrentGameInfo(),
-        window.currentGame.getAllDetectedGames(),
-        window.widget.getHotkeyInfo(),
-        window.settings.hasCanonicalSettings()
-      ]);
-
-      setGames(gamesData);
-      // Ensure settings have edpi for compatibility
-      if (settings && typeof settings === 'object' && 'sensitivity' in settings && 'dpi' in settings && !('edpi' in settings)) {
-        (settings as any).edpi = (settings as any).sensitivity * (settings as any).dpi;
-      }
-      setCanonicalSettings(settings as CanonicalSettings);
-      setHotkeyInfo(hotkey);
-      setAllDetectedGames(allGames);
-
-      // Check if user has canonical settings, if not show onboarding
-      if (!hasSettings) {
-        setShowOnboarding(true);
-        setOnboardingStep(1);
-        // Reset onboarding data to ensure clean state
-        setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
-      }
-
-      // Only update current game if it actually changed
-      setCurrentGame(prevGame => {
-        if (!prevGame && !gameInfo) return prevGame;
-        if (!prevGame || !gameInfo) return gameInfo;
-        if (prevGame.id === gameInfo.id && prevGame.name === gameInfo.name && prevGame.isSupported === gameInfo.isSupported) {
-          return prevGame; // No change, keep previous state
-        }
-        return gameInfo;
-      });
-
-      // Load sensitivity suggestion only if we have both settings and game info
-      if (settings && gameInfo && window.sensitivityConverter) {
-        const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
-        setSuggestedSensitivity(suggestion);
-      }
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    // Initial data load
-    loadAllData();
-
-    // Initialize theme
-    const initializeTheme = async () => {
-      try {
-        const theme = await window.settings.getTheme();
-        applyTheme(theme);
-      } catch (error) {
-        console.error('Error loading theme:', error);
-      }
-    };
-    initializeTheme();
-
-    // Set up theme change listener
-    const handleThemeChanged = (theme: string) => {
-      applyTheme(theme);
-    };
-
-    if (window.settings && window.settings.onThemeChanged) {
-      window.settings.onThemeChanged(handleThemeChanged);
-    }
-
-    // Set up listener for game change events
-    const handleGameChanged = (gameInfo: any) => {
-      // Reload both current game and all detected games
-      loadGameSpecificData(gameInfo);
-      loadAllDetectedGames();
-    };
-
-    if (window.currentGame && window.currentGame.onGameChanged) {
-      window.currentGame.onGameChanged(handleGameChanged);
-    }
-
-    // Set up listener for hotkey changes
-    const handleHotkeyChanged = async (id: string, updates: any) => {
-      if (id === 'widget-toggle') {
-        // Refresh hotkey info when widget toggle hotkey changes
-        try {
-          const hotkey = await window.widget.getHotkeyInfo();
-          setHotkeyInfo(hotkey);
-        } catch (error) {
-          console.error('Error refreshing hotkey info:', error);
-        }
-      }
-    };
-
-    const handleHotkeysReset = async () => {
-      // Refresh hotkey info when hotkeys are reset
-      try {
-        const hotkey = await window.widget.getHotkeyInfo();
-        setHotkeyInfo(hotkey);
-      } catch (error) {
-        console.error('Error refreshing hotkey info after reset:', error);
-      }
-    };
-
-    // Add hotkey change listeners using preload script APIs
-    if (window.hotkeys) {
-      window.hotkeys.onHotkeyChanged(handleHotkeyChanged);
-      window.hotkeys.onHotkeysReset(handleHotkeysReset);
-    }
-
-    // Reduced polling frequency for settings changes
-    const settingsInterval = setInterval(async () => {
-      try {
-        const settings = await window.settings.getCanonicalSettings();
-        setCanonicalSettings(prev => {
-          if (!prev || !settings) return settings as CanonicalSettings;
-          if (prev.game === settings.game && prev.sensitivity === settings.sensitivity && prev.dpi === settings.dpi) {
-            return prev; // No change
-          }
-          // Ensure settings have edpi for compatibility
-          if (settings && typeof settings === 'object' && 'sensitivity' in settings && 'dpi' in settings && !('edpi' in settings)) {
-            (settings as any).edpi = (settings as any).sensitivity * (settings as any).dpi;
-          }
-          return settings as CanonicalSettings;
-        });
-      } catch (error) {
-        console.error('Error checking settings:', error);
-      }
-    }, 30000); // Check every 30 seconds instead of 15
-
-    return () => {
-      if (window.currentGame && window.currentGame.removeGameChangedListener) {
-        window.currentGame.removeGameChangedListener();
-      }
-      if (window.settings && window.settings.removeThemeListener) {
-        window.settings.removeThemeListener();
-      }
-      clearInterval(settingsInterval);
-
-      // Remove hotkey change listeners
-      if (window.hotkeys) {
-        window.hotkeys.removeHotkeyListeners();
-      }
-    };
-  }, [loadAllData]);
-
-  // Separate function to load all detected games
-  const loadAllDetectedGames = React.useCallback(async () => {
-    try {
-      const allGames = await window.currentGame.getAllDetectedGames();
-
-      // Only update state if games actually changed
-      setAllDetectedGames(prevGames => {
-        if (hasGamesChanged(prevGames, allGames)) {
-          return allGames;
-        }
-        return prevGames;
-      });
-    } catch (error) {
-      console.error('Error loading all detected games:', error);
-    }
-  }, []);
-
-  // Helper function to check if games array has changed
-  const hasGamesChanged = (prevGames: CurrentGameInfo[], newGames: CurrentGameInfo[]): boolean => {
-    if (prevGames.length !== newGames.length) return true;
-
-    const prevIds = prevGames.map(g => g.id).sort();
-    const newIds = newGames.map(g => g.id).sort();
-    return JSON.stringify(prevIds) !== JSON.stringify(newIds);
-  };
-
-  // Separate function for game-specific data updates
-  const loadGameSpecificData = React.useCallback(async (gameInfo?: any) => {
-    try {
-      const currentGameInfo = gameInfo || await window.currentGame.getCurrentGameInfo();
-
-      setCurrentGame(prevGame => {
-        if (!prevGame && !currentGameInfo) return prevGame;
-        if (!prevGame || !currentGameInfo) return currentGameInfo;
-        if (prevGame.id === currentGameInfo.id && prevGame.name === currentGameInfo.name && prevGame.isSupported === currentGameInfo.isSupported) {
-          return prevGame; // No change
-        }
-        return currentGameInfo;
-      });
-
-      // Update sensitivity suggestion if we have canonical settings
-      if (canonicalSettings && currentGameInfo && window.sensitivityConverter) {
-        const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
-        setSuggestedSensitivity(prevSuggestion => {
-          if (!prevSuggestion && !suggestion) return prevSuggestion;
-          if (!prevSuggestion || !suggestion) return suggestion;
-          if (prevSuggestion.fromGame === suggestion.fromGame &&
-            prevSuggestion.toGame === suggestion.toGame &&
-            prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
-            return prevSuggestion; // No change
-          }
-          return suggestion;
-        });
-      }
-    } catch (error) {
-      console.error('Error loading game data:', error);
-    }
-  }, [canonicalSettings]);
 
   // Separate function to update sensitivity suggestion when settings change
   const updateSensitivitySuggestion = React.useCallback(async () => {
@@ -397,6 +113,7 @@ export const MyMainWindow: React.FC = () => {
             prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
             return prevSuggestion; // No change
           }
+
           return suggestion;
         });
       }
@@ -411,11 +128,6 @@ export const MyMainWindow: React.FC = () => {
       updateSensitivitySuggestion();
     }
   }, [canonicalSettings, currentGame, updateSensitivitySuggestion]);
-
-  // Calculate cm/360° when canonical settings change
-  useEffect(() => {
-    fetchCanonicalCm360();
-  }, [canonicalSettings]);
 
   // Update currentGameIndex when currentGame changes
   useEffect(() => {
@@ -500,19 +212,6 @@ export const MyMainWindow: React.FC = () => {
       setMessage('Error clearing settings');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Theme application function
-  const applyTheme = (theme: string) => {
-    const htmlElement = document.documentElement;
-
-    // Remove all theme classes
-    htmlElement.classList.remove('default', 'high-contrast');
-
-    // Add the selected theme class
-    if (theme !== 'default') {
-      htmlElement.classList.add(theme);
     }
   };
 
@@ -668,21 +367,6 @@ export const MyMainWindow: React.FC = () => {
     setIsSecondaryCardOpen(false);
   };
 
-  const fetchCanonicalCm360 = async () => {
-    if (canonicalSettings && window.sensitivityConverter) {
-      try {
-        // CM/360° is universal for a given eDPI - it doesn't change between games
-        const cm360Value = await window.sensitivityConverter.getCanonicalCm360();
-        setCm360(cm360Value);
-      } catch (error) {
-        console.error('Error fetching cm/360°:', error);
-        setCm360(null);
-      }
-    } else {
-      setCm360(null);
-    }
-  };
-
   const handleResetSettingsFromCard = () => {
     setIsUserPreferencesCardOpen(false);
     handleResetCanonicalSettings();
@@ -704,6 +388,7 @@ export const MyMainWindow: React.FC = () => {
         setMessage('Error saving settings');
         setTimeout(() => setMessage(''), 3000);
       }
+
       return success;
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -731,7 +416,7 @@ export const MyMainWindow: React.FC = () => {
 
       // Reset all state
       setCanonicalSettings(null);
-      setCm360(null);
+
       setSuggestedSensitivity(null);
       setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
       setOnboardingStep(1);
@@ -786,6 +471,7 @@ export const MyMainWindow: React.FC = () => {
       } finally {
         setIsLoading(false);
       }
+
       return;
     }
 
@@ -838,93 +524,6 @@ export const MyMainWindow: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  // Reusable component for game information display
-  const GameInfo = ({
-    title,
-    gameName,
-    suggestedSensitivity,
-    canonicalSettings,
-    cm360,
-    showNavigation = false,
-    onPrevious,
-    onNext,
-    canNavigate
-  }: {
-    title: string;
-    gameName?: string;
-    suggestedSensitivity: SensitivityConversion | null;
-    canonicalSettings: CanonicalSettings | null;
-    cm360: number | null;
-    showNavigation?: boolean;
-    onPrevious?: () => void;
-    onNext?: () => void;
-    canNavigate?: boolean;
-  }) => (
-    <>
-      <h2>{title}</h2>
-      {suggestedSensitivity ? (
-        <>
-          <p className="cool-text">// Converted Sensitivity</p>
-          <h4>{suggestedSensitivity.suggestedSensitivity}</h4>
-        </>
-      ) : (
-        <>
-          <p className="cool-text">// Current Sensitivity</p>
-          <h4>{canonicalSettings?.sensitivity}</h4>
-        </>
-      )}
-
-      <div className="settings-grid">
-        <div className="setting-row">
-          <span className="setting-label">Current Game</span>
-          <span className="setting-value">{gameName}</span>
-        </div>
-        <div className="setting-row">
-          <span className="setting-label">
-            {suggestedSensitivity ? 'Recommended Sensitivity' : 'Sensitivity'}
-          </span>
-          <span className="setting-value">
-            {suggestedSensitivity ? suggestedSensitivity.suggestedSensitivity : canonicalSettings?.sensitivity}
-          </span>
-        </div>
-        <div className="setting-row">
-          <span className="setting-label">DPI</span>
-          <span className="setting-value">{canonicalSettings?.dpi}</span>
-        </div>
-        <div className="setting-row">
-          <span className="setting-label">CM/360°</span>
-          <span className="setting-value">
-            {suggestedSensitivity
-              ? `${suggestedSensitivity.cm360} cm`
-              : cm360 !== null
-                ? `${cm360} cm`
-                : 'Calculating...'
-            }
-          </span>
-        </div>
-      </div>
-
-      {showNavigation && (
-        <div className="multi-games-nav">
-          <button
-            className="nav-arrow prev-arrow"
-            onClick={onPrevious}
-            disabled={!canNavigate}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
-          </button>
-          <button
-            className="nav-arrow next-arrow"
-            onClick={onNext}
-            disabled={!canNavigate}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M529-279 361-447q-7-7-10-15.5t-3-17.5q0-9 3-17.5t10-15.5l168-168q5-5 10.5-7.5T551-691q12 0 22 9t10 23v358q0 14-10 23t-22 9q-4 0-22-10Z" /></svg>
-          </button>
-        </div>
-      )}
-    </>
-  );
 
   return (
     <div className={`my-main-window ${showOnboarding ? 'onboarding' : ''}`}>
@@ -983,7 +582,6 @@ export const MyMainWindow: React.FC = () => {
                       <>
                         <h2>Your ready to go!</h2>
                         <p>Launch a game to get started and we'll recommend a sensitivity for you based on your eDPI.</p>
-
 
                         <div className="notes-section">
                           <h3>Early Access Notes</h3>
@@ -1059,11 +657,10 @@ export const MyMainWindow: React.FC = () => {
                         settingsStep={userPreferencesSettingsStep}
                         isLoading={isLoading}
                         message={message}
-                        onDataChange={(field: string, value: string) =>
-                          setUserPreferencesSettingsData(prev => ({
-                            ...prev,
-                            [field]: field === 'knowsEdpi' ? value === 'true' : value
-                          }))
+                        onDataChange={(field: string, value: string) => setUserPreferencesSettingsData(prev => ({
+                          ...prev,
+                          [field]: field === 'knowsEdpi' ? value === 'true' : value
+                        }))
                         }
                         onNext={handleUserPreferencesNext}
                         onBack={handleUserPreferencesBack}
@@ -1098,7 +695,6 @@ export const MyMainWindow: React.FC = () => {
         )}
       </main>
 
-
-    </div >
+      </div >
   );
 };

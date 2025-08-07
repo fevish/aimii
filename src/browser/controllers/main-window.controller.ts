@@ -1,7 +1,7 @@
 import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
-import { WINDOW_CONFIG } from '../services/window-state.service';
+import { WINDOW_CONFIG, WindowStateService } from '../services/window-state.service';
 
 import { WidgetWindowController } from './widget-window.controller';
 import { OverlayService } from '../services/overlay.service';
@@ -12,7 +12,7 @@ import { GamesService } from '../services/games.service';
 import { SettingsService } from '../services/settings.service';
 import { CurrentGameService } from '../services/current-game.service';
 import { SensitivityConverterService } from '../services/sensitivity-converter.service';
-import { WindowStateService } from '../services/window-state.service';
+
 import { HotkeyService } from '../services/hotkey.service';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
@@ -61,7 +61,7 @@ export class MainWindowController {
 
   private setupGameChangeListener(): void {
     // Listen for game changes from the CurrentGameService
-    this.currentGameService.on('game-changed', (gameInfo) => {
+    this.currentGameService.on('game-changed', gameInfo => {
       this.printLogMessage('Current game changed:', gameInfo?.name || 'No game');
 
       // Notify all renderer processes about the game change
@@ -82,10 +82,11 @@ export class MainWindowController {
   /**
    *
    */
-  public printLogMessage(message: String, ...args: any[]) {
+  public printLogMessage(message: string, ...args: any[]) {
     if (!this.browserWindow || (this.browserWindow?.isDestroyed() ?? true)) {
       return;
     }
+
     this.browserWindow?.webContents?.send('console-message', message, ...args);
   }
 
@@ -96,7 +97,7 @@ export class MainWindowController {
     return this.browserWindow;
   }
 
-  //----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   private logPackageManagerErrors(e: any, packageName: any, ...args: any[]) {
     this.printLogMessage(
       'Overwolf Package Manager error!',
@@ -243,7 +244,7 @@ export class MainWindowController {
   private setupWindowCloseHandler(): void {
     if (!this.browserWindow) return;
 
-    this.browserWindow.on('close', (event) => {
+    this.browserWindow.on('close', event => {
       // Prevent the default close behavior
       event.preventDefault();
 
@@ -300,6 +301,7 @@ export class MainWindowController {
       if (settings && !settings.edpi) {
         settings.edpi = settings.sensitivity * settings.dpi;
       }
+
       return settings;
     });
 
@@ -453,7 +455,6 @@ export class MainWindowController {
       this.printLogMessage('=== Re-initialization complete ===');
       return true;
     });
-
 
 
     // Hotkey service IPC handlers

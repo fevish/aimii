@@ -75,7 +75,15 @@ export class GamesService {
         }
         // Minecraft-style: (linearCoefficient * Math.pow(offset * sensitivity * multiplier + constant, 3)) * dpi
         else if (params.linearCoefficient && params.offset && params.multiplier && params.constant && params.scaleFactor) {
-          inches360 = 360 / ((params.linearCoefficient * Math.pow(params.offset * sensitivity * params.multiplier + params.constant, 3)) * dpi);
+          inches360 = 360 / (
+            (
+              params.linearCoefficient *
+              Math.pow(
+                params.offset * sensitivity * params.multiplier + params.constant,
+                3
+              )
+            ) * dpi
+          );
         }
         // PUBG-style: (Math.exp((sensitivity - baseValue) / scaleFactor)) * dpi
         else if (params.baseValue && params.scaleFactor) {
@@ -88,8 +96,7 @@ export class GamesService {
         // First Descendant-style: ((sensitivity - offset) / constant) * dpi
         else if (params.offset && params.constant) {
           inches360 = 360 / (((sensitivity - params.offset) / params.constant) * dpi);
-        }
-        else {
+        } else {
           throw new Error(`Invalid conversion parameters for ${game.game}`);
         }
 
@@ -119,29 +126,34 @@ export class GamesService {
         if (params.linearCoefficient && params.offset && params.multiplier) {
           return ((360 / (inches360 * params.multiplier)) - params.offset) / params.linearCoefficient;
         }
+
         // GTA5-style inverse: (constant / (targetDPI * inches360)) - offset
-        else if (params.constant && params.offset) {
+        if (params.constant && params.offset) {
           return (params.constant / (targetDPI * inches360)) - params.offset;
         }
+
         // Minecraft-style inverse: (Math.pow((360/(linearCoefficient * targetDPI * inches360)), 1/3) - constant) / scaleFactor
-        else if (params.linearCoefficient && params.offset && params.multiplier && params.constant && params.scaleFactor) {
-          return (Math.pow((360 / (params.linearCoefficient * targetDPI * inches360)), 1/3) - params.constant) / params.scaleFactor;
+        if (params.linearCoefficient && params.offset && params.multiplier && params.constant && params.scaleFactor) {
+          return (Math.pow((360 / (params.linearCoefficient * targetDPI * inches360)), 1 / 3) - params.constant) / params.scaleFactor;
         }
+
         // PUBG-style inverse: baseValue + scaleFactor * Math.log(360 / (targetDPI * inches360))
-        else if (params.baseValue && params.scaleFactor) {
+        if (params.baseValue && params.scaleFactor) {
           return params.baseValue + params.scaleFactor * Math.log(360 / (targetDPI * inches360));
         }
+
         // STALKER-style inverse: (360 * constant / (linearCoefficient * targetDPI * inches360)) - offset
-        else if (params.linearCoefficient && params.offset && params.constant) {
+        if (params.linearCoefficient && params.offset && params.constant) {
           return (360 * params.constant / (params.linearCoefficient * targetDPI * inches360)) - params.offset;
         }
+
         // First Descendant-style inverse: (360 * constant / (targetDPI * inches360)) + offset
-        else if (params.offset && params.constant) {
+        if (params.offset && params.constant) {
           return (360 * params.constant / (targetDPI * inches360)) + params.offset;
         }
-        else {
-          throw new Error(`Invalid conversion parameters for ${game.game}`);
-        }
+
+        throw new Error(`Invalid conversion parameters for ${game.game}`);
+
       } catch (error) {
         console.error(`Error in special conversion for ${game.game}:`, error);
         // Fall back to standard calculation

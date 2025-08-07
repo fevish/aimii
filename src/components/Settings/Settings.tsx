@@ -243,6 +243,7 @@ const Settings: React.FC = () => {
         modifierParts.push('Ctrl');
       }
     }
+
     if (shift) {
       if (location === 2) {
         modifierParts.push('R-Shift');
@@ -250,6 +251,7 @@ const Settings: React.FC = () => {
         modifierParts.push('Shift');
       }
     }
+
     if (alt) {
       if (location === 2) {
         modifierParts.push('R-Alt');
@@ -275,37 +277,38 @@ const Settings: React.FC = () => {
     } else if (keyCode >= 106 && keyCode <= 111) {
       // Numpad operators
       switch (keyCode) {
-        case 106: keyName = 'Num *'; break;
-        case 107: keyName = 'Num +'; break;
-        case 109: keyName = 'Num -'; break;
-        case 110: keyName = 'Num .'; break;
-        case 111: keyName = 'Num /'; break;
-        default: keyName = `Num ${keyCode}`; break;
+      case 106: keyName = 'Num *'; break;
+      case 107: keyName = 'Num +'; break;
+      case 109: keyName = 'Num -'; break;
+      case 110: keyName = 'Num .'; break;
+      case 111: keyName = 'Num /'; break;
+      default: keyName = `Num ${keyCode}`; break;
       }
     } else {
       // Common keyboard characters
       switch (keyCode) {
-        case 186: keyName = ';'; break;
-        case 187: keyName = '='; break;
-        case 188: keyName = ','; break;
-        case 189: keyName = '-'; break;
-        case 190: keyName = '.'; break;
-        case 191: keyName = '/'; break;
-        case 192: keyName = '`'; break;
-        case 219: keyName = '['; break;
-        case 220: keyName = '\\'; break;
-        case 221: keyName = ']'; break;
-        case 222: keyName = "'"; break;
-        default: keyName = `Key${keyCode}`; break;
+      case 186: keyName = ';'; break;
+      case 187: keyName = '='; break;
+      case 188: keyName = ','; break;
+      case 189: keyName = '-'; break;
+      case 190: keyName = '.'; break;
+      case 191: keyName = '/'; break;
+      case 192: keyName = '`'; break;
+      case 219: keyName = '['; break;
+      case 220: keyName = '\\'; break;
+      case 221: keyName = ']'; break;
+      case 222: keyName = '\''; break;
+      default: keyName = `Key${keyCode}`; break;
       }
     }
 
     // Handle key combinations
     if (modifierParts.length > 0) {
       return `${modifierParts.join('+')}+${keyName}`;
-    } else {
-      return keyName;
     }
+
+    return keyName;
+
   };
 
   const loadHotkeys = async () => {
@@ -325,7 +328,7 @@ const Settings: React.FC = () => {
     try {
       const success = await window.hotkeys.updateHotkey(id, updates);
       if (success) {
-        setHotkeys(prev => prev.map(hk => hk.id === id ? { ...hk, ...updates } : hk));
+        setHotkeys(prev => prev.map(hk => (hk.id === id ? { ...hk, ...updates } : hk)));
         setMessage('Hotkey updated successfully');
         setTimeout(() => setMessage(''), 3000);
       } else {
@@ -374,37 +377,38 @@ const Settings: React.FC = () => {
     } else if (hotkey.keyCode >= 106 && hotkey.keyCode <= 111) {
       // Numpad operators
       switch (hotkey.keyCode) {
-        case 106: keyName = 'Num *'; break;
-        case 107: keyName = 'Num +'; break;
-        case 109: keyName = 'Num -'; break;
-        case 110: keyName = 'Num .'; break;
-        case 111: keyName = 'Num /'; break;
-        default: keyName = `Num ${hotkey.keyCode}`; break;
+      case 106: keyName = 'Num *'; break;
+      case 107: keyName = 'Num +'; break;
+      case 109: keyName = 'Num -'; break;
+      case 110: keyName = 'Num .'; break;
+      case 111: keyName = 'Num /'; break;
+      default: keyName = `Num ${hotkey.keyCode}`; break;
       }
     } else {
       // Common keyboard characters
       switch (hotkey.keyCode) {
-        case 186: keyName = ';'; break;
-        case 187: keyName = '='; break;
-        case 188: keyName = ','; break;
-        case 189: keyName = '-'; break;
-        case 190: keyName = '.'; break;
-        case 191: keyName = '/'; break;
-        case 192: keyName = '`'; break;
-        case 219: keyName = '['; break;
-        case 220: keyName = '\\'; break;
-        case 221: keyName = ']'; break;
-        case 222: keyName = "'"; break;
-        default: keyName = `Key${hotkey.keyCode}`; break;
+      case 186: keyName = ';'; break;
+      case 187: keyName = '='; break;
+      case 188: keyName = ','; break;
+      case 189: keyName = '-'; break;
+      case 190: keyName = '.'; break;
+      case 191: keyName = '/'; break;
+      case 192: keyName = '`'; break;
+      case 219: keyName = '['; break;
+      case 220: keyName = '\\'; break;
+      case 221: keyName = ']'; break;
+      case 222: keyName = '\''; break;
+      default: keyName = `Key${hotkey.keyCode}`; break;
       }
     }
 
     // Handle key combinations
     if (modifierParts.length > 0) {
       return `${modifierParts.join('+')}+${keyName}`;
-    } else {
-      return keyName;
     }
+
+    return keyName;
+
   };
 
   const handleKeyCapture = (hotkey: HotkeyConfig) => {
@@ -526,13 +530,11 @@ const Settings: React.FC = () => {
           tabIndex={0}
           ref={overlayRef}
         >
-          <div className="key-capture-active" onClick={(e) => e.stopPropagation()}>
+          <div className="key-capture-active" onClick={e => e.stopPropagation()}>
             <div className="captured-keys">
               {capturedKeys
                 ? capturedKeys.displayText
-                : modifierDisplay
-                  ? modifierDisplay
-                  : 'Press keys...'
+                : modifierDisplay || 'Press keys...'
               }
             </div>
 
