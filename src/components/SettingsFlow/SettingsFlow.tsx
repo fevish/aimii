@@ -1,6 +1,4 @@
 import React from 'react';
-import { EdpiChoiceStep } from './EdpiChoiceStep';
-import { EdpiInputStep } from './EdpiInputStep';
 import { GameSelectionStep } from './GameSelectionStep';
 import { SensitivityInputStep } from './SensitivityInputStep';
 import { DpiInputStep } from './DpiInputStep';
@@ -19,14 +17,14 @@ interface SettingsData {
   selectedGame: string;
   sensitivity: string;
   dpi: string;
-  edpi: string;
-  knowsEdpi: boolean | null;
+  edpi: string; // unused in this flow but kept for compatibility
+  knowsEdpi: boolean | null; // unused in this flow but kept for compatibility
 }
 
 interface SettingsFlowProps {
   games: GameData[];
   settingsData: SettingsData;
-  currentStep: number;
+  currentStep: number; // 1..3
   isLoading: boolean;
   message: string;
   onDataChange: (field: string, value: string) => void;
@@ -35,6 +33,7 @@ interface SettingsFlowProps {
   onComplete: () => void;
   showProgress?: boolean;
   inputPrefix?: string;
+  context?: 'onboarding' | 'preferences';
 }
 
 export const SettingsFlow: React.FC<SettingsFlowProps> = ({
@@ -48,66 +47,29 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
   onBack,
   onComplete,
   showProgress = true,
-  inputPrefix = ''
+  inputPrefix = '',
+  context = 'onboarding'
 }) => {
-  // Update the useEffect to only calculate when knowsEdpi === false
-  React.useEffect(() => {
-    // Only auto-calculate eDPI when user doesn't know their eDPI
-    if (settingsData.knowsEdpi === false && settingsData.sensitivity && settingsData.dpi) {
-      const sensitivity = parseFloat(settingsData.sensitivity);
-      const dpi = parseInt(settingsData.dpi);
-      if (!isNaN(sensitivity) && !isNaN(dpi) && sensitivity > 0 && dpi > 0) {
-        const calculatedEdpi = (sensitivity * dpi).toFixed(0);
-        if (calculatedEdpi !== settingsData.edpi) {
-          onDataChange('edpi', calculatedEdpi);
-        }
-      }
-    }
-  }, [settingsData.sensitivity, settingsData.dpi, settingsData.edpi, onDataChange, settingsData.knowsEdpi]);
+  const getInputId = (baseId: string) => (inputPrefix ? `${inputPrefix}-${baseId}` : baseId);
 
-  const handleKnowsEdpiChoice = (knows: boolean) => {
-    onDataChange('knowsEdpi', knows ? 'true' : 'false');
-    // For "knowsEdpi === true", we stay on step 1 but show different content
-    // For "knowsEdpi === false", we also stay on step 1 initially
-  };
-
-  const getInputId = (baseId: string) => {
-    return inputPrefix ? `${inputPrefix}-${baseId}` : baseId;
-  };
-
-  const canProceed = () => {
+  const canProceed = (): boolean => {
     if (isLoading) return false;
-
-    if (settingsData.knowsEdpi === true) {
-      return !!settingsData.edpi;
-    }
-
-    if (settingsData.knowsEdpi === false) {
-      if (currentStep === 1) return !!settingsData.selectedGame;
-      if (currentStep === 2) return !!settingsData.sensitivity;
-      if (currentStep === 3) return !!settingsData.dpi;
-    }
-
+    if (currentStep === 1) return !!settingsData.dpi;
+    if (currentStep === 2) return !!settingsData.selectedGame;
+    if (currentStep === 3) return !!settingsData.sensitivity;
     return false;
   };
 
-  const getNextButtonText = () => {
-    if (isLoading) return 'Saving...';
-
-    if (settingsData.knowsEdpi === true) {
-      return 'Continue';
-    }
-
-    if (settingsData.knowsEdpi === false) {
-      return currentStep === 3 ? 'Complete' : 'Next';
-    }
-
-    return 'Next';
+  const handlePrimary = () => {
+    if (currentStep < 3) onNext();
+    else onComplete();
   };
+
+  const showBackButton = !(context === 'onboarding' && currentStep === 1);
 
   return (
     <div className="settings-flow">
-      {showProgress && settingsData.knowsEdpi === false && (
+      {showProgress && (
         <div className="settings-progress">
           <div className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}>1</div>
           <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>2</div>
@@ -115,67 +77,56 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
         </div>
       )}
 
-      {currentStep === 1 && settingsData.knowsEdpi === null && (
-        <EdpiChoiceStep onChoice={handleKnowsEdpiChoice} />
-      )}
-
-      {currentStep === 1 && settingsData.knowsEdpi === true && (
-        <EdpiInputStep
-          edpi={settingsData.edpi}
+      {currentStep === 1 && (
+        <DpiInputStep
+          dpi={settingsData.dpi}
           onDataChange={onDataChange}
           onNext={onNext}
-          inputId={getInputId('edpi-input')}
+          inputId={getInputId('dpi-input')}
+          context={context}
         />
       )}
 
-      {currentStep === 1 && settingsData.knowsEdpi === false && (
+      {currentStep === 2 && (
         <GameSelectionStep
           games={games}
           selectedGame={settingsData.selectedGame}
           onDataChange={onDataChange}
           inputId={getInputId('game-select')}
+          context={context}
         />
       )}
 
-      {currentStep === 2 && settingsData.knowsEdpi === false && (
+      {currentStep === 3 && (
         <SensitivityInputStep
           sensitivity={settingsData.sensitivity}
           selectedGame={settingsData.selectedGame}
           onDataChange={onDataChange}
           onNext={onNext}
           inputId={getInputId('sensitivity-input')}
+          context={context}
         />
       )}
 
-      {currentStep === 3 && settingsData.knowsEdpi === false && (
-        <DpiInputStep
-          dpi={settingsData.dpi}
-          onDataChange={onDataChange}
-          onNext={onNext}
-          inputId={getInputId('dpi-input')}
-        />
-      )}
-
-      {/* Navigation buttons */}
-      {settingsData.knowsEdpi !== null && (
-        <div className="settings-navigation">
+      <div className="settings-navigation">
+        {showBackButton && (
           <button
             className="settings-btn settings-btn-back"
             onClick={onBack}
-            disabled={isLoading}
+            disabled={isLoading || currentStep === 1}
           >
             Back
           </button>
+        )}
 
-          <button
-            onClick={onNext}
-            className="settings-btn settings-btn-next"
-            disabled={!canProceed()}
-          >
-            {getNextButtonText()}
-          </button>
-        </div>
-      )}
+        <button
+          onClick={handlePrimary}
+          className="settings-btn settings-btn-next"
+          disabled={!canProceed()}
+        >
+          {currentStep < 3 ? 'Next' : 'Complete'}
+        </button>
+      </div>
 
       {message && (
         <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
@@ -184,4 +135,5 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
       )}
     </div>
   );
-};
+}
+

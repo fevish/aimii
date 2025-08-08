@@ -8,7 +8,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
   padding: var(--spacing);
 }
 
@@ -17,7 +16,8 @@
   border-radius: var(--radius);
   padding: calc(2 * var(--spacing));
   max-width: 600px;
+  height: 375px;
   width: 100%;
-  text-align: center;
   border: 1px solid var(--secondary);
+  position: relative;
 }

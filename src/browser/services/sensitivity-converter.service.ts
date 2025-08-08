@@ -82,7 +82,7 @@ export class SensitivityConverterService {
   }
 
   /**
-   * Get cm/360° for canonical settings
+   * Get cm/360° for canonical settings (game + sensitivity + dpi)
    */
   public getCanonicalCm360(): number | null {
     const canonicalSettings = this.settingsService.getCanonicalSettings();

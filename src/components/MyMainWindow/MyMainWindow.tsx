@@ -217,30 +217,17 @@ export const MyMainWindow: React.FC = () => {
 
   // Onboarding handlers
   const handleOnboardingNext = () => {
-    // If user knows their eDPI and has entered it, complete onboarding
-    if (onboardingData.knowsEdpi === true && onboardingData.edpi) {
-      handleCompleteOnboarding();
+    if (onboardingStep < 3) {
+      setOnboardingStep(prev => prev + 1);
       return;
     }
-
-    // If user doesn't know their eDPI, go through step-by-step process
-    if (onboardingData.knowsEdpi === false) {
-      if (onboardingStep < 3) {
-        setOnboardingStep(onboardingStep + 1);
-      } else {
-        // Complete onboarding
-        handleCompleteOnboarding();
-      }
-    }
+    // Step 3 -> Complete
+    handleCompleteOnboarding();
   };
 
   const handleOnboardingBack = () => {
     if (onboardingStep > 1) {
-      setOnboardingStep(onboardingStep - 1);
-    } else if (onboardingData.knowsEdpi !== null) {
-      // Go back to initial choice screen
-      setOnboardingData(prev => ({ ...prev, knowsEdpi: null }));
-      setOnboardingStep(1);
+      setOnboardingStep(prev => prev - 1);
     }
   };
 
@@ -299,63 +286,34 @@ export const MyMainWindow: React.FC = () => {
   };
 
   const handleUserPreferencesNext = async () => {
-    if (userPreferencesSettingsData.knowsEdpi === true && userPreferencesSettingsData.edpi) {
-      // User knows eDPI - save settings
-      const edpiNum = parseFloat(userPreferencesSettingsData.edpi);
-      if (isNaN(edpiNum) || edpiNum <= 0) {
-        setMessage('Please enter a valid eDPI value');
-        setTimeout(() => setMessage(''), 3000);
-        return;
-      }
+    if (userPreferencesSettingsStep < 3) {
+      setUserPreferencesSettingsStep(prev => prev + 1);
+      return;
+    }
 
-      // Calculate sensitivity and DPI from eDPI (assuming 800 DPI as default)
-      const defaultDpi = 800;
-      const calculatedSensitivity = (edpiNum / defaultDpi).toFixed(3);
+    // Step 3: save
+    if (!userPreferencesSettingsData.selectedGame || !userPreferencesSettingsData.sensitivity || !userPreferencesSettingsData.dpi) {
+      setMessage('Please fill in all fields');
+      setTimeout(() => setMessage(''), 3000);
+      return;
+    }
 
-      const success = await handleSaveSettingsFromCard(
-        canonicalSettings?.game || 'Unknown',
-        parseFloat(calculatedSensitivity),
-        defaultDpi,
-        'eDPI Updated'
-      );
+    const success = await handleSaveSettingsFromCard(
+      userPreferencesSettingsData.selectedGame,
+      parseFloat(userPreferencesSettingsData.sensitivity),
+      parseInt(userPreferencesSettingsData.dpi),
+      'Baseline updated'
+    );
 
-      if (success) {
-        setShowUserPreferencesForm(false);
-        setUserPreferencesSettingsStep(1);
-      }
-    } else if (userPreferencesSettingsData.knowsEdpi === false) {
-      if (userPreferencesSettingsStep < 3) {
-        setUserPreferencesSettingsStep(userPreferencesSettingsStep + 1);
-      } else {
-        // Final step - save settings
-        if (!userPreferencesSettingsData.selectedGame || !userPreferencesSettingsData.sensitivity || !userPreferencesSettingsData.dpi) {
-          setMessage('Please fill in all fields');
-          setTimeout(() => setMessage(''), 3000);
-          return;
-        }
-
-        const success = await handleSaveSettingsFromCard(
-          userPreferencesSettingsData.selectedGame,
-          parseFloat(userPreferencesSettingsData.sensitivity),
-          parseInt(userPreferencesSettingsData.dpi),
-          'eDPI Updated'
-        );
-
-        if (success) {
-          setShowUserPreferencesForm(false);
-          setUserPreferencesSettingsStep(1);
-        }
-      }
+    if (success) {
+      setShowUserPreferencesForm(false);
+      setUserPreferencesSettingsStep(1);
     }
   };
 
   const handleUserPreferencesBack = () => {
     if (userPreferencesSettingsStep > 1) {
-      setUserPreferencesSettingsStep(userPreferencesSettingsStep - 1);
-    } else if (userPreferencesSettingsData.knowsEdpi !== null) {
-      // Go back to initial choice
-      setUserPreferencesSettingsData(prev => ({ ...prev, knowsEdpi: null }));
-      setUserPreferencesSettingsStep(1);
+      setUserPreferencesSettingsStep(prev => prev - 1);
     }
   };
 
@@ -457,13 +415,16 @@ export const MyMainWindow: React.FC = () => {
           dpi: defaultDpi,
           edpi: edpiNum
         };
-        setCanonicalSettings(newSettings);
+                setCanonicalSettings(newSettings);
+
+        // Reload data to compute cm/360 and suggestions
+        await loadAllData();
 
         // Hide onboarding and show main screen
         setShowOnboarding(false);
         setOnboardingStep(1);
         setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
-        setMessage('eDPI saved successfully!');
+        setMessage('Baseline saved successfully!');
         setTimeout(() => setMessage(''), 3000);
       } catch (error) {
         console.error('Error saving onboarding settings:', error);
@@ -496,7 +457,7 @@ export const MyMainWindow: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await window.settings.setCanonicalSettings(
+            await window.settings.setCanonicalSettings(
         onboardingData.selectedGame || 'Counter-Strike 2',
         sensitivityNum,
         dpiNum
@@ -511,11 +472,14 @@ export const MyMainWindow: React.FC = () => {
       };
       setCanonicalSettings(newSettings);
 
+      // Reload data to compute cm/360 and suggestions
+      await loadAllData();
+
       // Hide onboarding and show main screen
       setShowOnboarding(false);
       setOnboardingStep(1);
       setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '800', edpi: '', knowsEdpi: null });
-      setMessage('eDPI saved successfully!');
+      setMessage('Baseline saved successfully!');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error saving onboarding settings:', error);
@@ -533,24 +497,26 @@ export const MyMainWindow: React.FC = () => {
           <span className="version">v{process.env.APP_VERSION}</span>
         </div>
         <div className="header-controls">
-          <nav className="tab-navigation">
-            <button
-              className={`tab-button ${activeTab === 'main' ? 'active' : ''}`}
-              onClick={() => setActiveTab('main')}
-            >
-              Main
-            </button>
-            <button
-              className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
-              onClick={() => setActiveTab('settings')}
-            >
-              Settings
-            </button>
-            <button className="tab-button btn-icon discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>Discord</button>
-            <button className="tab-button" onClick={handleRestartOnboarding} title="Restart App and Clear Settings">
-              Kill Switch
-            </button>
-          </nav>
+          {!showOnboarding && (
+            <nav className="tab-navigation">
+              <button
+                className={`tab-button ${activeTab === 'main' ? 'active' : ''}`}
+                onClick={() => setActiveTab('main')}
+              >
+                Main
+              </button>
+              <button
+                className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
+                onClick={() => setActiveTab('settings')}
+              >
+                Settings
+              </button>
+              <button className="tab-button btn-icon discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>Discord</button>
+              <button className="tab-button" onClick={handleRestartOnboarding} title="Restart App and Clear Settings">
+                Kill Switch
+              </button>
+            </nav>
+          )}
           <div className="window-controls">
             <button onClick={handleMinimize} className="window-control-btn minimize-btn">_</button>
             <button onClick={handleClose} className="window-control-btn close-btn">✕</button>

@@ -69,6 +69,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
           onComplete={onNext}
           showProgress={false}
           inputPrefix="card"
+          context="preferences"
         />
       ) : canonicalSettings ? (
         <div className="current-settings">

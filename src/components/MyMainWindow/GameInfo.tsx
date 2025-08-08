@@ -38,7 +38,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({
         )
         : (
           <>
-            <p className="cool-text">Current Sensitivity</p>
+            <p className="cool-text">// Current Sensitivity</p>
             <h4>{canonicalSettings?.sensitivity}</h4>
           </>
         )}

@@ -1,56 +1,49 @@
 import React from 'react';
 
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
-
 interface GameSelectionStepProps {
-  games: GameData[];
+  games: Array<{ game: string }>;
   selectedGame: string;
   onDataChange: (field: string, value: string) => void;
   inputId?: string;
+  context?: 'onboarding' | 'preferences';
 }
 
 export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
   games,
   selectedGame,
   onDataChange,
-  inputId = 'game-select'
+  inputId = 'game-select',
+  context = 'onboarding'
 }) => {
-  React.useEffect(() => {
-    const select = document.getElementById(inputId);
-    if (select) {
-      select.focus();
-    }
-  }, [inputId]);
+  const isPreferences = context === 'preferences';
 
   return (
     <div className="settings-step">
-      <h2>Choose your eDPI</h2>
-      <p>Don't know your eDPI? Select your most played game below.</p>
+      {isPreferences ? (
+        <>
+          <h2>Reference game</h2>
+          <p>Choose the game that reflects your current settings.</p>
+        </>
+      ) : (
+        <>
+          <h2>Set a reference game</h2>
+          <p>Choose a game to establish your baseline.</p>
+        </>
+      )}
 
       <div className="form-group">
-        <label htmlFor={inputId}>Select your most played game</label>
-        <div className="select-wrapper">
-          <select
-            id={inputId}
-            value={selectedGame}
-            onChange={e => onDataChange('selectedGame', e.target.value)}
-            required
-          >
-            <option value="">Select a Game</option>
-            {games.map(game => (
-              <option key={game.game} value={game.game}>
-                {game.game}
-              </option>
-            ))}
-          </select>
-        </div>
+        <label htmlFor={inputId}>Favorite Game</label>
+        <select
+          id={inputId}
+          value={selectedGame}
+          onChange={e => onDataChange('selectedGame', e.target.value)}
+          required
+        >
+          <option value="" disabled>Select a game</option>
+          {games.map(g => (
+            <option key={g.game} value={g.game}>{g.game}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
