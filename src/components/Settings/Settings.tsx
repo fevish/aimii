@@ -33,6 +33,10 @@ interface CanonicalSettings {
   edpi: number;
 }
 
+interface SettingsProps {
+  handleRestartOnboarding: () => Promise<void>;
+}
+
 declare global {
   interface Window {
     hotkeys: {
@@ -57,7 +61,7 @@ declare global {
   }
 }
 
-const Settings: React.FC = () => {
+const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   const [hotkeys, setHotkeys] = useState<HotkeyConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingHotkey, setEditingHotkey] = useState<string | null>(null);
@@ -277,28 +281,28 @@ const Settings: React.FC = () => {
     } else if (keyCode >= 106 && keyCode <= 111) {
       // Numpad operators
       switch (keyCode) {
-      case 106: keyName = 'Num *'; break;
-      case 107: keyName = 'Num +'; break;
-      case 109: keyName = 'Num -'; break;
-      case 110: keyName = 'Num .'; break;
-      case 111: keyName = 'Num /'; break;
-      default: keyName = `Num ${keyCode}`; break;
+        case 106: keyName = 'Num *'; break;
+        case 107: keyName = 'Num +'; break;
+        case 109: keyName = 'Num -'; break;
+        case 110: keyName = 'Num .'; break;
+        case 111: keyName = 'Num /'; break;
+        default: keyName = `Num ${keyCode}`; break;
       }
     } else {
       // Common keyboard characters
       switch (keyCode) {
-      case 186: keyName = ';'; break;
-      case 187: keyName = '='; break;
-      case 188: keyName = ','; break;
-      case 189: keyName = '-'; break;
-      case 190: keyName = '.'; break;
-      case 191: keyName = '/'; break;
-      case 192: keyName = '`'; break;
-      case 219: keyName = '['; break;
-      case 220: keyName = '\\'; break;
-      case 221: keyName = ']'; break;
-      case 222: keyName = '\''; break;
-      default: keyName = `Key${keyCode}`; break;
+        case 186: keyName = ';'; break;
+        case 187: keyName = '='; break;
+        case 188: keyName = ','; break;
+        case 189: keyName = '-'; break;
+        case 190: keyName = '.'; break;
+        case 191: keyName = '/'; break;
+        case 192: keyName = '`'; break;
+        case 219: keyName = '['; break;
+        case 220: keyName = '\\'; break;
+        case 221: keyName = ']'; break;
+        case 222: keyName = '\''; break;
+        default: keyName = `Key${keyCode}`; break;
       }
     }
 
@@ -377,28 +381,28 @@ const Settings: React.FC = () => {
     } else if (hotkey.keyCode >= 106 && hotkey.keyCode <= 111) {
       // Numpad operators
       switch (hotkey.keyCode) {
-      case 106: keyName = 'Num *'; break;
-      case 107: keyName = 'Num +'; break;
-      case 109: keyName = 'Num -'; break;
-      case 110: keyName = 'Num .'; break;
-      case 111: keyName = 'Num /'; break;
-      default: keyName = `Num ${hotkey.keyCode}`; break;
+        case 106: keyName = 'Num *'; break;
+        case 107: keyName = 'Num +'; break;
+        case 109: keyName = 'Num -'; break;
+        case 110: keyName = 'Num .'; break;
+        case 111: keyName = 'Num /'; break;
+        default: keyName = `Num ${hotkey.keyCode}`; break;
       }
     } else {
       // Common keyboard characters
       switch (hotkey.keyCode) {
-      case 186: keyName = ';'; break;
-      case 187: keyName = '='; break;
-      case 188: keyName = ','; break;
-      case 189: keyName = '-'; break;
-      case 190: keyName = '.'; break;
-      case 191: keyName = '/'; break;
-      case 192: keyName = '`'; break;
-      case 219: keyName = '['; break;
-      case 220: keyName = '\\'; break;
-      case 221: keyName = ']'; break;
-      case 222: keyName = '\''; break;
-      default: keyName = `Key${hotkey.keyCode}`; break;
+        case 186: keyName = ';'; break;
+        case 187: keyName = '='; break;
+        case 188: keyName = ','; break;
+        case 189: keyName = '-'; break;
+        case 190: keyName = '.'; break;
+        case 191: keyName = '/'; break;
+        case 192: keyName = '`'; break;
+        case 219: keyName = '['; break;
+        case 220: keyName = '\\'; break;
+        case 221: keyName = ']'; break;
+        case 222: keyName = '\''; break;
+        default: keyName = `Key${hotkey.keyCode}`; break;
       }
     }
 
@@ -462,31 +466,44 @@ const Settings: React.FC = () => {
 
       <div className="settings-content">
         <section className="hotkeys-section">
-          <div className="section-header">
-            <h3>Hotkeys</h3>
-          </div>
 
           <div className="hotkeys-list">
             {hotkeys.map(hotkey => (
               <div key={hotkey.id} className="hotkey-item">
                 <div className="hotkey-info">
-                  <h4>{hotkey.name}</h4>
+                  <h4>{hotkey.name} Hotkey</h4>
                   <p className="hotkey-description">{hotkey.description}</p>
                 </div>
 
-                <div className="hotkey-controls">
-                  <div className="hotkey-display">
-                    <button
-                      onClick={() => handleKeyCapture(hotkey)}
-                      className="hotkey-btn"
-                      disabled={!hotkey.enabled || editingHotkey === hotkey.id}
-                    >
-                      {editingHotkey === hotkey.id && capturedKeys
-                        ? capturedKeys.displayText
-                        : getHotkeyDisplayText(hotkey)
-                      }
-                    </button>
-                  </div>
+                <div className="hotkey-actions">
+                  <button
+                    onClick={() => handleKeyCapture(hotkey)}
+                    className="hotkey-btn"
+                    disabled={!hotkey.enabled || editingHotkey === hotkey.id}
+                  >
+                    {editingHotkey === hotkey.id
+                      ? (capturedKeys ? capturedKeys.displayText : 'Type new keys..')
+                      : getHotkeyDisplayText(hotkey)
+                    }
+                  </button>
+
+                  {editingHotkey === hotkey.id && (
+                    <>
+                      <button
+                        onClick={handleSaveHotkey}
+                        className="save-btn"
+                        disabled={!capturedKeys}
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelCapture}
+                        className="cancel-btn"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -498,13 +515,10 @@ const Settings: React.FC = () => {
         </section>
 
         <section className="theme-section">
-          <div className="section-header">
-            <h3>Theme</h3>
-          </div>
 
           <div className="theme-controls">
             <div className="form-group select-theme">
-              <label htmlFor="theme-select">Select Theme</label>
+              <h4>Select Theme</h4>
               <div className="select-wrapper">
                 <select
                   id="theme-select"
@@ -521,41 +535,25 @@ const Settings: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Kill Switch Section */}
+        <section className="settings-section">
+          <div className="setting-item">
+            <div className="setting-info">
+              <h4>Reset Application</h4>
+              <p className="setting-description">Clears all user + app settings and restarts onboarding.</p>
+            </div>
+            <button
+              onClick={handleRestartOnboarding}
+              className="danger-btn"
+              title="Restart App and Clear Settings"
+            >
+              💀 Kill Switch
+            </button>
+          </div>
+        </section>
       </div>
 
-      {editingHotkey && (
-        <div
-          className="key-capture-overlay"
-          onClick={handleCancelCapture}
-          tabIndex={0}
-          ref={overlayRef}
-        >
-          <div className="key-capture-active" onClick={e => e.stopPropagation()}>
-            <div className="captured-keys">
-              {capturedKeys
-                ? capturedKeys.displayText
-                : modifierDisplay || 'Press keys...'
-              }
-            </div>
-
-            <div className="capture-actions">
-              <button
-                onClick={handleSaveHotkey}
-                className="save-btn"
-                disabled={!capturedKeys}
-              >
-                Save
-              </button>
-              <button
-                onClick={handleCancelCapture}
-                className="cancel-btn"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

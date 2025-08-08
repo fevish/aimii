@@ -380,6 +380,9 @@ export const MyMainWindow: React.FC = () => {
       setOnboardingStep(0);
       setShowOnboarding(true);
 
+      // Switch to main tab to show onboarding
+      setActiveTab('main');
+
       console.log('Onboarding restarted - all settings cleared');
     } catch (error) {
       console.error('Error restarting onboarding:', error);
@@ -512,9 +515,6 @@ export const MyMainWindow: React.FC = () => {
                 Settings
               </button>
               <button className="tab-button btn-icon discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>Discord</button>
-              <button className="tab-button" onClick={handleRestartOnboarding} title="Restart App and Clear Settings">
-                Kill Switch
-              </button>
             </nav>
           )}
           <div className="window-controls">
@@ -652,14 +652,15 @@ export const MyMainWindow: React.FC = () => {
                   </div>
                 </section>
 
-                <section className="ad-section">
-                </section>
               </>
             )}
           </>
         ) : (
-          <Settings />
+          <Settings handleRestartOnboarding={handleRestartOnboarding} />
         )}
+
+        <section className="ad-section">
+        </section>
       </main>
 
       </div >

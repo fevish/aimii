@@ -137,11 +137,12 @@ label {
   &:before {
     content: '';
     position: absolute;
+    pointer-events: none;
     top: 50%;
     transform: translateY(-50%);
-    right: calc(0.50 * var(--spacing));
-    width: calc(2 * var(--spacing));
-    height: calc(2 * var(--spacing));
+    right: calc(1.75 * var(--spacing));
+    width: calc(2.25 * var(--spacing));
+    height: calc(2.25 * var(--spacing));
     background-color: var(--primary);
     -webkit-mask-image: url('./assets/svg/chevron-down.svg');
     -webkit-mask-repeat: no-repeat;
@@ -214,7 +215,7 @@ button:hover:not(:disabled) {
 
 button:disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  cursor: default;
   transform: none;
   background: var(--dark);
   border-color: var(--secondary);
