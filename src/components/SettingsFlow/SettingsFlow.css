@@ -42,18 +42,17 @@
   height: 100%;
 }
 
-.settings-step h2 {
-  margin-bottom: var(--spacing);
+.settings-flow h2 {
+  margin-bottom: calc(2 * var(--spacing));
   color: var(--light);
-}
-
-.settings-step h3 {
   font-size: 1.25rem;
 }
-.settings-step p {
+
+.settings-flow p {
   margin-bottom: calc(2 * var(--spacing));
   color: var(--light);
   opacity: 0.8;
+  font-size: 1rem;
 }
 
 .choice-buttons {
@@ -130,7 +129,8 @@
   display: flex;
   justify-content: space-between;
   gap: var(--spacing);
-  margin-top: calc(2 * var(--spacing));
+  padding-top: calc(2 * var(--spacing));
+  margin-top: auto;
 }
 
 .settings-btn {

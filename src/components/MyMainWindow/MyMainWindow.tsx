@@ -40,7 +40,7 @@ export const MyMainWindow: React.FC = () => {
   } = useMainWindowData();
 
   // Onboarding state
-  const [onboardingStep, setOnboardingStep] = useState<number>(1);
+  const [onboardingStep, setOnboardingStep] = useState<number>(0);
   const [onboardingData, setOnboardingData] = useState({
     selectedGame: '',
     sensitivity: '',
@@ -226,7 +226,7 @@ export const MyMainWindow: React.FC = () => {
   };
 
   const handleOnboardingBack = () => {
-    if (onboardingStep > 1) {
+    if (onboardingStep > 0) {
       setOnboardingStep(prev => prev - 1);
     }
   };
@@ -377,7 +377,7 @@ export const MyMainWindow: React.FC = () => {
 
       setSuggestedSensitivity(null);
       setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
-      setOnboardingStep(1);
+      setOnboardingStep(0);
       setShowOnboarding(true);
 
       console.log('Onboarding restarted - all settings cleared');
@@ -422,7 +422,7 @@ export const MyMainWindow: React.FC = () => {
 
         // Hide onboarding and show main screen
         setShowOnboarding(false);
-        setOnboardingStep(1);
+        setOnboardingStep(0);
         setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
         setMessage('Baseline saved successfully!');
         setTimeout(() => setMessage(''), 3000);
@@ -477,7 +477,7 @@ export const MyMainWindow: React.FC = () => {
 
       // Hide onboarding and show main screen
       setShowOnboarding(false);
-      setOnboardingStep(1);
+      setOnboardingStep(0);
       setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '800', edpi: '', knowsEdpi: null });
       setMessage('Baseline saved successfully!');
       setTimeout(() => setMessage(''), 3000);
@@ -538,6 +538,7 @@ export const MyMainWindow: React.FC = () => {
                 onNext={handleOnboardingNext}
                 onBack={handleOnboardingBack}
                 onRestart={handleRestartOnboarding}
+                onComplete={handleCompleteOnboarding}
               />
             ) : (
               <>

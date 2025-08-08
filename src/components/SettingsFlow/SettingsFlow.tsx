@@ -54,9 +54,23 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
 
   const canProceed = (): boolean => {
     if (isLoading) return false;
-    if (currentStep === 1) return !!settingsData.dpi;
-    if (currentStep === 2) return !!settingsData.selectedGame;
-    if (currentStep === 3) return !!settingsData.sensitivity;
+
+    if (currentStep === 1) {
+      return !!(settingsData.selectedGame && settingsData.selectedGame.trim() !== '');
+    }
+
+    if (currentStep === 2) {
+      if (!settingsData.sensitivity || settingsData.sensitivity.trim() === '') return false;
+      const sensitivityNum = parseFloat(settingsData.sensitivity);
+      return !isNaN(sensitivityNum) && sensitivityNum > 0;
+    }
+
+    if (currentStep === 3) {
+      if (!settingsData.dpi || settingsData.dpi.trim() === '') return false;
+      const dpiNum = parseInt(settingsData.dpi);
+      return !isNaN(dpiNum) && dpiNum > 0;
+    }
+
     return false;
   };
 
@@ -65,7 +79,7 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
     else onComplete();
   };
 
-  const showBackButton = !(context === 'onboarding' && currentStep === 1);
+  const showBackButton = true;
 
   return (
     <div className="settings-flow">
@@ -78,33 +92,34 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
       )}
 
       {currentStep === 1 && (
-        <DpiInputStep
-          dpi={settingsData.dpi}
-          onDataChange={onDataChange}
-          onNext={onNext}
-          inputId={getInputId('dpi-input')}
-          context={context}
-        />
-      )}
-
-      {currentStep === 2 && (
         <GameSelectionStep
           games={games}
           selectedGame={settingsData.selectedGame}
           onDataChange={onDataChange}
           inputId={getInputId('game-select')}
           context={context}
+          onNext={handlePrimary}
         />
       )}
 
-      {currentStep === 3 && (
+      {currentStep === 2 && (
         <SensitivityInputStep
           sensitivity={settingsData.sensitivity}
           selectedGame={settingsData.selectedGame}
           onDataChange={onDataChange}
-          onNext={onNext}
           inputId={getInputId('sensitivity-input')}
           context={context}
+          onNext={handlePrimary}
+        />
+      )}
+
+      {currentStep === 3 && (
+        <DpiInputStep
+          dpi={settingsData.dpi}
+          onDataChange={onDataChange}
+          inputId={getInputId('dpi-input')}
+          context={context}
+          onNext={handlePrimary}
         />
       )}
 
@@ -113,15 +128,14 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
           <button
             className="settings-btn settings-btn-back"
             onClick={onBack}
-            disabled={isLoading || currentStep === 1}
+            disabled={isLoading}
           >
             Back
           </button>
         )}
-
         <button
-          onClick={handlePrimary}
           className="settings-btn settings-btn-next"
+          onClick={handlePrimary}
           disabled={!canProceed()}
         >
           {currentStep < 3 ? 'Next' : 'Complete'}
@@ -129,11 +143,11 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
       </div>
 
       {message && (
-        <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
+        <div className="settings-message">
           {message}
         </div>
       )}
     </div>
   );
-}
+};
 

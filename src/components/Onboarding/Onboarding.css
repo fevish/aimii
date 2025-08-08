@@ -13,7 +13,7 @@
 
 .onboarding-container {
   background: var(--dark);
-  border-radius: var(--radius);
+  border-radius: calc(5 * var(--radius));
   padding: calc(2 * var(--spacing));
   max-width: 600px;
   height: 375px;

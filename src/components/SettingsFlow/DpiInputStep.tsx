@@ -3,17 +3,17 @@ import React from 'react';
 interface DpiInputStepProps {
   dpi: string;
   onDataChange: (field: string, value: string) => void;
-  onNext: () => void;
   inputId?: string;
   context?: 'onboarding' | 'preferences';
+  onNext?: () => void;
 }
 
 export const DpiInputStep: React.FC<DpiInputStepProps> = ({
   dpi,
   onDataChange,
-  onNext,
   inputId = 'dpi-input',
-  context = 'onboarding'
+  context = 'onboarding',
+  onNext
 }) => {
   React.useEffect(() => {
     const input = document.getElementById(inputId);
@@ -39,7 +39,7 @@ export const DpiInputStep: React.FC<DpiInputStepProps> = ({
       )}
       {!isPreferences &&
       <>
-        <h3>What is your current DPI?</h3>
+        <h2>What is your current DPI?</h2>
         <p>Enter your DPI setting.</p>
       </>
       }
@@ -52,8 +52,11 @@ export const DpiInputStep: React.FC<DpiInputStepProps> = ({
           value={dpi}
           onChange={e => onDataChange('dpi', e.target.value)}
           onKeyDown={e => {
-            if (e.key === 'Enter' && dpi) {
-              onNext();
+            if (e.key === 'Enter' && dpi && onNext) {
+              const num = parseInt(dpi);
+              if (!isNaN(num) && num > 0) {
+                onNext();
+              }
             }
           }}
           placeholder="800"

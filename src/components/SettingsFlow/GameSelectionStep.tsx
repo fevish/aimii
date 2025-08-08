@@ -6,6 +6,7 @@ interface GameSelectionStepProps {
   onDataChange: (field: string, value: string) => void;
   inputId?: string;
   context?: 'onboarding' | 'preferences';
+  onNext?: () => void;
 }
 
 export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
@@ -13,9 +14,15 @@ export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
   selectedGame,
   onDataChange,
   inputId = 'game-select',
-  context = 'onboarding'
+  context = 'onboarding',
+  onNext
 }) => {
   const isPreferences = context === 'preferences';
+
+  React.useEffect(() => {
+    const el = document.getElementById(inputId) as HTMLSelectElement | null;
+    if (el) el.focus();
+  }, [inputId]);
 
   return (
     <div className="settings-step">
@@ -33,17 +40,24 @@ export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
 
       <div className="form-group">
         <label htmlFor={inputId}>Favorite Game</label>
+        <div className="select-wrapper">
         <select
           id={inputId}
           value={selectedGame}
           onChange={e => onDataChange('selectedGame', e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && selectedGame && onNext) {
+              onNext();
+            }
+          }}
           required
         >
           <option value="" disabled>Select a game</option>
           {games.map(g => (
             <option key={g.game} value={g.game}>{g.game}</option>
-          ))}
-        </select>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   );

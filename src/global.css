@@ -183,6 +183,10 @@ input::placeholder {
 }
 
 /* Buttons */
+button, button:hover, button:focus, button:focus-visible {
+  outline: none;
+}
+
 button {
   padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
   background: var(--dark);

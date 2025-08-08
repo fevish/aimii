@@ -4,18 +4,18 @@ interface SensitivityInputStepProps {
   sensitivity: string;
   selectedGame: string;
   onDataChange: (field: string, value: string) => void;
-  onNext: () => void;
   inputId?: string;
   context?: 'onboarding' | 'preferences';
+  onNext?: () => void;
 }
 
 export const SensitivityInputStep: React.FC<SensitivityInputStepProps> = ({
   sensitivity,
   selectedGame,
   onDataChange,
-  onNext,
   inputId = 'sensitivity-input',
-  context = 'onboarding'
+  context = 'onboarding',
+  onNext
 }) => {
   React.useEffect(() => {
     const input = document.getElementById(inputId);
@@ -48,8 +48,11 @@ export const SensitivityInputStep: React.FC<SensitivityInputStepProps> = ({
           value={sensitivity}
           onChange={e => onDataChange('sensitivity', e.target.value)}
           onKeyDown={e => {
-            if (e.key === 'Enter' && sensitivity) {
-              onNext();
+            if (e.key === 'Enter' && sensitivity && onNext) {
+              const num = parseFloat(sensitivity);
+              if (!isNaN(num) && num > 0) {
+                onNext();
+              }
             }
           }}
           placeholder="0.35"

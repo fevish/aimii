@@ -401,10 +401,6 @@ export class MainWindowController {
       return this.sensitivityConverterService.getAllConversionsFromCanonical();
     });
 
-    ipcMain.handle('sensitivity-get-canonical-cm360', () => {
-      return this.sensitivityConverterService.getCanonicalCm360();
-    });
-
     ipcMain.handle('sensitivity-convert', (event, fromGame: string, toGame: string, sensitivity: number, dpi: number) => {
       const fromGameData = this.gamesService.getGameByName(fromGame);
       const toGameData = this.gamesService.getGameByName(toGame);
@@ -414,6 +410,10 @@ export class MainWindowController {
       }
 
       return this.sensitivityConverterService.convertSensitivity(fromGameData, toGameData, sensitivity, dpi);
+    });
+
+    ipcMain.handle('sensitivity-get-canonical-cm360', () => {
+      return this.sensitivityConverterService.getCanonicalCm360();
     });
 
     ipcMain.handle('gep-set-required-feature', async () => {
@@ -526,34 +526,28 @@ export class MainWindowController {
     await this.createWidget();
   }
 
-  private async createWidget(): Promise<void> {
-    const controller = this.createWidgetWinController();
-    this.widgetController = controller; // Store reference
-
-    await controller.createWidget();
-
-    controller.overlayBrowserWindow?.window.on('closed', () => {
-      this.printLogMessage('widget window closed');
-      this.widgetController = null; // Clear reference
-    });
+  private async createWidget() {
+    // create a browser window for overlay widget and load a url
+    this.widgetController = this.createWidgetWinController();
+    await this.widgetController.createWidget();
   }
 
-  private async toggleWidget(): Promise<void> {
-    if (!this.widgetController) {
-      // Create widget if it doesn't exist
-      await this.createWidget();
-    } else {
-      await this.widgetController.toggleVisibility();
-    }
-  }
-
-  private openWidgetDevTools() {
+  private async toggleWidget() {
     if (this.widgetController) {
-      this.widgetController.openDevTools();
-      this.printLogMessage('Opening widget dev tools...');
-    } else {
-      this.printLogMessage('Widget not created yet. Create widget first.');
+      this.widgetController.toggleVisibility();
+      return;
     }
+
+    this.widgetController = this.createWidgetWinController();
+    await this.widgetController.createWidget();
+  }
+
+  private async openWidgetDevTools() {
+    if (!this.widgetController) {
+      return;
+    }
+
+    this.widgetController.openDevTools();
   }
 
   /**
