@@ -444,7 +444,7 @@ form {
 /* Ad / Debug Section */
 .ad-section {
   border: 1px solid var(--gray);
-  border-radius: var(--radius);
+  border-radius: calc(3 * var(--radius));
   padding: var(--spacing);
   height: 300px;
 }

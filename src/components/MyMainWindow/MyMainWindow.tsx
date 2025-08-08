@@ -659,8 +659,10 @@ export const MyMainWindow: React.FC = () => {
           <Settings handleRestartOnboarding={handleRestartOnboarding} />
         )}
 
-        <section className="ad-section">
-        </section>
+        {!showOnboarding && (
+          <section className="ad-section">
+          </section>
+        )}
       </main>
 
       </div >
