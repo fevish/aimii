@@ -296,12 +296,15 @@ export class MainWindowController {
 
     // Settings IPC handlers
     ipcMain.handle('settings-get-baseline', () => {
-      return this.settingsService.getBaselineSettings();
+      const baseline = this.settingsService.getBaselineSettings();
+      if (!baseline) return null;
+      const trueSens = this.sensitivityConverterService.calculateTrueSens(baseline.mouseTravel);
+      return { ...baseline, trueSens };
     });
 
-    ipcMain.handle('settings-set-baseline', (event, mouseTravel: number, dpi: number) => {
-      this.settingsService.setBaselineSettings(mouseTravel, dpi);
-      this.printLogMessage(`Baseline settings saved: mouseTravel: ${mouseTravel}cm, DPI: ${dpi}`);
+    ipcMain.handle('settings-set-baseline', (event, mouseTravel: number, dpi: number, favoriteGame?: string, favoriteSensitivity?: number, eDPI?: number) => {
+      this.settingsService.setBaselineSettings(mouseTravel, dpi, favoriteGame, favoriteSensitivity, eDPI);
+      this.printLogMessage(`Baseline settings saved: mouseTravel: ${mouseTravel}cm, DPI: ${dpi}${favoriteGame ? ", favoriteGame: " + favoriteGame : ''}${favoriteSensitivity ? ", favoriteSensitivity: " + favoriteSensitivity : ''}${eDPI ? ", eDPI: " + eDPI : ''}`);
 
       // Notify main window about settings change
       if (this.browserWindow && !this.browserWindow.isDestroyed()) {
@@ -400,6 +403,13 @@ export class MainWindowController {
 
     ipcMain.handle('sensitivity-get-current-mouse-travel', () => {
       return this.sensitivityConverterService.getCurrentMouseTravel();
+    });
+
+    ipcMain.handle('sensitivity-get-true-sens', () => {
+      const baselineSettings = this.settingsService.getBaselineSettings();
+      if (!baselineSettings) return null;
+
+      return this.sensitivityConverterService.calculateTrueSens(baselineSettings.mouseTravel);
     });
 
     ipcMain.handle('gep-set-required-feature', async () => {

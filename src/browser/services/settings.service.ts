@@ -1,11 +1,7 @@
 import { app } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
-
-export interface BaselineSettings {
-  mouseTravel: number; // cm for 360° turn
-  dpi: number;
-}
+import { BaselineSettings } from '../../types/app';
 
 export interface HotkeyConfig {
   id: string;
@@ -20,12 +16,21 @@ export interface HotkeyConfig {
   enabled: boolean;
 }
 
+// Storage-only baseline (does not include derived fields like trueSens)
+interface StorageBaselineSettings {
+  mouseTravel: number;
+  dpi: number;
+  favoriteGame?: string;
+  favoriteSensitivity?: number;
+  eDPI?: number;
+}
+
 export interface UserSettings {
   widget: {
     position: { x: number; y: number };
     visible: boolean;
   };
-  baseline: BaselineSettings | null;
+  baseline: StorageBaselineSettings | null;
   hotkeys: HotkeyConfig[];
   theme: string;
 }
@@ -61,9 +66,14 @@ export class SettingsService {
         const data = fs.readFileSync(this.settingsPath, 'utf8');
         const loadedSettings = JSON.parse(data);
 
-        // Migrate old canonical settings to include edpi
-        if (loadedSettings.canonical && !loadedSettings.canonical.edpi) {
-          loadedSettings.canonical.edpi = loadedSettings.canonical.sensitivity * loadedSettings.canonical.dpi;
+        // Migrate old canonical settings to include eDPI if needed
+        if (
+          loadedSettings.baseline &&
+          loadedSettings.baseline.favoriteSensitivity &&
+          loadedSettings.baseline.dpi &&
+          !loadedSettings.baseline.eDPI
+        ) {
+          loadedSettings.baseline.eDPI = loadedSettings.baseline.favoriteSensitivity * loadedSettings.baseline.dpi;
         }
 
         // Merge with defaults to ensure all properties exist
@@ -105,13 +115,28 @@ export class SettingsService {
     this.saveSettings();
   }
 
-  // Canonical game settings methods
-  public getBaselineSettings(): BaselineSettings | null {
+  // Canonical game settings methods (storage-level)
+  public getBaselineSettings(): StorageBaselineSettings | null {
     return this.settings.baseline;
   }
 
-  public setBaselineSettings(mouseTravel: number, dpi: number): void {
-    this.settings.baseline = { mouseTravel, dpi };
+  public setBaselineSettings(
+    mouseTravel: number,
+    dpi: number,
+    favoriteGame?: string,
+    favoriteSensitivity?: number,
+    eDPI?: number
+  ): void {
+    const existing: Partial<StorageBaselineSettings> = this.settings.baseline || {};
+    const next: StorageBaselineSettings = {
+      mouseTravel,
+      dpi,
+      favoriteGame: favoriteGame ?? existing.favoriteGame,
+      favoriteSensitivity: favoriteSensitivity ?? existing.favoriteSensitivity,
+      eDPI: eDPI ?? existing.eDPI
+    };
+
+    this.settings.baseline = next;
     this.saveSettings();
   }
 

@@ -63,6 +63,8 @@ export class GameEventsService extends EventEmitter {
     this.emit('log', 'Checking for already running games...');
     this.emit('log', `Supported games to check: ${this.gepGamesId.join(', ')}`);
 
+    const detectedGames: Array<{ gameId: number, name: string, gameInfo: any }> = [];
+
     // Check each supported game to see if it's already running
     for (const gameId of this.gepGamesId) {
       this.emit('log', `Checking game ID: ${gameId}...`);
@@ -79,13 +81,17 @@ export class GameEventsService extends EventEmitter {
           // Add to active games set
           this.activeGames.add(gameId);
 
-          // Set as active game if none is set
+          // Set as active game if none is set (only for the first detected game)
           if (this.activeGame === 0) {
             this.activeGame = gameId;
           }
 
-          // Emit game-detected event to notify other services
-          this.emit('game-detected', gameId, gameInfo.gameInfo.name || 'Unknown', gameInfo.gameInfo);
+          // Collect detected games for batch notification
+          detectedGames.push({
+            gameId,
+            name: gameInfo.gameInfo.name || 'Unknown',
+            gameInfo: gameInfo.gameInfo
+          });
 
           // Set required features for the game
           await this.setRequiredFeaturesForGame(gameId);
@@ -95,6 +101,16 @@ export class GameEventsService extends EventEmitter {
       } catch (error) {
         // Game is not running, which is expected for most games
         this.emit('log', `Game ${gameId} is not running (error):`, error);
+      }
+    }
+
+    // Emit all detected games in a single batch event
+    if (detectedGames.length > 0) {
+      this.emit('log', `Emitting batch startup detection for ${detectedGames.length} games`);
+
+      // Emit individual events for each game (services still expect this)
+      for (const { gameId, name, gameInfo } of detectedGames) {
+        this.emit('game-detected', gameId, name, gameInfo);
       }
     }
 
@@ -186,9 +202,19 @@ export class GameEventsService extends EventEmitter {
       // }
 
       this.emit('log', 'gep: register game-detected', gameId, name, gameInfo);
-      this.activeGame = gameId; // Set active game first (for backward compatibility)
-      this.activeGames.add(gameId); // Add to active games set
-      this.emit('game-detected', gameId, name, gameInfo); // Then emit event
+
+      // Add to active games set
+      this.activeGames.add(gameId);
+
+      // Only set as active game if no active game is currently set
+      if (this.activeGame === 0) {
+        this.emit('log', 'gep: setting active game (no previous active game)', gameId);
+        this.activeGame = gameId;
+      } else {
+        this.emit('log', 'gep: game detected but keeping current active game', this.activeGame, 'new game:', gameId);
+      }
+
+      this.emit('game-detected', gameId, name, gameInfo);
       e.enable();
 
       // Automatically set required features for immediate event detection

@@ -80,6 +80,7 @@
 
         .setting-value {
           color: var(--dark);
+          line-height: 75%;
         }
       }
     }

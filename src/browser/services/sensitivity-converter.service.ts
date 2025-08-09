@@ -1,12 +1,14 @@
 import { GamesService } from './games.service';
-import { SettingsService, BaselineSettings } from './settings.service';
+import { SettingsService } from './settings.service';
+import { BaselineSettings } from '../../types/app';
 import { CurrentGameService } from './current-game.service';
 
 export interface SensitivityConversion {
-  toGame: string;
+  gameName: string;
   suggestedSensitivity: number;
   mouseTravel: number; // cm/360° baseline
   userDPI: number;
+  trueSens: number; // Add trueSens to the interface
 }
 
 export class SensitivityConverterService {
@@ -42,11 +44,14 @@ export class SensitivityConverterService {
       return null;
     }
 
+    const trueSens = this.calculateTrueSens(baselineSettings.mouseTravel);
+
     return {
-      toGame: currentGame.name,
+      gameName: currentGame.name,
       suggestedSensitivity,
       mouseTravel: baselineSettings.mouseTravel,
-      userDPI: baselineSettings.dpi
+      userDPI: baselineSettings.dpi,
+      trueSens // Include trueSens
     };
   }
 
@@ -99,32 +104,39 @@ export class SensitivityConverterService {
    */
   public getAllConversionsFromBaseline(): SensitivityConversion[] {
     const baselineSettings = this.settingsService.getBaselineSettings();
-    if (!baselineSettings) {
-      return [];
-    }
+    if (!baselineSettings) return [];
 
-    const allGames = this.gamesService.getAllGames();
-    const conversions: SensitivityConversion[] = [];
+    const enabledGames = this.gamesService.getEnabledGames();
+    const trueSens = this.calculateTrueSens(baselineSettings.mouseTravel);
 
-    for (const gameData of allGames) {
-      if (!gameData.enable_for_app) continue;
+    return enabledGames
+      .map(game => {
+        const suggestedSensitivity = this.convertFromMouseTravel(
+          baselineSettings.mouseTravel,
+          baselineSettings.dpi,
+          game
+        );
 
-      const suggestedSensitivity = this.convertFromMouseTravel(
-        baselineSettings.mouseTravel,
-        baselineSettings.dpi,
-        gameData
-      );
+        if (suggestedSensitivity === null) {
+          return null;
+        }
 
-      if (suggestedSensitivity !== null) {
-        conversions.push({
-          toGame: gameData.game,
+        return {
+          gameName: game.game,
           suggestedSensitivity,
           mouseTravel: baselineSettings.mouseTravel,
-          userDPI: baselineSettings.dpi
-        });
-      }
-    }
+          userDPI: baselineSettings.dpi,
+          trueSens // Include trueSens in each conversion
+        };
+      })
+      .filter((conversion): conversion is SensitivityConversion => conversion !== null);
+  }
 
-    return conversions;
+  /**
+   * Calculates True Sens from mouse travel (cm/360°)
+   * Formula: cm/360 * 10, rounded to nearest whole number
+   */
+  public calculateTrueSens(mouseTravel: number): number {
+    return Math.round(mouseTravel * 10);
   }
 }

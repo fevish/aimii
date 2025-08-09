@@ -4,283 +4,77 @@ globs:
 alwaysApply: true
 ---
 
-- This app used to be named aimii uppercase but it should always be called aimii lower case in every context
-- This project is based on the overwolf-electron sample app (NOT Overwolf Native).
-- All code and configuration is for overwolf-electron, not native Overwolf.
-- Game events and in-game overlays are confirmed to work in this setup.
-- The assistant is never allowed to make git commits.
+- Always use: aimii (lower case)
+- Based on: overwolf-electron sample (not native Overwolf)
+- Overlay + GEP confirmed working
+- Never make git commits via assistant
 
-## aimii - Mouse Sensitivity Normalizer App
+## Core principles
+- Event-driven (no polling); debounce updates (≈200ms for game changes)
+- Single instance; DevTools detached and manual (Ctrl+Shift+I)
+- Use Overwolf gameInfo.classId (never gameInfo.id)
+- Keep logic in services; UI consumes via IPC/preload
 
-### Project Overview
-aimii is a complete overwolf-electron mouse sensitivity normalizer application with real-time game detection, event-driven architecture, and both main window and overlay widget interfaces. The app is optimized for maximum performance with minimal latency.
+## Canonical settings (BaselineSettings)
+- mouseTravel (cm/360°)
+- dpi
+- trueSens = Math.round(mouseTravel × 10)
+- favoriteGame (string)
+- favoriteSensitivity (number)
+- eDPI = dpi × favoriteSensitivity
 
-### Core Architecture
+Storage: SettingsService persists baseline; baseline getter is enriched with trueSens (and eDPI via migration if needed).
 
-#### Services Layer (`src/browser/services/`)
-- **CurrentGameService**: Event-driven game detection with GEP-overlay coordination
-  - Extends EventEmitter for real-time notifications
-  - Uses `gameInfo.classId` (NOT `gameInfo.id`) for game matching - this is critical
-  - Prioritizes GEP detection over overlay for faster response
-  - Implements 200ms debouncing to prevent excessive updates
-  - Multi-source detection (GEP, Overlay, Custom Detector) with deduplication
-  - Periodic verification of running games with automatic cleanup
-  - Eliminates polling overhead with pure event-driven detection
+## Services (src/browser/services)
+- CurrentGameService: event-driven game detection (GEP-first), debounced
+- GamesService: game data + conversions (cm/360 and target sensitivity)
+- SensitivityConverterService:
+  - getSuggestedSensitivityForCurrentGame()
+  - getAllConversionsFromBaseline()
+  - calculateMouseTravelFromGame(game, sens, dpi)
+  - calculateTrueSens(mouseTravel) = round(cm × 10)
+- SettingsService: baseline, widget, hotkeys, theme
+- OverlayService: optimized registration/injection; coordinates with GEP
 
-- **GameEventsService (GEP)**: High-performance game detection service
-  - Uses O(1) Set lookups for game ID matching (optimized from O(n) array.includes)
-  - Automatically sets required features on game detection for immediate events
-  - Proper game exit handling to prevent stale detection states
-  - Parallel feature setting with Promise.all for faster initialization
+## IPC/preload (selected)
+- settings:
+  - getBaselineSettings() → BaselineSettings (with trueSens/eDPI)
+  - setBaselineSettings(mouseTravel, dpi, favoriteGame?, favoriteSensitivity?, eDPI?) → boolean
+  - hasBaselineSettings(), clearBaselineSettings()
+- currentGame: getCurrentGameInfo(), getAllDetectedGames(), onGameChanged()
+- sensitivityConverter:
+  - getSuggestedForCurrentGame(), getAllConversionsFromBaseline()
+  - calculateMouseTravelFromGame(game, sens, dpi)
+  - getCurrentMouseTravel(), getTrueSens()
 
-- **SensitivityConverterService**: Cross-game sensitivity calculations
-  - Uses existing GamesService conversion methods for accuracy
-  - Smart logic: shows current settings when playing canonical game, suggests conversion for other supported games
-  - Calculates cm/360° for consistency verification
+## UI
+- MyMainWindow: parallel data load; real-time updates; suggestions
+- Widget: compact; listens for baseline changes
+- SettingsFlow (3 steps: game, sens, dpi)
+  - Onboarding: normal Next/Back
+  - Preferences: Back on step 1 closes flow; Back on steps 2–3 navigates back
+- UserPreferencesContent: shows canonical settings; opens SettingsFlow (context="preferences")
 
-- **GamesService**: Game configuration management from `games.data.ts`
-  - Maps Overwolf game IDs to internal game data
-  - Provides conversion factors and game metadata
-  - Supports special conversion formulas for complex games
-  - Uses TypeScript interfaces for type safety
-  - Supports multiple conversion parameter types (linear, exponential, etc.)
+## Game detection
+- Primary: GEP (O(1) Set) with auto-features
+- Secondary: overlay injection; both normalize to classId strings
 
-- **SettingsService**: Persistent canonical settings storage
-  - User's preferred game, sensitivity, and DPI as conversion baseline
-  - Widget position and visibility state persistence
-  - Hotkey configuration management with validation
-  - Theme settings and user preferences
-  - TypeScript interfaces for type-safe settings management
+## Performance
+- Debounce game updates; minimal settings sync
+- O(1) ID lookups; Promise.all for parallel loads
 
-- **OverlayService**: Optimized Overwolf overlay API management
-  - Removed 2-second delay from game registration for faster injection
-  - Game injection and overlay window creation
-  - Event registration and management
-  - Coordinates with GEP for immediate injection attempts
+## Conventions
+- TypeScript throughout; shared types in src/types
+- No inline styles; use CSS
+- Do not recompute conversions in UI; use services via IPC
 
-- **HotkeyService**: Centralized hotkey management
-  - Manages all application hotkeys (widget toggle, DevTools, etc.)
-  - Persistent hotkey configuration with settings integration
-  - Hotkey registration tracking to prevent duplicates
-  - Default hotkey setup (Ctrl+Shift+M for widget toggle)
+## Maintenance notes
+- Unify BaselineSettings type usage: import from src/types/app.ts in backend
+- Consider PreferencesContext and ConversionContext in renderer to centralize access and reduce duplication
 
-- **CustomGameDetectorService**: Fallback game detection for non-GEP games
-  - Uses Windows tasklist to detect custom game processes
-  - Supports games without Overwolf integration
-  - Periodic monitoring with configurable intervals (2-second default)
-  - Integrates with GamesService for custom game definitions
-  - CSV parsing for reliable process detection
+## Commit messages
+- ≤50 chars, e.g.: "add eDPI to baseline", "fix prefs back behavior"
 
-- **WindowStateService**: Window state persistence
-  - Saves and restores window position, size, and state
-  - DevTools state management (detached mode)
-  - Proper cleanup and error handling
-
-#### Controllers Layer (`src/browser/controllers/`)
-- **MainWindowController**: Central coordination hub
-  - Manages all service dependencies and IPC handlers
-  - Listens for game changes and broadcasts to UI components via IPC
-  - Handles widget creation and management
-  - Centralized logging and error handling
-  - Single instance window management with `getBrowserWindow()` method
-  - DevTools behavior management (detached mode enforcement)
-
-- **WidgetWindowController**: Overlay widget management
-  - Centralized hotkey configuration (Ctrl+Shift+M for toggle, Ctrl+Shift+I for dev tools)
-  - Prevents duplicate hotkey registrations with hotkeysRegistered flag
-  - Position persistence and bounds checking with debounced saving
-  - Overlay window lifecycle management
-  - Proper timeout cleanup to prevent memory leaks
-
-#### UI Components
-- **MyMainWindow** (`src/components/MyMainWindow/`): Optimized main application interface
-  - Consolidated data loading with Promise.all for parallel execution
-  - React.useMemo() for expensive calculations to prevent unnecessary recalculations
-  - Smart state change detection to avoid redundant re-renders
-  - Reduced polling frequency from 15s to 30s for settings sync
-  - Canonical settings configuration with real-time validation
-  - Real-time game status display with immediate updates
-  - Sensitivity suggestions for current game
-  - Dark theme with glassmorphism effects
-  - App version display using `process.env.APP_VERSION`
-
-- **Widget** (`src/components/Widget/`): Overlay widget
-  - Compact game info display
-  - Real-time sensitivity suggestions
-  - Minimal, non-intrusive design
-  - Position persistence and bounds checking
-
-- **Settings** (`src/components/Settings/`): Settings management interface
-  - Hotkey configuration with real-time validation
-  - Canonical settings management
-  - User preference persistence
-
-### Event-Driven Architecture
-- **Game Detection**: Pure event-driven using Overwolf events (no polling)
-- **GEP-Overlay Coordination**: GEP detection immediately triggers overlay injection attempts
-- **UI Updates**: IPC events (`current-game-changed`) for instant UI refresh
-- **Settings Sync**: Minimal polling (30s) only for settings changes
-- **Performance**: Smart state updates prevent unnecessary re-renders
-
-### Key Technical Patterns
-
-#### Single Instance Locking
-- **Application-level**: Uses `app.requestSingleInstanceLock()` to prevent multiple instances
-- **Second Instance Handling**: Focuses existing window when user tries to launch another instance
-- **Window Management**: Restores minimized windows and brings to front
-- **Console Logging**: Provides feedback about instance management
-
-#### DevTools Behavior
-- **No Auto-Open**: DevTools don't open automatically on app startup
-- **Detached Mode**: DevTools always open in detached (separate) window
-- **Manual Trigger**: Only opens via Ctrl+Shift+I hotkey
-- **Infinite Loop Prevention**: Uses flag to prevent re-entry when forcing detached mode
-
-#### IPC Communication
-- Main window uses contextIsolation:true with preload script APIs
-- Widget uses contextIsolation:false with direct electron access
-- Centralized IPC handlers in MainWindowController
-- Event broadcasting for real-time updates
-
-#### Game ID Handling (CRITICAL)
-**IMPORTANT**: When working with Overwolf game detection, always use `gameInfo.classId` for game identification, NOT `gameInfo.id`.
-
-- `gameInfo.id` - Runtime instance ID (changes each time game launches, e.g., 216401)
-- `gameInfo.classId` - Actual Overwolf game ID (static, matches games.data.ts, e.g., 21640)
-
-```typescript
-// CORRECT - Use classId for game matching
-const activeGame = overlayService.overlayApi?.getActiveGameInfo();
-const overwolfGameId = activeGame.gameInfo.classId?.toString();
-
-// WRONG - Don't use id (runtime instance ID)
-const wrongId = activeGame.gameInfo.id; // This changes per game launch
-```
-
-The `owGameId` field in `games.data.ts` corresponds to Overwolf's `gameInfo.classId`.
-
-#### GEP-Overlay Coordination System
-**CRITICAL**: The app uses a coordinated detection system for maximum performance:
-
-- **GEP Detection**: Primary detection method using `gameInfo.classId` with O(1) Set lookups
-- **Overlay Detection**: Secondary method with automatic injection for supported games
-- **Fallback System**: If overlay fails (elevated privileges, anti-cheat), GEP provides detection
-- **Normalized IDs**: All game IDs are normalized to strings matching Overwolf's official format
-- **Immediate Injection**: GEP detection triggers overlay injection attempts immediately
-
-```typescript
-// Normalized game ID handling (used throughout the app)
-private normalizeGameId(gameId: number | string): string {
-  return gameId.toString(); // Ensures consistency across GEP, Overlay, and games.data.ts
-}
-
-// GEP-Overlay coordination in Application class
-gepService.on('game-detected', (gameId, name, gameInfo) => {
-  // Trigger immediate overlay injection attempt
-  if (overlayService.overlayApi) {
-    const activeGame = overlayService.overlayApi.getActiveGameInfo();
-    if (activeGame && activeGame.gameInfo.classId === gameId) {
-      // Game already detected by overlay, create widget
-    }
-  }
-});
-```
-
-#### Game Detection Flow
-1. **GEP detects game** → Normalizes game ID → Checks if supported → Sets features automatically
-2. **Overlay attempts injection** → Uses same normalized game ID → Injects if supported
-3. **CurrentGameService** → Prioritizes GEP detection → Falls back to overlay if needed
-4. **UI updates** → Immediate via IPC events → No polling required
-
-**Key Benefits**:
-- **Faster detection**: GEP detection is immediate, overlay injection starts right away
-- **Reliable fallback**: If overlay fails, GEP still provides game detection
-- **Consistent IDs**: Normalized game IDs prevent matching issues
-- **No polling**: Pure event-driven architecture eliminates delays
-
-#### State Management
-- Functional setState with change detection to prevent unnecessary renders
-- Smart comparison of key properties before state updates
-- Proper cleanup of event listeners and intervals
-- Debounced operations to prevent excessive calls
-
-### Styling System
-- No inline styles. The assistant will not create styles unless specifically prompted; when requested, use external CSS (or the project's preferred styling method) only.
-
-### Development Patterns
-- TypeScript interfaces for all data structures
-- Proper error handling and logging
-- Modular service architecture with dependency injection
-- Event-driven communication over polling
-- Centralized configuration (hotkeys, themes, etc.)
-- Performance-first approach with debouncing and memoization
-
-### Performance Optimizations (Recent)
-- **Removed 2-second delay** from overlay registration for faster injection (confirmed)
-- **GEP-Overlay coordination** for immediate injection attempts when GEP detects games
-- **O(1) game ID lookups** using Set instead of array.includes for faster matching
-- **Automatic feature setting** on GEP game detection for immediate events
-- **Consolidated data loading** with Promise.all for parallel execution
-- **React memoization** for expensive calculations
-- **Smart state updates** with change detection to prevent unnecessary re-renders
-- **Debounced operations** (200ms for game updates, 30s for settings sync)
-- **Proper cleanup** of timeouts and intervals to prevent memory leaks
-- **Prioritized GEP detection** over overlay for faster state updates
-
-### Future Development Notes
-- All game-related logic should use CurrentGameService events
-- New UI components should follow the dark theme pattern
-- IPC handlers should be centralized in MainWindowController
-- Always use gameInfo.classId for game identification
-- Maintain the event-driven architecture pattern
-- Prioritize performance with debouncing and memoization
-- Use O(1) data structures for lookups when possible
-- Implement proper cleanup for all timeouts and intervals
-- Single instance locking is now standard for all new features
-- DevTools behavior should remain detached-only with manual trigger
-
-### Commit Message Guidelines
-- Keep commit messages concise and under 50 characters
-- State what changes you made as short as possible
-- Focus on the main change, not implementation details
-- Examples:
-  - `optimize order of operation and app performance`
-  - `fix hotkey registration issue`
-  - `add game detection fallback`
-  - `simplify CSS structure`
-  - `update README`
-  - `add single instance locking`
-  - `fix DevTools detached mode`
-- Avoid verbose descriptions - the code should be self-documenting
-
-### Rules Maintenance
-**CRITICAL**: This rules file must be updated whenever significant changes are made to the codebase:
-
-- **Architecture changes**: New services, controllers, or major refactoring
-- **Performance optimizations**: New optimization patterns or techniques
-- **API changes**: Modified service interfaces or IPC handlers
-- **File structure changes**: New files, renamed files, or moved functionality
-- **Detection system changes**: GEP, Overlay, or game detection modifications
-- **UI component changes**: New components or major UI updates
-- **Configuration changes**: New settings, hotkeys, or app behavior
-
-**Update Process**:
-1. Identify what changed in the codebase
-2. Update relevant sections in this rules file
-3. Add new patterns, remove deprecated ones
-4. Ensure examples and code snippets are current
-5. Update file structure and service descriptions if needed
-
-This ensures the rules remain accurate and helpful for future development.
-
-### Removed Components (Recent Cleanup)
-- **OverwolfTerminal**: Removed entire demo terminal component and related files (directory exists but is empty)
-- **Demo OSR Window**: Removed demo overlay window functionality
-- **Renderer Directory**: Removed demo HTML/TS files for OSR and exclusive mode
-- **Overlay Input Service**: Removed exclusive mode demo functionality
-- **Demo-related IPC handlers**: Cleaned up demo-specific IPC communication
-
-This ensures the rules remain accurate and helpful for future development.
 
 This ensures the rules remain accurate and helpful for future development.
 - **Demo-related IPC handlers**: Cleaned up demo-specific IPC communication

@@ -21,6 +21,7 @@ export const MyMainWindow: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'main' | 'settings'>('main');
   const [currentGameIndex, setCurrentGameIndex] = useState<number>(0);
+  const [trueSens, setTrueSens] = useState<number | null>(null);
 
   const {
     games,
@@ -107,7 +108,7 @@ export const MyMainWindow: React.FC = () => {
         setSuggestedSensitivity(prevSuggestion => {
           if (!prevSuggestion && !suggestion) return prevSuggestion;
           if (!prevSuggestion || !suggestion) return suggestion;
-          if (prevSuggestion.toGame === suggestion.toGame &&
+          if (prevSuggestion.gameName === suggestion.gameName &&
             prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
             return prevSuggestion; // No change
           }
@@ -136,6 +137,23 @@ export const MyMainWindow: React.FC = () => {
       }
     }
   }, [currentGame, allDetectedGames]);
+
+  console.log('allDetectedGames', allDetectedGames);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const value = await window.sensitivityConverter.getTrueSens();
+        if (isMounted) setTrueSens(value);
+      } catch (e) {
+        if (isMounted) setTrueSens(null);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [canonicalSettings]);
 
   const handleToggleWidget = async () => {
     try {
@@ -256,8 +274,8 @@ export const MyMainWindow: React.FC = () => {
         return false;
       }
 
-      // Save baseline settings (mouseTravel + dpi)
-      const success = await (window.settings as any).setBaselineSettings(mouseTravel, dpi);
+      // Save baseline settings (mouseTravel + dpi + favorite game info)
+      const success = await (window.settings as any).setBaselineSettings(mouseTravel, dpi, game, sensitivity);
       if (success) {
         // Reload data to update the UI
         await loadAllData();
@@ -377,13 +395,20 @@ export const MyMainWindow: React.FC = () => {
         return;
       }
 
-      // Save baseline settings (mouseTravel + dpi)
-      await (window.settings as any).setBaselineSettings(mouseTravel, dpiNum);
+      // Save baseline settings (mouseTravel + dpi + favorite game info)
+      const favoriteGame = onboardingData.selectedGame;
+      const favoriteSensitivity = sensitivityNum;
+      await (window.settings as any).setBaselineSettings(mouseTravel, dpiNum, favoriteGame, favoriteSensitivity, dpiNum * favoriteSensitivity);
 
       // Update baseline settings state
+      const fetchedTrueSens = await window.sensitivityConverter.getTrueSens();
       const newSettings = {
         mouseTravel,
-        dpi: dpiNum
+        dpi: dpiNum,
+        trueSens: fetchedTrueSens ?? Math.round(mouseTravel * 10),
+        favoriteGame,
+        favoriteSensitivity,
+        eDPI: dpiNum * favoriteSensitivity
       };
       setCanonicalSettings(newSettings);
 
@@ -460,7 +485,7 @@ export const MyMainWindow: React.FC = () => {
                     {!currentGame && (
                       <>
                         <h2>Your ready to go!</h2>
-                        <p>Launch a game to get started and we'll recommend a sensitivity for you based on your eDPI.</p>
+                        <p>Launch a game to get started and we'll recommend a sensitivity for you based on your saved preferences.</p>
 
                         <div className="notes-section">
                           <h3>Early Access Notes</h3>
@@ -519,7 +544,7 @@ export const MyMainWindow: React.FC = () => {
                   <div className="cards-section">
                     <CardButton
                       title="Mouse Travel"
-                      value={canonicalSettings?.mouseTravel ? `${canonicalSettings.mouseTravel.toFixed(2)} cm` : 'Not set'}
+                      value={canonicalSettings?.mouseTravel ? `${canonicalSettings.mouseTravel.toFixed(2)}` : 'Not set'}
                       iconName="arrow-north-east"
                       isOpen={isUserPreferencesCardOpen}
                       onToggle={handleOpenUserPreferencesCard}
@@ -531,6 +556,7 @@ export const MyMainWindow: React.FC = () => {
                         showForm={showUserPreferencesForm}
                         canonicalSettings={canonicalSettings}
                         mouseTravel={mouseTravel}
+                        trueSens={trueSens}
                         games={games}
                         settingsData={userPreferencesSettingsData}
                         settingsStep={userPreferencesSettingsStep}

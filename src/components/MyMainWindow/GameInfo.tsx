@@ -31,7 +31,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({
       {/* Only show current sensitivity if we have suggested sensitivity (meaning we're in a different game) */}
       {suggestedSensitivity && (
         <>
-          <p className="cool-text">// Suggested Sensitivity</p>
+          <p className="cool-text">// Suggested Sensitivity for {gameName}</p>
           <h4>{suggestedSensitivity.suggestedSensitivity.toFixed(3)}</h4>
         </>
       )}
@@ -42,18 +42,6 @@ export const GameInfo: React.FC<GameInfoProps> = ({
           <span className="setting-value">{gameName}</span>
         </div>
         <div className="setting-row">
-          <span className="setting-label">
-            {suggestedSensitivity ? 'Recommended Sensitivity' : 'Sensitivity'}
-          </span>
-          <span className="setting-value">
-            {suggestedSensitivity ? suggestedSensitivity.suggestedSensitivity.toFixed(3) : 'Use your baseline'}
-          </span>
-        </div>
-        <div className="setting-row">
-          <span className="setting-label">DPI</span>
-          <span className="setting-value">{canonicalSettings?.dpi}</span>
-        </div>
-        <div className="setting-row">
           <span className="setting-label">Mouse Travel</span>
           <span className="setting-value">
             {suggestedSensitivity
@@ -62,6 +50,14 @@ export const GameInfo: React.FC<GameInfoProps> = ({
                 ? `${mouseTravel.toFixed(2)} cm`
                 : 'Calculating...'}
           </span>
+        </div>
+        <div className="setting-row">
+          <span className="setting-label">eDPI</span>
+          <span className="setting-value">{canonicalSettings?.eDPI}</span>
+        </div>
+        <div className="setting-row">
+          <span className="setting-label">Mouse DPI</span>
+          <span className="setting-value">{canonicalSettings?.dpi}</span>
         </div>
       </div>
 

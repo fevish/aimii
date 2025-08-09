@@ -37,7 +37,7 @@ declare global {
     };
     settings: {
       getBaselineSettings: () => Promise<BaselineSettings | null>;
-      setBaselineSettings: (mouseTravel: number, dpi: number) => Promise<boolean>;
+      setBaselineSettings: (mouseTravel: number, dpi: number, favoriteGame?: string, favoriteSensitivity?: number, eDPI?: number) => Promise<boolean>;
       hasBaselineSettings: () => Promise<boolean>;
       clearBaselineSettings: () => Promise<boolean>;
       getTheme: () => Promise<string>;
@@ -57,6 +57,7 @@ declare global {
       getAllConversionsFromBaseline: () => Promise<any[]>;
       getCurrentMouseTravel: () => Promise<number | null>;
       calculateMouseTravelFromGame: (gameData: any, sensitivity: number, dpi: number) => Promise<number | null>;
+      getTrueSens: () => Promise<number | null>;
     };
     windowControls: {
       minimize: () => void;

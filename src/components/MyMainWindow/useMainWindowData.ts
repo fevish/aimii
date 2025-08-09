@@ -68,7 +68,7 @@ export function useMainWindowData() {
       setSuggestedSensitivity(prevSuggestion => {
         if (!prevSuggestion && !suggestion) return prevSuggestion;
         if (!prevSuggestion || !suggestion) return suggestion;
-        if (prevSuggestion.toGame === suggestion.toGame &&
+        if (prevSuggestion.gameName === suggestion.gameName &&
           prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
           return prevSuggestion; // No change
         }
@@ -99,6 +99,8 @@ export function useMainWindowData() {
 
         return gameInfo;
       });
+      // Refresh detected games immediately so UI can reflect multi-game state
+      loadAllDetectedGames();
     };
 
     const handleBaselineSettingsChanged = () => {
@@ -120,7 +122,7 @@ export function useMainWindowData() {
         console.error('Error removing event listeners:', error);
       }
     };
-  }, [loadAllData]);
+  }, [loadAllData, loadAllDetectedGames]);
 
   // Periodic data refresh for settings changes
   React.useEffect(() => {

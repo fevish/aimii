@@ -220,7 +220,7 @@ export const gamesData: GameData[] = [
     game: 'Destiny 2',
     scalingFactor: 0.00660000176,
     owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'DOOM Eternal',

@@ -10,6 +10,10 @@ export interface GameData {
 export interface BaselineSettings {
   mouseTravel: number; // cm for 360° turn
   dpi: number;
+  trueSens: number; // derived: Math.round(mouseTravel * 10)
+  favoriteGame: string; // user's chosen canonical game
+  favoriteSensitivity: number; // sensitivity for favoriteGame at 'dpi'
+  eDPI: number; // derived: dpi * favoriteSensitivity
 }
 
 export interface HotkeyInfo {
@@ -29,4 +33,12 @@ export interface HotkeyConfig {
   };
   description: string;
   enabled: boolean;
+}
+
+export interface SensitivityConversion {
+  gameName: string;
+  suggestedSensitivity: number;
+  mouseTravel: number;
+  userDPI: number;
+  trueSens: number; // Add trueSens to the interface
 }

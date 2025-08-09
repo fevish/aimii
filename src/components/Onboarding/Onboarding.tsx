@@ -51,10 +51,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({
         <div className="onboarding-container">
           <div className="settings-flow">
             <h2>Let's make your aim conistent!</h2>
-            <p>To begin, we're going to ask you three questions to calculate your canonical sensitivity.</p>
+            <p>To begin, we're going to calculate your real Mouse Travel (cm/360°).</p>
             <p>You can always change this later!</p>
             <div className="settings-navigation">
-              <button className="settings-btn settings-btn-next" onClick={onNext} autoFocus>Continue</button>
+              <button className="settings-btn settings-btn-next" onClick={onNext} autoFocus>Begin</button>
             </div>
           </div>
         </div>

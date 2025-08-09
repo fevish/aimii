@@ -67,8 +67,8 @@ contextBridge.exposeInMainWorld('settings', {
   getBaselineSettings: () => {
     return ipcRenderer.invoke('settings-get-baseline');
   },
-  setBaselineSettings: (mouseTravel: number, dpi: number) => {
-    return ipcRenderer.invoke('settings-set-baseline', mouseTravel, dpi);
+  setBaselineSettings: (mouseTravel: number, dpi: number, favoriteGame?: string, favoriteSensitivity?: number, eDPI?: number) => {
+    return ipcRenderer.invoke('settings-set-baseline', mouseTravel, dpi, favoriteGame, favoriteSensitivity, eDPI);
   },
   hasBaselineSettings: () => {
     return ipcRenderer.invoke('settings-has-baseline');
@@ -145,7 +145,8 @@ contextBridge.exposeInMainWorld('sensitivityConverter', {
   },
   getCurrentMouseTravel: () => {
     return ipcRenderer.invoke('sensitivity-get-current-mouse-travel');
-  }
+  },
+  getTrueSens: () => ipcRenderer.invoke('sensitivity-get-true-sens'),
 });
 
 contextBridge.exposeInMainWorld('hotkeys', {

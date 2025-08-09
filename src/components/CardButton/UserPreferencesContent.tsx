@@ -6,6 +6,7 @@ interface UserPreferencesContentProps {
   showForm: boolean;
   canonicalSettings: BaselineSettings | null;
   mouseTravel: number | null;
+  trueSens: number | null; // accept trueSens via props
   games: GameData[];
   settingsData: {
     selectedGame: string;
@@ -28,6 +29,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
   showForm,
   canonicalSettings,
   mouseTravel,
+  trueSens,
   games,
   settingsData,
   settingsStep,
@@ -39,6 +41,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
   onShowForm,
   onCancelForm
 }) => {
+  console.log('canonicalSettings', canonicalSettings);
   return (
     <>
       {showForm ? (
@@ -50,7 +53,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
           message={message}
           onDataChange={onDataChange}
           onNext={onNext}
-          onBack={onBack}
+          onBack={() => { if (settingsStep === 1) { onCancelForm(); } else { onBack(); } }}
           onComplete={onNext}
           showProgress={false}
           inputPrefix="card"
@@ -60,7 +63,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
         <div className="current-settings">
           <div className="main-setting">
             <div className="setting-row">
-              <p>// YOUR BASELINE SETTINGS
+              <p>// MOUSE TRAVEL (cm/360°)
                 <button
                   className="btn btn-secondary btn-outline"
                   onClick={onShowForm}
@@ -68,28 +71,31 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
                   Change Settings
                 </button>
               </p>
-              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)} cm/360°
-              </span>
+              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)}</span>
             </div>
           </div>
           <p>// EQUIVALENT TO</p>
           <div className="settings-grid">
             <div className="setting-row">
               <span className="setting-label">Game</span>
-              <span className="setting-value">Baseline (Any)</span>
+              <span className="setting-value">{canonicalSettings.favoriteGame || 'Baseline (Any)'}</span>
             </div>
             <div className="setting-row">
               <span className="setting-label">Sensitivity</span>
-              <span className="setting-value">Baseline Settings</span>
+              <span className="setting-value">{canonicalSettings.favoriteSensitivity}</span>
             </div>
             <div className="setting-row">
-              <span className="setting-label">DPI</span>
+              <span className="setting-label">eDPI</span>
+              <span className="setting-value">{canonicalSettings.eDPI}</span>
+            </div>
+            <div className="setting-row">
+              <span className="setting-label">Mouse DPI</span>
               <span className="setting-value">{canonicalSettings.dpi}</span>
             </div>
-            <div className="setting-row">
-              <span className="setting-label">Mouse Travel</span>
-              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)} cm</span>
-            </div>
+            {/* <div className="setting-row">
+              <span className="setting-label">Mouse Travel (cm/360°)</span>
+              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)}</span>
+            </div> */}
           </div>
         </div>
       ) : (

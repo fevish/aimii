@@ -40,7 +40,7 @@ export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
       )}
 
       <div className="form-group">
-        <label htmlFor={inputId}>Favorite Game</label>
+        <label htmlFor={inputId}>Game</label>
         <div className="select-wrapper">
         <select
           id={inputId}

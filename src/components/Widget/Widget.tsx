@@ -87,7 +87,7 @@ const Widget: React.FC = () => {
       setSuggestedSensitivity(prevSuggestion => {
         if (!prevSuggestion && !suggestion) return prevSuggestion;
         if (!prevSuggestion || !suggestion) return suggestion;
-        if (prevSuggestion.toGame === suggestion.toGame &&
+        if (prevSuggestion.gameName === suggestion.gameName &&
             prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
           return prevSuggestion; // No change, keep previous state
         }
