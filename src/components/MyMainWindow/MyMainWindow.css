@@ -137,9 +137,8 @@ header {
 }
 
 .close-btn:hover {
-  background: #e81123;
-  /* Standard red for close button */
-  color: var(--primary);
+  background: var(--primary);
+  color: var(--dark);
 }
 
 main {

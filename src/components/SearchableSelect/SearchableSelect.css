@@ -1,0 +1,121 @@
+.searchable-select {
+  position: relative;
+  width: 100%;
+}
+
+.searchable-select.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.select-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.select-input {
+  width: 100%;
+  padding: calc(0.25 * var(--spacing));
+  padding-right: calc(3 * var(--spacing));
+  border: 1px solid var(--secondary);
+  border-radius: var(--radius);
+  background-color: var(--dark);
+  color: var(--light);
+  transition: all 0.2s ease;
+  font-family: inherit;
+  -webkit-appearance: none;
+}
+
+.select-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: var(--dark);
+}
+
+.select-input[readonly] {
+  cursor: default;
+  background-color: var(--dark);
+  color: var(--light);
+}
+
+.select-arrow, .select-arrow:hover,
+.select-clear, .select-clear:hover {
+  position: absolute;
+  right: calc(1.25 * var(--spacing));
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  padding: calc(0.25 * var(--spacing));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: var(--radius);
+  svg {
+    fill: var(--primary);
+    width: calc(2.25 * var(--spacing));
+    height: calc(2.25 * var(--spacing));
+  }
+}
+
+.select-clear:hover {
+  color: var(--dark);
+  background-color: var(--primary);
+}
+
+.select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--dark);
+  border: 1px solid var(--primary);
+  border-top: none;
+  border-bottom-left-radius: calc(2 * var(--radius));
+  max-height: 160px;
+  overflow-y: auto;
+  scrollbar-color: var(--primary) var(--dark);
+  scrollbar-width: thin;
+  z-index: 1000;
+}
+
+.select-options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.select-option {
+  padding: var(--spacing) calc(2 * var(--spacing));
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--light);
+  transition: background-color 0.2s ease;
+}
+
+.select-option:hover,
+.select-option.highlighted {
+  background-color: var(--primary);
+  color: var(--dark);
+}
+
+.select-option.selected {
+  background-color: var(--secondary);
+  color: var(--light);
+}
+
+.select-option.selected:hover,
+.select-option.selected.highlighted {
+  background-color: var(--primary);
+  color: var(--dark);
+}
+
+.select-no-results {
+  padding: var(--spacing) calc(2 * var(--spacing));
+  font-size: 1.2rem;
+  text-align: center;
+}

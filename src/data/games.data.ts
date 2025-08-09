@@ -161,7 +161,7 @@ export const gamesData: GameData[] = [
     owGameId: '24542',
     owConstant: 'CallOfDutyWarzone',
     owGameName: 'Call of Duty: Warzone',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Combat Master',
@@ -287,12 +287,12 @@ export const gamesData: GameData[] = [
     enable_for_app: false
   },
   {
-    game: 'GTA 5 (TPP)',
+    game: 'GTA 5',
     scalingFactor: 1.0,
     specialConversion: true,
     conversionParams: { constant: 66124.8, offset: 6.024 },
     owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Half-Life 2',
@@ -306,7 +306,7 @@ export const gamesData: GameData[] = [
     owGameId: '21854',
     owConstant: 'HaloInfinite',
     owGameName: 'Halo Infinite',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Halo: Reach',
@@ -344,7 +344,7 @@ export const gamesData: GameData[] = [
     game: 'Left 4 Dead 2',
     scalingFactor: 0.02199999511,
     owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Marvel Rivals',
@@ -352,10 +352,10 @@ export const gamesData: GameData[] = [
     owGameId: '24890',
     owConstant: 'MarvelRivals',
     owGameName: 'Marvel Rivals',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
-    game: 'Minecraft: Java Edition',
+    game: 'Minecraft Java',
     scalingFactor: 1.0,
     specialConversion: true,
     conversionParams: { linearCoefficient: 1.2, offset: 0.6, multiplier: 0.005, constant: 0.2, scaleFactor: 0.003 },
@@ -382,7 +382,7 @@ export const gamesData: GameData[] = [
     owGameId: '10844',
     owConstant: 'Overwatch2',
     owGameName: 'Overwatch 2',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Paladins',
@@ -432,7 +432,7 @@ export const gamesData: GameData[] = [
     owGameId: '10826',
     owConstant: 'RainbowSixSiege',
     owGameName: 'Rainbow Six Siege',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Redmatch 2',
@@ -460,7 +460,7 @@ export const gamesData: GameData[] = [
     game: 'Rust',
     scalingFactor: 0.1125,
     owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Spectre Divide',
@@ -538,7 +538,7 @@ export const gamesData: GameData[] = [
     game: 'Titanfall 2',
     scalingFactor: 0.02199999511,
     owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Unturned',

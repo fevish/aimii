@@ -1,5 +1,6 @@
 import React from 'react';
 import { GameData } from '../../types/app';
+import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 
 interface GameSelectionStepProps {
   games: GameData[];
@@ -21,9 +22,25 @@ export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
   const isPreferences = context === 'preferences';
 
   React.useEffect(() => {
-    const el = document.getElementById(inputId) as HTMLSelectElement | null;
+    const el = document.getElementById(inputId) as HTMLInputElement | null;
     if (el) el.focus();
   }, [inputId]);
+
+  // Convert games to options format for SearchableSelect
+  const gameOptions = games.map(game => ({
+    value: game.game,
+    label: game.game
+  }));
+
+  const handleGameChange = (value: string) => {
+    onDataChange('selectedGame', value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && selectedGame && onNext) {
+      onNext();
+    }
+  };
 
   return (
     <div className="settings-step">
@@ -41,24 +58,15 @@ export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
 
       <div className="form-group">
         <label htmlFor={inputId}>Game</label>
-        <div className="select-wrapper">
-        <select
+        <SearchableSelect
           id={inputId}
           value={selectedGame}
-          onChange={e => onDataChange('selectedGame', e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && selectedGame && onNext) {
-              onNext();
-            }
-          }}
+          options={gameOptions}
+          placeholder="Select a game"
+          onChange={handleGameChange}
+          onKeyDown={handleKeyDown}
           required
-        >
-          <option value="" disabled>Select a game</option>
-          {games.map(g => (
-            <option key={g.game} value={g.game}>{g.game}</option>
-            ))}
-          </select>
-        </div>
+        />
       </div>
     </div>
   );
