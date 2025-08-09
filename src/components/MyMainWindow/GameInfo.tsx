@@ -25,6 +25,26 @@ export const GameInfo: React.FC<GameInfoProps> = ({
   onNext,
   canNavigate
 }) => {
+  // Calculate eDPI from available data
+  const eDPI = React.useMemo(() => {
+    // If we have suggested sensitivity, calculate eDPI for current game
+    if (suggestedSensitivity) {
+      return Math.round(suggestedSensitivity.userDPI * suggestedSensitivity.suggestedSensitivity);
+    }
+
+    // Otherwise use the canonical settings eDPI
+    if (canonicalSettings?.eDPI) {
+      return canonicalSettings.eDPI;
+    }
+
+    // Fallback: calculate from canonical settings if available
+    if (canonicalSettings?.dpi && canonicalSettings?.favoriteSensitivity) {
+      return Math.round(canonicalSettings.dpi * canonicalSettings.favoriteSensitivity);
+    }
+
+    return null;
+  }, [suggestedSensitivity, canonicalSettings]);
+
   return (
     <>
       <h2>{title}</h2>
@@ -38,10 +58,14 @@ export const GameInfo: React.FC<GameInfoProps> = ({
 
       <div className="settings-grid">
         <div className="setting-row">
-          <span className="setting-label">Current Game</span>
+          <span className="setting-label">Running Game</span>
           <span className="setting-value">{gameName}</span>
         </div>
         <div className="setting-row">
+          <span className="setting-label">eDPI</span>
+          <span className="setting-value">{eDPI}</span>
+        </div>
+        {/* <div className="setting-row">
           <span className="setting-label">Mouse Travel</span>
           <span className="setting-value">
             {suggestedSensitivity
@@ -52,13 +76,9 @@ export const GameInfo: React.FC<GameInfoProps> = ({
           </span>
         </div>
         <div className="setting-row">
-          <span className="setting-label">eDPI</span>
-          <span className="setting-value">{canonicalSettings?.eDPI}</span>
-        </div>
-        <div className="setting-row">
           <span className="setting-label">Mouse DPI</span>
           <span className="setting-value">{canonicalSettings?.dpi}</span>
-        </div>
+        </div> */}
       </div>
 
       {showNavigation && (

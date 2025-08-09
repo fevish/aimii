@@ -299,7 +299,14 @@ export class MainWindowController {
       const baseline = this.settingsService.getBaselineSettings();
       if (!baseline) return null;
       const trueSens = this.sensitivityConverterService.calculateTrueSens(baseline.mouseTravel);
-      return { ...baseline, trueSens };
+
+      // Calculate eDPI if not present but we have the required data
+      let eDPI = baseline.eDPI;
+      if (!eDPI && baseline.dpi && baseline.favoriteSensitivity) {
+        eDPI = baseline.dpi * baseline.favoriteSensitivity;
+      }
+
+      return { ...baseline, trueSens, eDPI };
     });
 
     ipcMain.handle('settings-set-baseline', (event, mouseTravel: number, dpi: number, favoriteGame?: string, favoriteSensitivity?: number, eDPI?: number) => {

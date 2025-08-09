@@ -275,7 +275,8 @@ export const MyMainWindow: React.FC = () => {
       }
 
       // Save baseline settings (mouseTravel + dpi + favorite game info)
-      const success = await (window.settings as any).setBaselineSettings(mouseTravel, dpi, game, sensitivity);
+      const eDPI = dpi * sensitivity;
+      const success = await (window.settings as any).setBaselineSettings(mouseTravel, dpi, game, sensitivity, eDPI);
       if (success) {
         // Reload data to update the UI
         await loadAllData();
