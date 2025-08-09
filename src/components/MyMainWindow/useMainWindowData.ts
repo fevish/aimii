@@ -1,17 +1,16 @@
 import React from 'react';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
-import { GameData, CanonicalSettings, HotkeyInfo } from '../../types/app';
-
+import { GameData, BaselineSettings, HotkeyInfo } from '../../types/app';
 
 export function useMainWindowData() {
   const [games, setGames] = React.useState<GameData[]>([]);
-  const [canonicalSettings, setCanonicalSettings] = React.useState<CanonicalSettings | null>(null);
+  const [canonicalSettings, setCanonicalSettings] = React.useState<BaselineSettings | null>(null);
   const [currentGame, setCurrentGame] = React.useState<CurrentGameInfo | null>(null);
   const [allDetectedGames, setAllDetectedGames] = React.useState<CurrentGameInfo[]>([]);
   const [suggestedSensitivity, setSuggestedSensitivity] = React.useState<SensitivityConversion | null>(null);
   const [hotkeyInfo, setHotkeyInfo] = React.useState<HotkeyInfo | null>(null);
-  const [cm360, setCm360] = React.useState<number | null>(null);
+  const [mouseTravel, setMouseTravel] = React.useState<number | null>(null);
   const [showOnboarding, setShowOnboarding] = React.useState<boolean>(false);
 
   const loadAllDetectedGames = React.useCallback(async () => {
@@ -36,170 +35,101 @@ export function useMainWindowData() {
   const loadAllData = React.useCallback(async () => {
     try {
       const [gamesData, settings, gameInfo, allGames, hotkey, hasSettings] = await Promise.all([
-        window.games.getEnabledGames(),
-        window.settings.getCanonicalSettings(),
+        window.games?.getEnabledGames() || Promise.resolve([]),
+        (window.settings as any).getBaselineSettings(),
         window.currentGame.getCurrentGameInfo(),
         window.currentGame.getAllDetectedGames(),
-        window.widget.getHotkeyInfo(),
-        window.settings.hasCanonicalSettings()
+        window.widget?.getHotkeyInfo() || Promise.resolve(null),
+        (window.settings as any).hasBaselineSettings()
       ]);
 
       setGames(gamesData);
-
-      if (settings && typeof settings === 'object' && 'sensitivity' in settings && 'dpi' in settings && !('edpi' in settings)) {
-        (settings as any).edpi = (settings as any).sensitivity * (settings as any).dpi;
-      }
-
-      setCanonicalSettings(settings as CanonicalSettings);
-      setHotkeyInfo(hotkey);
+      setCanonicalSettings(settings);
+      setCurrentGame(gameInfo);
       setAllDetectedGames(allGames);
+      setHotkeyInfo(hotkey);
+      setShowOnboarding(!hasSettings);
 
-      if (!hasSettings) {
-        setShowOnboarding(true);
-      }
-
-      setCurrentGame(prevGame => {
-        if (!prevGame && !gameInfo) return prevGame;
-        if (!prevGame || !gameInfo) return gameInfo;
-        if (prevGame.id === gameInfo.id && prevGame.name === gameInfo.name && prevGame.isSupported === gameInfo.isSupported) {
-          return prevGame;
-        }
-
-        return gameInfo;
-      });
-
-      if (settings && gameInfo && window.sensitivityConverter) {
-        const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
-        setSuggestedSensitivity(suggestion);
-      }
-
-      if (settings && window.sensitivityConverter) {
-        const cm = await window.sensitivityConverter.getCanonicalCm360();
-        setCm360(cm);
+      // Get current mouse travel
+      if (settings) {
+        setMouseTravel(settings.mouseTravel);
       } else {
-        setCm360(null);
+        const currentMouseTravel = await window.sensitivityConverter.getCurrentMouseTravel();
+        setMouseTravel(currentMouseTravel);
       }
     } catch (error) {
       console.error('Error loading data:', error);
     }
   }, []);
 
-  React.useEffect(() => {
-    loadAllData();
-
-    const initializeTheme = async () => {
-      try {
-        const theme = await window.settings.getTheme();
-        const { applyTheme } = await import('../../utils/theme');
-        applyTheme(theme);
-      } catch (error) {
-        console.error('Error loading theme:', error);
-      }
-    };
-
-    initializeTheme();
-
-    const handleThemeChanged = (theme: string) => {
-      const { applyTheme } = require('../../utils/theme');
-      applyTheme(theme);
-    };
-
-    window.settings?.onThemeChanged?.(handleThemeChanged);
-
-    const handleGameChanged = (gameInfo: any) => {
-      loadGameSpecificData(gameInfo);
-      loadAllDetectedGames();
-    };
-
-    window.currentGame?.onGameChanged?.(handleGameChanged);
-
-    const handleHotkeyChanged = async (id: string) => {
-      if (id === 'widget-toggle') {
-        try {
-          const hotkey = await window.widget.getHotkeyInfo();
-          setHotkeyInfo(hotkey);
-        } catch (error) {
-          console.error('Error refreshing hotkey info:', error);
+  const loadGameSpecificData = React.useCallback(async () => {
+    try {
+      const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
+      setSuggestedSensitivity(prevSuggestion => {
+        if (!prevSuggestion && !suggestion) return prevSuggestion;
+        if (!prevSuggestion || !suggestion) return suggestion;
+        if (prevSuggestion.toGame === suggestion.toGame &&
+          prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
+          return prevSuggestion; // No change
         }
-      }
-    };
 
-    const handleHotkeysReset = async () => {
-      try {
-        const hotkey = await window.widget.getHotkeyInfo();
-        setHotkeyInfo(hotkey);
-      } catch (error) {
-        console.error('Error refreshing hotkey info after reset:', error);
-      }
-    };
-
-    window.hotkeys?.onHotkeyChanged?.(handleHotkeyChanged);
-    window.hotkeys?.onHotkeysReset?.(handleHotkeysReset);
-
-    const settingsInterval = setInterval(async () => {
-      try {
-        const settings = await window.settings.getCanonicalSettings();
-        setCanonicalSettings(prev => {
-          if (!prev || !settings) return settings as CanonicalSettings;
-          if (prev.game === settings.game && prev.sensitivity === settings.sensitivity && prev.dpi === settings.dpi) {
-            return prev;
-          }
-
-          if (settings && typeof settings === 'object' && 'sensitivity' in settings && 'dpi' in settings && !('edpi' in settings)) {
-            (settings as any).edpi = (settings as any).sensitivity * (settings as any).dpi;
-          }
-
-          return settings as CanonicalSettings;
-        });
-      } catch (error) {
-        console.error('Error checking settings:', error);
-      }
-    }, 30000);
-
-    return () => {
-      window.currentGame?.removeGameChangedListener?.();
-      window.settings?.removeThemeListener?.();
-      clearInterval(settingsInterval);
-      window.hotkeys?.removeHotkeyListeners?.();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        return suggestion;
+      });
+    } catch (error) {
+      console.error('Error loading game-specific data:', error);
+    }
   }, []);
 
-  const loadGameSpecificData = React.useCallback(async (gameInfo?: any) => {
-    try {
-      const currentGameInfo = gameInfo || await window.currentGame.getCurrentGameInfo();
+  React.useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
+
+  React.useEffect(() => {
+    loadGameSpecificData();
+  }, [currentGame, canonicalSettings, loadGameSpecificData]);
+
+  React.useEffect(() => {
+    const handleGameChanged = (gameInfo: CurrentGameInfo) => {
       setCurrentGame(prevGame => {
-        if (!prevGame && !currentGameInfo) return prevGame;
-        if (!prevGame || !currentGameInfo) return currentGameInfo;
-        if (
-          prevGame.id === currentGameInfo.id &&
-          prevGame.name === currentGameInfo.name &&
-          prevGame.isSupported === currentGameInfo.isSupported
-        ) {
-          return prevGame;
+        if (!prevGame && !gameInfo) return prevGame;
+        if (!prevGame || !gameInfo) return gameInfo;
+        if (prevGame.id === gameInfo.id && prevGame.name === gameInfo.name) {
+          return prevGame; // No change
         }
 
-        return currentGameInfo;
+        return gameInfo;
       });
+    };
 
-      if (canonicalSettings && currentGameInfo && window.sensitivityConverter) {
-        const suggestion = await window.sensitivityConverter.getSuggestedForCurrentGame();
-        setSuggestedSensitivity(prevSuggestion => {
-          if (!prevSuggestion && !suggestion) return prevSuggestion;
-          if (!prevSuggestion || !suggestion) return suggestion;
-          if (prevSuggestion.fromGame === suggestion.fromGame &&
-              prevSuggestion.toGame === suggestion.toGame &&
-              prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
-            return prevSuggestion;
-          }
+    const handleBaselineSettingsChanged = () => {
+      loadAllData();
+    };
 
-          return suggestion;
-        });
-      }
+    try {
+      window.currentGame.onGameChanged(handleGameChanged);
+      window.ipcRenderer?.on('baseline-settings-changed', handleBaselineSettingsChanged);
     } catch (error) {
-      console.error('Error loading game data:', error);
+      console.error('Error setting up event listeners:', error);
     }
-  }, [canonicalSettings]);
+
+    return () => {
+      try {
+        window.currentGame?.removeGameChangedListener?.();
+        window.ipcRenderer?.removeAllListeners('baseline-settings-changed');
+      } catch (error) {
+        console.error('Error removing event listeners:', error);
+      }
+    };
+  }, [loadAllData]);
+
+  // Periodic data refresh for settings changes
+  React.useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadAllDetectedGames();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [loadAllDetectedGames]);
 
   return {
     games,
@@ -208,7 +138,7 @@ export function useMainWindowData() {
     allDetectedGames,
     suggestedSensitivity,
     hotkeyInfo,
-    cm360,
+    mouseTravel,
     showOnboarding,
     setShowOnboarding,
     setCanonicalSettings,
@@ -216,5 +146,5 @@ export function useMainWindowData() {
     loadAllDetectedGames,
     loadAllData,
     loadGameSpecificData
-  } as const;
+  };
 }

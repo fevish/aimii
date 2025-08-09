@@ -2,11 +2,9 @@ import { app } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 
-export interface CanonicalGameSettings {
-  game: string;
-  sensitivity: number;
+export interface BaselineSettings {
+  mouseTravel: number; // cm for 360° turn
   dpi: number;
-  edpi: number;
 }
 
 export interface HotkeyConfig {
@@ -27,12 +25,9 @@ export interface UserSettings {
     position: { x: number; y: number };
     visible: boolean;
   };
-  canonical: CanonicalGameSettings | null;
+  baseline: BaselineSettings | null;
   hotkeys: HotkeyConfig[];
   theme: string;
-  // Add more settings categories as needed
-  // ui: { theme: string; fontSize: number };
-  // game: { autoStart: boolean; hotkeys: any };
 }
 
 export class SettingsService {
@@ -54,7 +49,7 @@ export class SettingsService {
         position: { x: 100, y: 100 },
         visible: false
       },
-      canonical: null,
+      baseline: null,
       hotkeys: [],
       theme: 'default'
     };
@@ -111,22 +106,21 @@ export class SettingsService {
   }
 
   // Canonical game settings methods
-  public getCanonicalSettings(): CanonicalGameSettings | null {
-    return this.settings.canonical;
+  public getBaselineSettings(): BaselineSettings | null {
+    return this.settings.baseline;
   }
 
-  public setCanonicalSettings(game: string, sensitivity: number, dpi: number): void {
-    const edpi = sensitivity * dpi;
-    this.settings.canonical = { game, sensitivity, dpi, edpi };
+  public setBaselineSettings(mouseTravel: number, dpi: number): void {
+    this.settings.baseline = { mouseTravel, dpi };
     this.saveSettings();
   }
 
-  public hasCanonicalSettings(): boolean {
-    return this.settings.canonical !== null;
+  public hasBaselineSettings(): boolean {
+    return this.settings.baseline !== null;
   }
 
-  public clearCanonicalSettings(): void {
-    this.settings.canonical = null;
+  public clearBaselineSettings(): void {
+    this.settings.baseline = null;
     this.saveSettings();
   }
 

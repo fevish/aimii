@@ -1,14 +1,13 @@
 import React from 'react';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
-import { CanonicalSettings } from '../../types/app';
-
+import { BaselineSettings } from '../../types/app';
 
 interface GameInfoProps {
   title: string;
   gameName?: string;
   suggestedSensitivity: SensitivityConversion | null;
-  canonicalSettings: CanonicalSettings | null;
-  cm360: number | null;
+  canonicalSettings: BaselineSettings | null;
+  mouseTravel: number | null;
   showNavigation?: boolean;
   onPrevious?: () => void;
   onNext?: () => void;
@@ -20,7 +19,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({
   gameName,
   suggestedSensitivity,
   canonicalSettings,
-  cm360,
+  mouseTravel,
   showNavigation = false,
   onPrevious,
   onNext,
@@ -29,19 +28,13 @@ export const GameInfo: React.FC<GameInfoProps> = ({
   return (
     <>
       <h2>{title}</h2>
-      {suggestedSensitivity
-        ? (
-          <>
-            <p className="cool-text">Converted Sensitivity</p>
-            <h4>{suggestedSensitivity.suggestedSensitivity}</h4>
-          </>
-        )
-        : (
-          <>
-            <p className="cool-text">// Current Sensitivity</p>
-            <h4>{canonicalSettings?.sensitivity}</h4>
-          </>
-        )}
+      {/* Only show current sensitivity if we have suggested sensitivity (meaning we're in a different game) */}
+      {suggestedSensitivity && (
+        <>
+          <p className="cool-text">// Suggested Sensitivity</p>
+          <h4>{suggestedSensitivity.suggestedSensitivity.toFixed(3)}</h4>
+        </>
+      )}
 
       <div className="settings-grid">
         <div className="setting-row">
@@ -53,7 +46,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({
             {suggestedSensitivity ? 'Recommended Sensitivity' : 'Sensitivity'}
           </span>
           <span className="setting-value">
-            {suggestedSensitivity ? suggestedSensitivity.suggestedSensitivity : canonicalSettings?.sensitivity}
+            {suggestedSensitivity ? suggestedSensitivity.suggestedSensitivity.toFixed(3) : 'Use your baseline'}
           </span>
         </div>
         <div className="setting-row">
@@ -61,12 +54,12 @@ export const GameInfo: React.FC<GameInfoProps> = ({
           <span className="setting-value">{canonicalSettings?.dpi}</span>
         </div>
         <div className="setting-row">
-          <span className="setting-label">CM/360°</span>
+          <span className="setting-label">Mouse Travel</span>
           <span className="setting-value">
             {suggestedSensitivity
-              ? `${suggestedSensitivity.cm360} cm`
-              : cm360 !== null
-                ? `${cm360} cm`
+              ? `${suggestedSensitivity.mouseTravel.toFixed(2)} cm`
+              : mouseTravel !== null
+                ? `${mouseTravel.toFixed(2)} cm`
                 : 'Calculating...'}
           </span>
         </div>

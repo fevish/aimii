@@ -294,51 +294,44 @@ export class MainWindowController {
       return this.gamesService.getEnabledGameIds();
     });
 
-    // Canonical settings IPC handlers
-    ipcMain.handle('settings-get-canonical', () => {
-      const settings = this.settingsService.getCanonicalSettings();
-      // Ensure edpi is included for frontend compatibility
-      if (settings && !settings.edpi) {
-        settings.edpi = settings.sensitivity * settings.dpi;
-      }
-
-      return settings;
+    // Settings IPC handlers
+    ipcMain.handle('settings-get-baseline', () => {
+      return this.settingsService.getBaselineSettings();
     });
 
-    ipcMain.handle('settings-set-canonical', (event, game: string, sensitivity: number, dpi: number) => {
-      this.settingsService.setCanonicalSettings(game, sensitivity, dpi);
-      const edpi = sensitivity * dpi;
-      this.printLogMessage(`Canonical settings saved: ${game}, sensitivity: ${sensitivity}, DPI: ${dpi}, eDPI: ${edpi}`);
+    ipcMain.handle('settings-set-baseline', (event, mouseTravel: number, dpi: number) => {
+      this.settingsService.setBaselineSettings(mouseTravel, dpi);
+      this.printLogMessage(`Baseline settings saved: mouseTravel: ${mouseTravel}cm, DPI: ${dpi}`);
 
       // Notify main window about settings change
       if (this.browserWindow && !this.browserWindow.isDestroyed()) {
-        this.browserWindow.webContents.send('canonical-settings-changed');
+        this.browserWindow.webContents.send('baseline-settings-changed');
       }
 
-      // Notify widget about settings change (pass the new settings with edpi)
+      // Notify widget about settings change
       if (this.widgetController?.overlayBrowserWindow) {
-        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', { game, sensitivity, dpi, edpi });
+        this.widgetController.overlayBrowserWindow.window.webContents.send('baseline-settings-changed', { mouseTravel, dpi });
       }
 
       return true;
     });
 
-    ipcMain.handle('settings-has-canonical', () => {
-      return this.settingsService.hasCanonicalSettings();
+    ipcMain.handle('settings-has-baseline', () => {
+      return this.settingsService.hasBaselineSettings();
     });
 
-    ipcMain.handle('settings-clear-canonical', () => {
-      this.settingsService.clearCanonicalSettings();
-      this.printLogMessage('Canonical settings cleared');
+    ipcMain.handle('settings-clear-baseline', () => {
+      this.settingsService.clearBaselineSettings();
+      this.printLogMessage('Baseline settings cleared');
 
       // Notify main window about settings change
       if (this.browserWindow && !this.browserWindow.isDestroyed()) {
-        this.browserWindow.webContents.send('canonical-settings-changed');
+        this.browserWindow.webContents.send('baseline-settings-changed');
       }
 
-      // Notify widget about settings change (pass null to indicate cleared)
+      // Notify widget about settings change
       if (this.widgetController?.overlayBrowserWindow) {
-        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', null);
+        this.widgetController.overlayBrowserWindow.window.webContents.send('baseline-settings-changed', null);
       }
 
       return true;
@@ -398,22 +391,15 @@ export class MainWindowController {
     });
 
     ipcMain.handle('sensitivity-get-all-conversions', () => {
-      return this.sensitivityConverterService.getAllConversionsFromCanonical();
+      return this.sensitivityConverterService.getAllConversionsFromBaseline();
     });
 
-    ipcMain.handle('sensitivity-convert', (event, fromGame: string, toGame: string, sensitivity: number, dpi: number) => {
-      const fromGameData = this.gamesService.getGameByName(fromGame);
-      const toGameData = this.gamesService.getGameByName(toGame);
-
-      if (!fromGameData || !toGameData) {
-        return null;
-      }
-
-      return this.sensitivityConverterService.convertSensitivity(fromGameData, toGameData, sensitivity, dpi);
+    ipcMain.handle('sensitivity-convert-from-game', (event, gameData: any, sensitivity: number, dpi: number) => {
+      return this.sensitivityConverterService.calculateMouseTravelFromGame(gameData, sensitivity, dpi);
     });
 
-    ipcMain.handle('sensitivity-get-canonical-cm360', () => {
-      return this.sensitivityConverterService.getCanonicalCm360();
+    ipcMain.handle('sensitivity-get-current-mouse-travel', () => {
+      return this.sensitivityConverterService.getCurrentMouseTravel();
     });
 
     ipcMain.handle('gep-set-required-feature', async () => {

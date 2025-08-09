@@ -1,7 +1,8 @@
 import React from 'react';
+import { GameData } from '../../types/app';
 
 interface GameSelectionStepProps {
-  games: Array<{ game: string }>;
+  games: GameData[];
   selectedGame: string;
   onDataChange: (field: string, value: string) => void;
   inputId?: string;

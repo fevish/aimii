@@ -1,15 +1,12 @@
 import { GamesService } from './games.service';
-import { SettingsService } from './settings.service';
+import { SettingsService, BaselineSettings } from './settings.service';
 import { CurrentGameService } from './current-game.service';
 
 export interface SensitivityConversion {
-  fromGame: string;
   toGame: string;
-  fromSensitivity: number;
-  fromDPI: number;
   suggestedSensitivity: number;
-  cm360: number; // cm/360° for reference
-  isSpecialConversion: boolean;
+  mouseTravel: number; // cm/360° baseline
+  userDPI: number;
 }
 
 export class SensitivityConverterService {
@@ -20,122 +17,114 @@ export class SensitivityConverterService {
   ) {}
 
   /**
-   * Calculate suggested sensitivity for the current game based on canonical settings
+   * Calculate suggested sensitivity for the current game based on baseline settings
    */
   public getSuggestedSensitivityForCurrentGame(): SensitivityConversion | null {
-    const canonicalSettings = this.settingsService.getCanonicalSettings();
+    const baselineSettings = this.settingsService.getBaselineSettings();
     const currentGame = this.currentGameService.getCurrentGameInfo();
 
-    if (!canonicalSettings || !currentGame || !currentGame.isSupported) {
+    if (!baselineSettings || !currentGame || !currentGame.isSupported) {
       return null;
     }
 
-    // Don't suggest conversion if we're already in the canonical game
-    if (canonicalSettings.game === currentGame.name) {
-      return null;
-    }
-
-    const fromGameData = this.gamesService.getGameByName(canonicalSettings.game);
     const toGameData = currentGame.gameData;
-
-    if (!fromGameData || !toGameData) {
+    if (!toGameData) {
       return null;
     }
 
-    const result = this.convertSensitivity(
-      fromGameData,
-      toGameData,
-      canonicalSettings.sensitivity,
-      canonicalSettings.dpi
+    const suggestedSensitivity = this.convertFromMouseTravel(
+      baselineSettings.mouseTravel,
+      baselineSettings.dpi,
+      toGameData
     );
 
-    return result;
-  }
-
-  /**
-   * Convert sensitivity between two games using GamesService methods
-   */
-  public convertSensitivity(
-    fromGame: any,
-    toGame: any,
-    sensitivity: number,
-    dpi: number
-  ): SensitivityConversion {
-    // Use the existing GamesService conversion method
-    const conversion = this.gamesService.convertSensitivity(
-      fromGame,
-      toGame,
-      sensitivity,
-      dpi,
-      dpi // Use same DPI for target
-    );
+    if (suggestedSensitivity === null) {
+      return null;
+    }
 
     return {
-      fromGame: fromGame.game,
-      toGame: toGame.game,
-      fromSensitivity: sensitivity,
-      fromDPI: dpi,
-      suggestedSensitivity: Math.round(conversion.targetSensitivity * 1000) / 1000, // Round to 3 decimal places
-      cm360: Math.round(conversion.cm360 * 100) / 100, // Round to 2 decimal places
-      isSpecialConversion: fromGame.specialConversion || toGame.specialConversion
+      toGame: currentGame.name,
+      suggestedSensitivity,
+      mouseTravel: baselineSettings.mouseTravel,
+      userDPI: baselineSettings.dpi
     };
   }
 
   /**
-   * Get cm/360° for canonical settings (game + sensitivity + dpi)
+   * Convert from mouseTravel baseline to a specific game's sensitivity
    */
-  public getCanonicalCm360(): number | null {
-    const canonicalSettings = this.settingsService.getCanonicalSettings();
-    if (!canonicalSettings) {
+  public convertFromMouseTravel(
+    mouseTravel: number,
+    dpi: number,
+    toGameData: any
+  ): number | null {
+    if (!toGameData || mouseTravel <= 0 || dpi <= 0) {
       return null;
     }
 
-    const gameData = this.gamesService.getGameByName(canonicalSettings.game);
-    if (!gameData) {
-      return null;
-    }
-
-    const cm360 = this.gamesService.calculateCm360(
-      gameData,
-      canonicalSettings.sensitivity,
-      canonicalSettings.dpi
+    // Use the games service to convert from cm/360 to target game sensitivity
+    return this.gamesService.calculateTargetSensitivity(
+      toGameData,
+      mouseTravel,
+      dpi
     );
-
-    return Math.round(cm360 * 100) / 100; // Round to 2 decimal places
   }
 
   /**
-   * Get all possible conversions from canonical settings to all supported games
+   * Convert from game+sensitivity+DPI to mouseTravel (for onboarding)
    */
-  public getAllConversionsFromCanonical(): SensitivityConversion[] {
-    const canonicalSettings = this.settingsService.getCanonicalSettings();
-    if (!canonicalSettings) {
+  public calculateMouseTravelFromGame(
+    gameData: any,
+    sensitivity: number,
+    dpi: number
+  ): number | null {
+    if (!gameData || sensitivity <= 0 || dpi <= 0) {
+      return null;
+    }
+
+    // Use the games service to calculate cm/360 from game settings
+    return this.gamesService.calculateCm360(gameData, sensitivity, dpi);
+  }
+
+  /**
+   * Get current user's mouseTravel value
+   */
+  public getCurrentMouseTravel(): number | null {
+    const baselineSettings = this.settingsService.getBaselineSettings();
+    return baselineSettings?.mouseTravel || null;
+  }
+
+  /**
+   * Get all possible conversions from current baseline to supported games
+   */
+  public getAllConversionsFromBaseline(): SensitivityConversion[] {
+    const baselineSettings = this.settingsService.getBaselineSettings();
+    if (!baselineSettings) {
       return [];
     }
 
-    const fromGameData = this.gamesService.getGameByName(canonicalSettings.game);
-    if (!fromGameData) {
-      return [];
-    }
-
-    const allGames = this.gamesService.getEnabledGames();
+    const allGames = this.gamesService.getAllGames();
     const conversions: SensitivityConversion[] = [];
 
-    for (const toGame of allGames) {
-      // Skip conversion to the same game
-      if (toGame.game === canonicalSettings.game) {
-        continue;
-      }
+    for (const gameData of allGames) {
+      if (!gameData.enable_for_app) continue;
 
-      const conversion = this.convertSensitivity(
-        fromGameData,
-        toGame,
-        canonicalSettings.sensitivity,
-        canonicalSettings.dpi
+      const suggestedSensitivity = this.convertFromMouseTravel(
+        baselineSettings.mouseTravel,
+        baselineSettings.dpi,
+        gameData
       );
-      conversions.push(conversion);
+
+      if (suggestedSensitivity !== null) {
+        conversions.push({
+          toGame: gameData.game,
+          suggestedSensitivity,
+          mouseTravel: baselineSettings.mouseTravel,
+          userDPI: baselineSettings.dpi
+        });
+      }
     }
 
-    return conversions.sort((a, b) => a.toGame.localeCompare(b.toGame));
+    return conversions;
   }
 }

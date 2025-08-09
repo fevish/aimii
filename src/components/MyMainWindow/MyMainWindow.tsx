@@ -9,7 +9,7 @@ import { SecondaryCardContent } from '../CardButton/SecondaryCardContent';
 import './MyMainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
-import { GameData, CanonicalSettings, HotkeyInfo } from '../../types/app';
+import { GameData, BaselineSettings, HotkeyInfo } from '../../types/app';
 import { GameInfo } from './GameInfo';
 import { useMainWindowData } from './useMainWindowData';
 
@@ -29,7 +29,7 @@ export const MyMainWindow: React.FC = () => {
     allDetectedGames,
     suggestedSensitivity,
     hotkeyInfo,
-    cm360,
+    mouseTravel,
     showOnboarding,
     setShowOnboarding,
     setCanonicalSettings,
@@ -49,7 +49,7 @@ export const MyMainWindow: React.FC = () => {
     knowsEdpi: null
   });
 
-  // Card state
+  // Card states
   const [isUserPreferencesCardOpen, setIsUserPreferencesCardOpen] = useState<boolean>(false);
   const [isSecondaryCardOpen, setIsSecondaryCardOpen] = useState<boolean>(false);
   const [showUserPreferencesForm, setShowUserPreferencesForm] = useState<boolean>(false);
@@ -95,8 +95,7 @@ export const MyMainWindow: React.FC = () => {
 
   // Memoized values to prevent unnecessary recalculations
   const isPlayingCanonicalGame = React.useMemo(
-    () => currentGame && canonicalSettings &&
-    currentGame.name === canonicalSettings.game && currentGame.isSupported,
+    () => currentGame && canonicalSettings && currentGame.isSupported,
     [currentGame, canonicalSettings]
   );
 
@@ -108,8 +107,7 @@ export const MyMainWindow: React.FC = () => {
         setSuggestedSensitivity(prevSuggestion => {
           if (!prevSuggestion && !suggestion) return prevSuggestion;
           if (!prevSuggestion || !suggestion) return suggestion;
-          if (prevSuggestion.fromGame === suggestion.fromGame &&
-            prevSuggestion.toGame === suggestion.toGame &&
+          if (prevSuggestion.toGame === suggestion.toGame &&
             prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
             return prevSuggestion; // No change
           }
@@ -148,120 +146,38 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-  const handleSaveCanonicalSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!selectedGame || !sensitivity || !dpi) {
-      setMessage('Please fill in all fields');
-      return;
-    }
-
-    const sensitivityNum = parseFloat(sensitivity);
-    const dpiNum = parseInt(dpi);
-
-    if (isNaN(sensitivityNum) || sensitivityNum <= 0) {
-      setMessage('Please enter a valid sensitivity value');
-      return;
-    }
-
-    if (isNaN(dpiNum) || dpiNum <= 0) {
-      setMessage('Please enter a valid DPI value');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await window.settings.setCanonicalSettings(selectedGame, sensitivityNum, dpiNum);
-
-      // Update canonical settings state
-      const newSettings = { game: selectedGame, sensitivity: sensitivityNum, dpi: dpiNum, edpi: sensitivityNum * dpiNum };
-      setCanonicalSettings(newSettings);
-      setMessage('eDPI saved successfully!');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      console.error('Error saving canonical settings:', error);
-      setMessage('Error saving settings');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResetCanonicalSettings = async () => {
-    if (!canonicalSettings) {
-      setMessage('No settings to reset');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Clear the canonical settings
-      await window.settings.clearCanonicalSettings();
-
-      // Update state
-      setCanonicalSettings(null);
-      setSelectedGame('');
-      setSensitivity('');
-      setDpi('800');
-
-      // Clear the sensitivity suggestion since there's no baseline to convert from
-      setSuggestedSensitivity(null);
-
-      setMessage('Canonical settings cleared successfully!');
-    } catch (error) {
-      console.error('Error clearing canonical settings:', error);
-      setMessage('Error clearing settings');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Onboarding handlers
-  const handleOnboardingNext = () => {
-    if (onboardingStep < 3) {
-      setOnboardingStep(prev => prev + 1);
-      return;
-    }
-    // Step 3 -> Complete
-    handleCompleteOnboarding();
-  };
-
-  const handleOnboardingBack = () => {
-    if (onboardingStep > 0) {
-      setOnboardingStep(prev => prev - 1);
-    }
-  };
-
-  const handleOnboardingDataChange = (field: string, value: string) => {
-    setOnboardingData(prev => ({
-      ...prev,
-      [field]: field === 'knowsEdpi' ? value === 'true' : value
-    }));
-  };
-
   const handleOpenUserPreferencesCard = () => {
     setIsUserPreferencesCardOpen(true);
     setShowUserPreferencesForm(false);
+    // For now, use empty form data since we're transitioning to mouseTravel-only
     setUserPreferencesFormData({
-      selectedGame: canonicalSettings?.game || '',
-      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
-      dpi: canonicalSettings?.dpi?.toString() || ''
+      selectedGame: '',
+      sensitivity: '',
+      dpi: ''
     });
   };
 
   const handleCloseUserPreferencesCard = () => {
     setIsUserPreferencesCardOpen(false);
     setShowUserPreferencesForm(false);
-    setUserPreferencesFormData({ selectedGame: '', sensitivity: '', dpi: '' });
+  };
+
+  const handleOpenSecondaryCard = () => {
+    setIsSecondaryCardOpen(true);
+  };
+
+  const handleCloseSecondaryCard = () => {
+    setIsSecondaryCardOpen(false);
   };
 
   const handleShowUserPreferencesForm = () => {
     setShowUserPreferencesForm(true);
-    // Initialize settings data with current values
+    // Initialize settings data - simplified for baseline structure
     setUserPreferencesSettingsData({
-      selectedGame: canonicalSettings?.game || '',
-      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
-      dpi: canonicalSettings?.dpi?.toString() || '',
-      edpi: canonicalSettings?.edpi?.toString() || '',
+      selectedGame: '',
+      sensitivity: '',
+      dpi: canonicalSettings?.dpi?.toString() || '800',
+      edpi: '',
       knowsEdpi: null
     });
     setUserPreferencesSettingsStep(1);
@@ -270,16 +186,16 @@ export const MyMainWindow: React.FC = () => {
   const handleCancelUserPreferencesForm = () => {
     setShowUserPreferencesForm(false);
     setUserPreferencesFormData({
-      selectedGame: canonicalSettings?.game || '',
-      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
-      dpi: canonicalSettings?.dpi?.toString() || ''
+      selectedGame: '',
+      sensitivity: '',
+      dpi: ''
     });
     // Reset settings flow data
     setUserPreferencesSettingsData({
-      selectedGame: canonicalSettings?.game || '',
-      sensitivity: canonicalSettings?.sensitivity?.toString() || '',
-      dpi: canonicalSettings?.dpi?.toString() || '',
-      edpi: canonicalSettings?.edpi?.toString() || '',
+      selectedGame: '',
+      sensitivity: '',
+      dpi: canonicalSettings?.dpi?.toString() || '800',
+      edpi: '',
       knowsEdpi: null
     });
     setUserPreferencesSettingsStep(1);
@@ -317,22 +233,31 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-  const handleOpenSecondaryCard = () => {
-    setIsSecondaryCardOpen(true);
-  };
-
-  const handleCloseSecondaryCard = () => {
-    setIsSecondaryCardOpen(false);
-  };
-
   const handleResetSettingsFromCard = () => {
     setIsUserPreferencesCardOpen(false);
-    handleResetCanonicalSettings();
+    // handleResetCanonicalSettings(); // This function is removed
   };
 
   const handleSaveSettingsFromCard = async (game: string, sensitivity: number, dpi: number, customMessage?: string): Promise<boolean> => {
     try {
-      const success = await window.settings.setCanonicalSettings(game, sensitivity, dpi);
+      // Find the game data to calculate mouse travel
+      const gameData = games.find(g => g.game === game);
+      if (!gameData) {
+        setMessage('Game not found');
+        setTimeout(() => setMessage(''), 3000);
+        return false;
+      }
+
+      // Calculate mouse travel from the game + sensitivity + dpi
+      const mouseTravel = await window.sensitivityConverter.calculateMouseTravelFromGame(gameData, sensitivity, dpi);
+      if (!mouseTravel) {
+        setMessage('Error calculating mouse travel');
+        setTimeout(() => setMessage(''), 3000);
+        return false;
+      }
+
+      // Save baseline settings (mouseTravel + dpi)
+      const success = await (window.settings as any).setBaselineSettings(mouseTravel, dpi);
       if (success) {
         // Reload data to update the UI
         await loadAllData();
@@ -370,7 +295,7 @@ export const MyMainWindow: React.FC = () => {
   const handleRestartOnboarding = async () => {
     try {
       // Clear all canonical settings
-      await window.settings.clearCanonicalSettings();
+      await (window.settings as any).clearBaselineSettings();
 
       // Reset all state
       setCanonicalSettings(null);
@@ -389,58 +314,32 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-  const handleCompleteOnboarding = async () => {
-    // Check if user provided eDPI directly
-    if (onboardingData.knowsEdpi === true && onboardingData.edpi) {
-      const edpiNum = parseFloat(onboardingData.edpi);
-      if (isNaN(edpiNum) || edpiNum <= 0) {
-        setMessage('Please enter a valid eDPI value');
-        return;
-      }
-
-      // For direct eDPI input, we need to set a default game and calculate sensitivity/DPI
-      const defaultGame = 'Valorant';
-      const defaultDpi = 800;
-      const calculatedSensitivity = edpiNum / defaultDpi;
-
-      setIsLoading(true);
-      try {
-        await window.settings.setCanonicalSettings(
-          defaultGame,
-          calculatedSensitivity,
-          defaultDpi
-        );
-
-        // Update canonical settings state
-        const newSettings = {
-          game: defaultGame,
-          sensitivity: calculatedSensitivity,
-          dpi: defaultDpi,
-          edpi: edpiNum
-        };
-                setCanonicalSettings(newSettings);
-
-        // Reload data to compute cm/360 and suggestions
-        await loadAllData();
-
-        // Hide onboarding and show main screen
-        setShowOnboarding(false);
-        setOnboardingStep(0);
-        setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
-        setMessage('Baseline saved successfully!');
-        setTimeout(() => setMessage(''), 3000);
-      } catch (error) {
-        console.error('Error saving onboarding settings:', error);
-        setMessage('Error saving settings');
-      } finally {
-        setIsLoading(false);
-      }
-
+  // Onboarding handlers
+  const handleOnboardingNext = () => {
+    if (onboardingStep < 3) {
+      setOnboardingStep(prev => prev + 1);
       return;
     }
+    // Step 3 -> Complete
+    handleCompleteOnboarding();
+  };
 
+  const handleOnboardingBack = () => {
+    if (onboardingStep > 0) {
+      setOnboardingStep(prev => prev - 1);
+    }
+  };
+
+  const handleOnboardingDataChange = (field: string, value: string) => {
+    setOnboardingData(prev => ({
+      ...prev,
+      [field]: field === 'knowsEdpi' ? value === 'true' : value
+    }));
+  };
+
+  const handleCompleteOnboarding = async () => {
     // Check if user went through the step-by-step process
-    if (!onboardingData.sensitivity || !onboardingData.dpi) {
+    if (!onboardingData.selectedGame || !onboardingData.sensitivity || !onboardingData.dpi) {
       setMessage('Please fill in all required fields');
       return;
     }
@@ -460,22 +359,35 @@ export const MyMainWindow: React.FC = () => {
 
     setIsLoading(true);
     try {
-            await window.settings.setCanonicalSettings(
-        onboardingData.selectedGame || 'Counter-Strike 2',
+      // Calculate mouseTravel from the selected game + sensitivity + DPI
+      const gameData = games.find(g => g.game === onboardingData.selectedGame);
+      if (!gameData) {
+        setMessage('Selected game not found');
+        return;
+      }
+
+      const mouseTravel = await window.sensitivityConverter.calculateMouseTravelFromGame(
+        gameData,
         sensitivityNum,
         dpiNum
       );
 
-      // Update canonical settings state
+      if (!mouseTravel || mouseTravel <= 0) {
+        setMessage('Error calculating mouse travel distance');
+        return;
+      }
+
+      // Save baseline settings (mouseTravel + dpi)
+      await (window.settings as any).setBaselineSettings(mouseTravel, dpiNum);
+
+      // Update baseline settings state
       const newSettings = {
-        game: onboardingData.selectedGame || 'Counter-Strike 2',
-        sensitivity: sensitivityNum,
-        dpi: dpiNum,
-        edpi: sensitivityNum * dpiNum
+        mouseTravel,
+        dpi: dpiNum
       };
       setCanonicalSettings(newSettings);
 
-      // Reload data to compute cm/360 and suggestions
+      // Reload data to update suggestions
       await loadAllData();
 
       // Hide onboarding and show main screen
@@ -580,7 +492,7 @@ export const MyMainWindow: React.FC = () => {
                         gameName={currentGame.name}
                         suggestedSensitivity={suggestedSensitivity}
                         canonicalSettings={canonicalSettings}
-                        cm360={cm360}
+                        mouseTravel={mouseTravel}
                         showNavigation={allDetectedGames.length > 1}
                         onPrevious={handlePreviousGame}
                         onNext={handleNextGame}
@@ -595,7 +507,7 @@ export const MyMainWindow: React.FC = () => {
                         gameName={currentGame.name}
                         suggestedSensitivity={suggestedSensitivity}
                         canonicalSettings={canonicalSettings}
-                        cm360={cm360}
+                        mouseTravel={mouseTravel}
                         showNavigation={allDetectedGames.length > 1}
                         onPrevious={handlePreviousGame}
                         onNext={handleNextGame}
@@ -606,8 +518,8 @@ export const MyMainWindow: React.FC = () => {
 
                   <div className="cards-section">
                     <CardButton
-                      title="eDPI"
-                      value={canonicalSettings?.edpi || (canonicalSettings?.sensitivity || 0) * (canonicalSettings?.dpi || 0)}
+                      title="Mouse Travel"
+                      value={canonicalSettings?.mouseTravel ? `${canonicalSettings.mouseTravel.toFixed(2)} cm` : 'Not set'}
                       iconName="arrow-north-east"
                       isOpen={isUserPreferencesCardOpen}
                       onToggle={handleOpenUserPreferencesCard}
@@ -618,7 +530,7 @@ export const MyMainWindow: React.FC = () => {
                       <UserPreferencesContent
                         showForm={showUserPreferencesForm}
                         canonicalSettings={canonicalSettings}
-                        cm360={cm360}
+                        mouseTravel={mouseTravel}
                         games={games}
                         settingsData={userPreferencesSettingsData}
                         settingsStep={userPreferencesSettingsStep}
@@ -641,10 +553,8 @@ export const MyMainWindow: React.FC = () => {
                       value="WIP"
                       iconName="arrow-north-east"
                       isOpen={isSecondaryCardOpen}
-                      // onToggle={handleOpenSecondaryCard}
-                      // onClose={handleCloseSecondaryCard}
-                      onToggle={() => { }}
-                      onClose={() => { }}
+                      onToggle={handleOpenSecondaryCard}
+                      onClose={handleCloseSecondaryCard}
                       className="card-secondary"
                     >
                       <SecondaryCardContent />

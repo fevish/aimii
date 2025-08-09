@@ -4,18 +4,7 @@ import './Widget.css';
 // Import the interface from the service
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
-
-interface CanonicalSettings {
-  game: string;
-  sensitivity: number;
-  dpi: number;
-}
-
-interface HotkeyInfo {
-  keyCode: number;
-  modifiers: { ctrl: boolean; shift: boolean; alt: boolean };
-  displayText: string;
-}
+import { BaselineSettings, HotkeyInfo } from '../../types/app';
 
 // Local type for electronAPI
 type ElectronAPI = {
@@ -24,12 +13,13 @@ type ElectronAPI = {
 };
 
 const Widget: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
   const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
-  const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
+  const [canonicalSettings, setCanonicalSettings] = useState<BaselineSettings | null>(null);
   const [hotkeyInfo, setHotkeyInfo] = useState<HotkeyInfo | null>(null);
   const [cm360, setCm360] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrentGame = async () => {
     try {
@@ -53,17 +43,16 @@ const Widget: React.FC = () => {
     }
   };
 
-  const fetchCanonicalSettings = async () => {
+  const fetchBaselineSettings = async () => {
     try {
       const { ipcRenderer } = require('electron');
-      const settings = await ipcRenderer.invoke('widget-get-canonical-settings');
+      const settings = await ipcRenderer.invoke('widget-get-baseline-settings');
 
       // Only update if settings have actually changed
       setCanonicalSettings(prevSettings => {
         if (!prevSettings && !settings) return prevSettings;
         if (!prevSettings || !settings) return settings;
-        if (prevSettings.game === settings.game &&
-            prevSettings.sensitivity === settings.sensitivity &&
+        if (prevSettings.mouseTravel === settings.mouseTravel &&
             prevSettings.dpi === settings.dpi) {
           return prevSettings; // No change, keep previous state
         }
@@ -71,7 +60,7 @@ const Widget: React.FC = () => {
         return settings;
       });
     } catch (error) {
-      console.error('Failed to fetch canonical settings:', error);
+      console.error('Failed to fetch baseline settings:', error);
       setCanonicalSettings(null);
     }
   };
@@ -98,8 +87,7 @@ const Widget: React.FC = () => {
       setSuggestedSensitivity(prevSuggestion => {
         if (!prevSuggestion && !suggestion) return prevSuggestion;
         if (!prevSuggestion || !suggestion) return suggestion;
-        if (prevSuggestion.fromGame === suggestion.fromGame &&
-            prevSuggestion.toGame === suggestion.toGame &&
+        if (prevSuggestion.toGame === suggestion.toGame &&
             prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
           return prevSuggestion; // No change, keep previous state
         }
@@ -112,13 +100,13 @@ const Widget: React.FC = () => {
     }
   };
 
-  const fetchCanonicalCm360 = async () => {
+  const fetchMouseTravel = async () => {
     try {
       const { ipcRenderer } = require('electron');
-      const cm360Value = await ipcRenderer.invoke('sensitivity-get-canonical-cm360');
-      setCm360(cm360Value);
+      const mouseTravel = await ipcRenderer.invoke('sensitivity-get-current-mouse-travel');
+      setCm360(mouseTravel);
     } catch (error) {
-      console.error('Failed to fetch cm/360°:', error);
+      console.error('Failed to fetch mouse travel:', error);
       setCm360(null);
     }
   };
@@ -126,17 +114,16 @@ const Widget: React.FC = () => {
   const fetchData = async () => {
     await Promise.all([
       fetchCurrentGame(),
-      fetchCanonicalSettings(),
+      fetchBaselineSettings(),
       fetchHotkeyInfo(),
       fetchSuggestedSensitivity(),
-      fetchCanonicalCm360()
+      fetchMouseTravel()
     ]);
   };
 
-  // Check if current game matches canonical game
-  const isPlayingCanonicalGame = React.useMemo(
-    () => currentGame && canonicalSettings &&
-    currentGame.name === canonicalSettings.game && currentGame.isSupported,
+  // Show suggestions for any supported game when we have baseline settings
+  const shouldShowSuggestion = React.useMemo(
+    () => currentGame && canonicalSettings && currentGame.isSupported,
     [currentGame, canonicalSettings]
   );
 
@@ -169,13 +156,13 @@ const Widget: React.FC = () => {
     // Listen for game change events from main process
     ipcRenderer.on('current-game-changed', handleGameChanged);
 
-    // Listen for canonical settings changes
-    const handleCanonicalSettingsChanged = (settings: any) => {
-      console.log('[Widget] Canonical settings changed event received:', settings);
-      fetchData();
+    // Listen for baseline settings changes
+    const handleBaselineSettingsChanged = (settings: any) => {
+      console.log('Baseline settings changed in widget:', settings);
+      setCanonicalSettings(settings);
     };
 
-    ipcRenderer.on('canonical-settings-changed', handleCanonicalSettingsChanged);
+    ipcRenderer.on('baseline-settings-changed', handleBaselineSettingsChanged);
 
     // Listen for theme changes
     const handleThemeChanged = (event: any, theme: string) => {
@@ -221,7 +208,7 @@ const Widget: React.FC = () => {
 
     return () => {
       ipcRenderer.removeListener('current-game-changed', handleGameChanged);
-      ipcRenderer.removeListener('canonical-settings-changed', handleCanonicalSettingsChanged);
+      ipcRenderer.removeListener('baseline-settings-changed', handleBaselineSettingsChanged);
       ipcRenderer.removeListener('theme-changed', handleThemeChanged);
       ipcRenderer.removeListener('hotkey-changed', handleHotkeyChanged);
       ipcRenderer.removeListener('hotkeys-reset', handleHotkeysReset);
@@ -262,29 +249,27 @@ const Widget: React.FC = () => {
               <div className="game-display">
                 <p>Game Detected: <b className="game-name">{currentGame?.name}</b></p>
               </div>
-              {isPlayingCanonicalGame
+              {suggestedSensitivity
                 ? (
                   <div className="sensitivity-suggestion">
-                    <p>Sensitivity</p>
-                    <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
-                    {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
+                    <p>Converted Sensitivity</p>
+                    <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity.toFixed(3)}</p>
+                    {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
                   </div>
                 )
-                : suggestedSensitivity
+                : !canonicalSettings
                   ? (
                     <div className="sensitivity-suggestion">
-                      <p>Converted Sensitivity</p>
-                      <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                      {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
+                      <p>No baseline configured</p>
                     </div>
                   )
-                  : !canonicalSettings
-                    ? (
-                      <div className="sensitivity-suggestion">
-                        <p>No canon game selected</p>
-                      </div>
-                    )
-                    : null}
+                  : (
+                    <div className="sensitivity-suggestion">
+                      <p>Using baseline settings</p>
+                      {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
+                    </div>
+                  )
+              }
             </div>
           )}
       </div>

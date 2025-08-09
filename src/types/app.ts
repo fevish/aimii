@@ -5,17 +5,11 @@ export interface GameData {
   owConstant?: string;
   owGameName?: string;
   enable_for_app: boolean;
-  processName?: string;
-  specialConversion?: boolean;
-  conversionParams?: Record<string, number>;
-  scalingFactor?: number;
 }
 
-export interface CanonicalSettings {
-  game: string;
-  sensitivity: number;
+export interface BaselineSettings {
+  mouseTravel: number; // cm for 360° turn
   dpi: number;
-  edpi: number;
 }
 
 export interface HotkeyInfo {
@@ -24,6 +18,15 @@ export interface HotkeyInfo {
   displayText: string;
 }
 
-export interface HotkeyConfig extends HotkeyInfo {
+export interface HotkeyConfig {
   id: string;
+  name: string;
+  keyCode: number;
+  modifiers: {
+    ctrl: boolean;
+    shift: boolean;
+    alt: boolean;
+  };
+  description: string;
+  enabled: boolean;
 }

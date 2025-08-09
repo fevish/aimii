@@ -64,17 +64,17 @@ contextBridge.exposeInMainWorld('games', {
 });
 
 contextBridge.exposeInMainWorld('settings', {
-  getCanonicalSettings: () => {
-    return ipcRenderer.invoke('settings-get-canonical');
+  getBaselineSettings: () => {
+    return ipcRenderer.invoke('settings-get-baseline');
   },
-  setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => {
-    return ipcRenderer.invoke('settings-set-canonical', game, sensitivity, dpi);
+  setBaselineSettings: (mouseTravel: number, dpi: number) => {
+    return ipcRenderer.invoke('settings-set-baseline', mouseTravel, dpi);
   },
-  clearCanonicalSettings: () => {
-    return ipcRenderer.invoke('settings-clear-canonical');
+  hasBaselineSettings: () => {
+    return ipcRenderer.invoke('settings-has-baseline');
   },
-  hasCanonicalSettings: () => {
-    return ipcRenderer.invoke('settings-has-canonical');
+  clearBaselineSettings: () => {
+    return ipcRenderer.invoke('settings-clear-baseline');
   },
   getTheme: () => {
     return ipcRenderer.invoke('settings-get-theme');
@@ -137,14 +137,14 @@ contextBridge.exposeInMainWorld('sensitivityConverter', {
   getSuggestedForCurrentGame: () => {
     return ipcRenderer.invoke('sensitivity-get-suggested-for-current-game');
   },
-  getAllConversions: () => {
+  getAllConversionsFromBaseline: () => {
     return ipcRenderer.invoke('sensitivity-get-all-conversions');
   },
-  convert: (fromGame: string, toGame: string, sensitivity: number, dpi: number) => {
-    return ipcRenderer.invoke('sensitivity-convert', fromGame, toGame, sensitivity, dpi);
+  calculateMouseTravelFromGame: (gameData: any, sensitivity: number, dpi: number) => {
+    return ipcRenderer.invoke('sensitivity-convert-from-game', gameData, sensitivity, dpi);
   },
-  getCanonicalCm360: () => {
-    return ipcRenderer.invoke('sensitivity-get-canonical-cm360');
+  getCurrentMouseTravel: () => {
+    return ipcRenderer.invoke('sensitivity-get-current-mouse-travel');
   }
 });
 
@@ -180,6 +180,15 @@ contextBridge.exposeInMainWorld('hotkeys', {
 contextBridge.exposeInMainWorld('windowControls', {
   minimize: () => ipcRenderer.invoke('minimize-window'),
   close: () => ipcRenderer.invoke('close-window')
+});
+
+contextBridge.exposeInMainWorld('ipcRenderer', {
+  on: (channel: string, func: (...args: any[]) => void) => {
+    ipcRenderer.on(channel, (event: any, ...args: any[]) => func(...args));
+  },
+  removeAllListeners: (channel: string) => {
+    ipcRenderer.removeAllListeners(channel);
+  }
 });
 
 

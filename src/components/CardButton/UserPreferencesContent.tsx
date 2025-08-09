@@ -1,26 +1,11 @@
 import React from 'react';
 import { SettingsFlow } from '../SettingsFlow/SettingsFlow';
-
-interface CanonicalSettings {
-  game: string;
-  sensitivity: number;
-  dpi: number;
-  edpi: number;
-}
-
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
+import { BaselineSettings, GameData } from '../../types/app';
 
 interface UserPreferencesContentProps {
   showForm: boolean;
-  canonicalSettings: CanonicalSettings | null;
-  cm360: number | null;
+  canonicalSettings: BaselineSettings | null;
+  mouseTravel: number | null;
   games: GameData[];
   settingsData: {
     selectedGame: string;
@@ -42,7 +27,7 @@ interface UserPreferencesContentProps {
 export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
   showForm,
   canonicalSettings,
-  cm360,
+  mouseTravel,
   games,
   settingsData,
   settingsStep,
@@ -73,19 +58,17 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
         />
       ) : canonicalSettings ? (
         <div className="current-settings">
-
           <div className="main-setting">
             <div className="setting-row">
-              <p>// {message ? (message.includes('Error') ? 'Error updating eDPI' : 'UPDATED eDPI') : 'YOUR SAVED eDPI'}
+              <p>// YOUR BASELINE SETTINGS
                 <button
                   className="btn btn-secondary btn-outline"
                   onClick={onShowForm}
                 >
-                  Change eDPI
+                  Change Settings
                 </button>
               </p>
-              {/* <span className="setting-label">eDPI</span> */}
-              <span className="setting-value">{canonicalSettings.edpi}
+              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)} cm/360°
               </span>
             </div>
           </div>
@@ -93,19 +76,19 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
           <div className="settings-grid">
             <div className="setting-row">
               <span className="setting-label">Game</span>
-              <span className="setting-value">{canonicalSettings.game}</span>
+              <span className="setting-value">Baseline (Any)</span>
             </div>
             <div className="setting-row">
               <span className="setting-label">Sensitivity</span>
-              <span className="setting-value">{canonicalSettings.sensitivity}</span>
+              <span className="setting-value">Baseline Settings</span>
             </div>
             <div className="setting-row">
               <span className="setting-label">DPI</span>
               <span className="setting-value">{canonicalSettings.dpi}</span>
             </div>
             <div className="setting-row">
-              <span className="setting-label">CM/360°</span>
-              <span className="setting-value">{cm360 !== null ? `${cm360} cm` : 'Calculating...'}</span>
+              <span className="setting-label">Mouse Travel</span>
+              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)} cm</span>
             </div>
           </div>
         </div>

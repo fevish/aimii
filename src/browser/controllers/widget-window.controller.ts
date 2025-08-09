@@ -86,28 +86,23 @@ export class WidgetWindowController {
       return this.currentGameService.getCurrentGameInfo();
     });
 
-    ipcMain.handle('widget-get-canonical-settings', () => {
-      return this.settingsService.getCanonicalSettings();
+    ipcMain.handle('widget-get-baseline-settings', () => {
+      return this.settingsService.getBaselineSettings();
     });
 
     ipcMain.handle('widget-get-suggested-sensitivity', () => {
       // We need access to the sensitivity converter service
       // For now, we'll calculate it directly here
-      const canonicalSettings = this.settingsService.getCanonicalSettings();
+      const baselineSettings = this.settingsService.getBaselineSettings();
       const currentGame = this.currentGameService.getCurrentGameInfo();
 
-      if (!canonicalSettings || !currentGame || !currentGame.isSupported) {
-        return null;
-      }
-
-      // Don't suggest conversion if we're already in the canonical game
-      if (canonicalSettings.game === currentGame.name) {
+      if (!baselineSettings || !currentGame || !currentGame.isSupported) {
         return null;
       }
 
       // Return the data needed for conversion - the main window will handle the calculation
       return {
-        canonicalSettings,
+        baselineSettings,
         currentGame
       };
     });
