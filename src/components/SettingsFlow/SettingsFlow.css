@@ -97,7 +97,6 @@
   padding: var(--spacing) calc(2 * var(--spacing));
   padding-right: calc(5.5 * var(--spacing));
   border: 1px solid var(--primary);
-  border-radius: 4px;
   background: var(--dark);
   color: var(--light);
   font-size: 1.55rem;

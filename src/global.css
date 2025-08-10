@@ -159,7 +159,7 @@ select,
 input {
   padding: calc(0.25 * var(--spacing));
   border: 1px solid var(--secondary);
-  border-radius: var(--radius);
+  border-radius: calc(2 * var(--radius));
   background-color: var(--dark);
   color: var(--light);
   transition: all 0.2s ease;
@@ -206,11 +206,11 @@ button {
   }
 }
 
-/* button:hover:not(:disabled) {
+button:hover {
   background: var(--primary);
   color: var(--dark);
   box-shadow: none;
-} */
+}
 
 button:disabled {
   opacity: 0.5;
@@ -241,13 +241,16 @@ button:disabled {
 .btn-secondary:hover {
   background: var(--secondary);
   color: var(--dark);
-  transform: scale(1.02);
 }
 
 .btn-outline {
   background: transparent;
   color: currentColor;
   border: 1px solid currentColor;
+}
+.btn-outline:hover {
+  background: var(--dark);
+  color: var(--primary);
 }
 
 /* My Sens */

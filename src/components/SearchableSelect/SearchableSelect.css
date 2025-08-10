@@ -19,12 +19,16 @@
   padding: calc(0.25 * var(--spacing));
   padding-right: calc(3 * var(--spacing));
   border: 1px solid var(--secondary);
-  border-radius: var(--radius);
   background-color: var(--dark);
   color: var(--light);
   transition: all 0.2s ease;
   font-family: inherit;
   -webkit-appearance: none;
+}
+
+.searchable-select.open .select-input {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .select-input:focus {
@@ -34,7 +38,7 @@
 }
 
 .select-input[readonly] {
-  cursor: default;
+  cursor: pointer;
   background-color: var(--dark);
   color: var(--light);
 }
@@ -57,8 +61,8 @@
   border-radius: var(--radius);
   svg {
     fill: var(--primary);
-    width: calc(2.25 * var(--spacing));
-    height: calc(2.25 * var(--spacing));
+    width: calc(1.55 * var(--spacing));
+    height: calc(1.55 * var(--spacing));
   }
 }
 

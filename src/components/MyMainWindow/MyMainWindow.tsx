@@ -493,14 +493,7 @@ export const MyMainWindow: React.FC = () => {
                           <ul>
                             <li>
                               <p>
-                                <b>In-game widget will not work in all games.</b>
-                                <br />
-                                Some of our supported games eg. Counter-Strike 2 do not support in-game overlays.
-                              </p>
-                            </li>
-                            <li>
-                              <p>
-                                <b>This app is very early access</b>
+                                <b>This app is early access</b>
                                 <br />
                                 Features may change or break. Please report bugs to
                                 &nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.

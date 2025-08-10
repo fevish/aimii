@@ -97,9 +97,9 @@ header {
 }
 
 .tab-button:hover {
-  background: var(--secondary);
+  background: var(--primary);
   color: var(--dark);
-  border-color: var(--secondary);
+  border-color: var(--primary);
   transform: none;
   box-shadow: none;
 }

@@ -220,7 +220,7 @@ export const gamesData: GameData[] = [
     game: 'Destiny 2',
     scalingFactor: 0.00660000176,
     owGameId: '0',
-    enable_for_app: true
+    enable_for_app: false
   },
   {
     game: 'DOOM Eternal',
@@ -287,12 +287,12 @@ export const gamesData: GameData[] = [
     enable_for_app: false
   },
   {
-    game: 'GTA 5',
+    game: 'Grand Theft Auto V',
     scalingFactor: 1.0,
     specialConversion: true,
     conversionParams: { constant: 66124.8, offset: 6.024 },
     owGameId: '0',
-    enable_for_app: true
+    enable_for_app: false
   },
   {
     game: 'Half-Life 2',
@@ -344,7 +344,7 @@ export const gamesData: GameData[] = [
     game: 'Left 4 Dead 2',
     scalingFactor: 0.02199999511,
     owGameId: '0',
-    enable_for_app: true
+    enable_for_app: false
   },
   {
     game: 'Marvel Rivals',
@@ -460,7 +460,7 @@ export const gamesData: GameData[] = [
     game: 'Rust',
     scalingFactor: 0.1125,
     owGameId: '0',
-    enable_for_app: true
+    enable_for_app: false
   },
   {
     game: 'Spectre Divide',
@@ -538,7 +538,7 @@ export const gamesData: GameData[] = [
     game: 'Titanfall 2',
     scalingFactor: 0.02199999511,
     owGameId: '0',
-    enable_for_app: true
+    enable_for_app: false
   },
   {
     game: 'Unturned',
