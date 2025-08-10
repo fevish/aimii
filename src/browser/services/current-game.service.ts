@@ -305,6 +305,17 @@ export class CurrentGameService extends EventEmitter {
       console.log(`Games detected: ${gameNames}`);
     }
 
+    // Log games that have exited
+    const currentGameIds = new Set(uniqueDetectedGames.map(g => this.normalizeGameId(g.id)));
+    const exitedGames = this.allDetectedGames.filter(g => !currentGameIds.has(this.normalizeGameId(g.id)));
+
+    if (exitedGames.length === 1) {
+      console.log(`Game exited: ${exitedGames[0].name}`);
+    } else if (exitedGames.length > 1) {
+      const gameNames = exitedGames.map(game => game.name).join(', ');
+      console.log(`Games exited: ${gameNames}`);
+    }
+
     // Replace the detected games list with only currently detected games
     this.allDetectedGames = uniqueDetectedGames;
     this.updateCurrentGameSelection();
