@@ -352,7 +352,7 @@ export class WidgetWindowController {
     });
 
     this.hotkeysRegistered = true;
-    console.log('Widget hotkeys registered successfully', widgetHotkeyInfo.displayText);
+    console.log('Widget hotkeys registered:', widgetHotkeyInfo.displayText);
   }
 
   private registerWindowEvents(): void {

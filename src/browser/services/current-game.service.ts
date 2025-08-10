@@ -96,6 +96,7 @@ export class CurrentGameService extends EventEmitter {
     if (game) {
       this.currentGameInfo = game;
       console.log('Game Changed:', game.name);
+      this.emit('game-changed', game);
     }
   }
 
@@ -264,10 +265,7 @@ export class CurrentGameService extends EventEmitter {
         detectedGamesCount: newDetectedGamesCount
       };
 
-            // Log when a new game is actually detected (count increased)
-      if (detectedGamesCountChanged && newDetectedGamesCount > this.previousState.detectedGamesCount && newGameInfo) {
-        console.log(`Game detected: ${newGameInfo.name}`);
-      }
+      this.emit('game-changed', newGameInfo);
     }
   }
 
@@ -295,6 +293,17 @@ export class CurrentGameService extends EventEmitter {
 
     // Deduplicate the detected games (in case multiple sources detect the same game)
     const uniqueDetectedGames = this.deduplicateGames(detected);
+
+        // Log newly detected games
+    const previousGameIds = new Set(this.allDetectedGames.map(g => this.normalizeGameId(g.id)));
+    const newGames = uniqueDetectedGames.filter(g => !previousGameIds.has(this.normalizeGameId(g.id)));
+
+    if (newGames.length === 1) {
+      console.log(`Game detected: ${newGames[0].name}`);
+    } else if (newGames.length > 1) {
+      const gameNames = newGames.map(game => game.name).join(', ');
+      console.log(`Games detected: ${gameNames}`);
+    }
 
     // Replace the detected games list with only currently detected games
     this.allDetectedGames = uniqueDetectedGames;
