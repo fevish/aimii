@@ -1,4 +1,4 @@
-console.log('** preload **');
+console.log(`aimii v${process.env.APP_VERSION} successfully loaded`);
 const { contextBridge, ipcRenderer } = require('electron');
 
 async function initialize () {

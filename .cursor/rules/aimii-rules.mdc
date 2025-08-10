@@ -8,6 +8,7 @@ alwaysApply: true
 - Based on: overwolf-electron sample (not native Overwolf)
 - Overlay + GEP confirmed working
 - Never make git commits via assistant
+- The agent/assistant should NEVER add css, let the user handle this
 
 ## Core principles
 - Event-driven (no polling); debounce updates (≈200ms for game changes)

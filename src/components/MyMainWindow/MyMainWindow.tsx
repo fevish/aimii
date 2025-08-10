@@ -6,6 +6,7 @@ import { Onboarding } from '../Onboarding';
 import { CardButton } from '../CardButton/CardButton';
 import { UserPreferencesContent } from '../CardButton/UserPreferencesContent';
 import { SecondaryCardContent } from '../CardButton/SecondaryCardContent';
+import { Terminal } from '../Terminal/Terminal';
 import './MyMainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
@@ -100,6 +101,8 @@ export const MyMainWindow: React.FC = () => {
     [currentGame, canonicalSettings]
   );
 
+
+
   // Separate function to update sensitivity suggestion when settings change
   const updateSensitivitySuggestion = React.useCallback(async () => {
     try {
@@ -138,7 +141,7 @@ export const MyMainWindow: React.FC = () => {
     }
   }, [currentGame, allDetectedGames]);
 
-  console.log('allDetectedGames', allDetectedGames);
+
 
   React.useEffect(() => {
     let isMounted = true;
@@ -589,11 +592,11 @@ export const MyMainWindow: React.FC = () => {
           <Settings handleRestartOnboarding={handleRestartOnboarding} />
         )}
 
-        {!showOnboarding && (
+                {!showOnboarding && (
           <section className="ad-section">
-            {/* <div className="ad-container" style={{ width: '400px', height: '300px', background: 'transparent' }}>
-              <owadview />
-            </div> */}
+            <div className="terminal-container">
+              <Terminal />
+            </div>
           </section>
         )}
       </main>
