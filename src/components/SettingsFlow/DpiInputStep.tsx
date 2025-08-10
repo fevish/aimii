@@ -29,19 +29,13 @@ export const DpiInputStep: React.FC<DpiInputStepProps> = ({
       {isPreferences ? (
         <>
           <h2>Update your DPI</h2>
-          <p>Adjust your baseline without changing your feel.</p>
+          <p>Enter your DPI setting.</p>
         </>
-      ) : (
-        <div className="welcome-message" hidden>
-          <h2>Welcome to aimii</h2>
-          <p>To get started, let's lock in your mouse travel distance (cm/360°).</p>
-        </div>
-      )}
-      {!isPreferences &&
-      <>
-        <h2>What is your current DPI?</h2>
-        <p>Enter your DPI setting.</p>
-      </>
+      ) :
+        <>
+          <h2>What is your mouse DPI?</h2>
+          <p>Enter your DPI setting.</p>
+        </>
       }
 
       <div className="form-group">
