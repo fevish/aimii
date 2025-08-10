@@ -218,9 +218,10 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Destiny 2',
+    processName: 'destiny2.exe',
     scalingFactor: 0.00660000176,
     owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'DOOM Eternal',
@@ -295,6 +296,14 @@ export const gamesData: GameData[] = [
     enable_for_app: false
   },
   {
+    game: 'Grand Theft Auto V - Enhanced',
+    scalingFactor: 1.0,
+    specialConversion: true,
+    conversionParams: { constant: 66124.8, offset: 6.024 },
+    owGameId: '0',
+    enable_for_app: false
+  },
+  {
     game: 'Half-Life 2',
     scalingFactor: 0.02199999511,
     owGameId: '0',
@@ -342,9 +351,10 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Left 4 Dead 2',
+    processName: 'left4dead2.exe',
     scalingFactor: 0.02199999511,
     owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Marvel Rivals',
@@ -536,6 +546,12 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Titanfall 2',
+    scalingFactor: 0.02199999511,
+    owGameId: '0',
+    enable_for_app: false
+  },
+  {
+    game: 'Titanfall 2: Northstar',
     scalingFactor: 0.02199999511,
     owGameId: '0',
     enable_for_app: false
