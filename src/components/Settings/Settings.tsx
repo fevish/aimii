@@ -127,9 +127,11 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
     const newTheme = event.target.value;
     try {
       await window.settings.setTheme(newTheme);
+      const themeLabel = availableThemes.find(t => t.value === newTheme)?.label || newTheme;
+      console.log('Theme changed:', { theme: newTheme, label: themeLabel });
       setCurrentTheme(newTheme);
       applyTheme(newTheme);
-      setMessage(`Theme changed to ${availableThemes.find(t => t.value === newTheme)?.label}`);
+      setMessage(`Theme changed to ${themeLabel}`);
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Failed to change theme:', error);
@@ -332,6 +334,14 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
     try {
       const success = await window.hotkeys.updateHotkey(id, updates);
       if (success) {
+        // Get the hotkey name for logging
+        const hotkey = hotkeys.find(hk => hk.id === id);
+        const displayText = getDisplayText(updates.keyCode || 0,
+          updates.modifiers?.ctrl || false,
+          updates.modifiers?.shift || false,
+          updates.modifiers?.alt || false,
+          0);
+        console.log('Hotkey updated:', displayText);
         setHotkeys(prev => prev.map(hk => (hk.id === id ? { ...hk, ...updates } : hk)));
         setMessage('Hotkey updated successfully');
         setTimeout(() => setMessage(''), 3000);
@@ -461,7 +471,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
     <div className="settings-container">
       <div className="settings-header">
         <h2>Settings</h2>
-        {message && <div className="message">{message}</div>}
+        {/* {message && <div className="message">{message}</div>} */}
       </div>
 
       <div className="settings-content">

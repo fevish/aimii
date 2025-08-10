@@ -46,7 +46,6 @@ export class WidgetWindowController {
     // Listen for hotkey changes from settings
     this.hotkeyService.on('hotkey-changed', (id: string, updatedHotkey: any) => {
       if (id === 'widget-toggle') {
-        console.log(' Widget hotkey changed', updatedHotkey);
         this.hotkeysRegistered = false; // Reset registration flag
         this.registerHotkey(); // Re-register with new hotkey
 
@@ -316,7 +315,6 @@ export class WidgetWindowController {
     // Get current widget hotkey configuration from HotkeyService
     const widgetHotkeyInfo = this.hotkeyService.getHotkeyInfo('widget-toggle');
     if (!widgetHotkeyInfo) {
-      console.log('No widget hotkey configured.');
       return;
     }
 
@@ -352,7 +350,6 @@ export class WidgetWindowController {
     });
 
     this.hotkeysRegistered = true;
-    console.log('Widget hotkeys registered:', widgetHotkeyInfo.displayText);
   }
 
   private registerWindowEvents(): void {
