@@ -68,9 +68,7 @@ const Widget: React.FC = () => {
   const fetchHotkeyInfo = async () => {
     try {
       const { ipcRenderer } = require('electron');
-      console.log('[Widget] Fetching hotkey info...');
       const hotkey = await ipcRenderer.invoke('widget-get-hotkey-info');
-      console.log('[Widget] Received hotkey info:', hotkey);
       setHotkeyInfo(hotkey);
     } catch (error) {
       console.error('[Widget] Failed to fetch hotkey info:', error);
@@ -149,7 +147,6 @@ const Widget: React.FC = () => {
     const { ipcRenderer } = require('electron');
 
     const handleGameChanged = () => {
-      console.log('Game changed event received in widget');
       fetchData(); // Refresh all data when game changes
     };
 
@@ -158,7 +155,6 @@ const Widget: React.FC = () => {
 
     // Listen for baseline settings changes
     const handleBaselineSettingsChanged = (settings: any) => {
-      console.log('Baseline settings changed in widget:', settings);
       setCanonicalSettings(settings);
     };
 
@@ -166,7 +162,6 @@ const Widget: React.FC = () => {
 
     // Listen for theme changes
     const handleThemeChanged = (event: any, theme: string) => {
-      console.log('[Widget] Theme changed event received:', theme);
       applyTheme(theme);
     };
 
@@ -174,16 +169,12 @@ const Widget: React.FC = () => {
 
     // Listen for hotkey change events
     const handleHotkeyChanged = (id: string, updatedHotkey: any) => {
-      console.log('[Widget] Hotkey changed event received:', id, updatedHotkey);
       if (id === 'widget-toggle') {
-        console.log('[Widget] Widget hotkey changed, refreshing display...');
         fetchHotkeyInfo();
       }
     };
 
     const handleHotkeysReset = () => {
-      console.log('[Widget] Hotkeys reset event received');
-      console.log('[Widget] Refreshing hotkey display...');
       fetchHotkeyInfo();
     };
 

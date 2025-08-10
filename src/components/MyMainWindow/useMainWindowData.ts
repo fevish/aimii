@@ -124,14 +124,7 @@ export function useMainWindowData() {
     };
   }, [loadAllData, loadAllDetectedGames]);
 
-  // Periodic data refresh for settings changes
-  React.useEffect(() => {
-    const intervalId = setInterval(() => {
-      loadAllDetectedGames();
-    }, 30000); // 30 seconds
 
-    return () => clearInterval(intervalId);
-  }, [loadAllDetectedGames]);
 
   return {
     games,

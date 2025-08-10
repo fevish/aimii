@@ -1,0 +1,148 @@
+.terminal {
+  font-size: 10px;
+  line-height: 1.4;
+  height: 100%;
+  display: flex;
+  flex-flow: column;
+  overflow: hidden;
+}
+
+.terminal-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--darker);
+}
+
+.terminal-command-line {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.terminal-prompt {
+  color: var(--primary);
+  font-weight: bold;
+  margin-right: 8px;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.terminal-input, .terminal-input:focus {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  outline: none;
+  flex: 1;
+  box-shadow: none;
+}
+
+.terminal-input::placeholder {
+  color: var(--text-muted);
+}
+
+.terminal-controls {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  gap: 8px;
+}
+
+.terminal-btn {
+  background: transparent;
+  font-size: 11px;
+  padding: 4px 8px;
+  border: none;
+}
+
+.terminal-btn:hover {
+  border: none;
+  background: unset;
+  opacity: 0.5;
+  color: var(--primary);
+}
+
+.terminal-content {
+  background: var(--dark);
+  overflow-y: auto;
+  scrollbar-color: var(--primary) var(--dark);
+  scrollbar-width: thin;
+}
+
+.terminal-empty {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-style: italic;
+}
+
+.terminal-line {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+  padding: 2px 0;
+  word-break: break-word;
+  font-weight: 200;
+}
+
+.terminal-timestamp {
+  color: var(--text-muted);
+  font-size: 11px;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.terminal-level {
+  min-width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.terminal-message {
+  color: var(--text);
+  flex: 1;
+}
+
+/* Log level styling */
+.terminal-log-error .terminal-message {
+  color: var(--error);
+}
+
+.terminal-log-warn .terminal-message {
+  color: var(--warning);
+}
+
+.terminal-log-info .terminal-message {
+  color: var(--info);
+}
+
+.terminal-log-log .terminal-message {
+  color: var(--text);
+  user-select: text;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .terminal {
+    max-height: 300px;
+  }
+
+  .terminal-content {
+    height: 200px;
+  }
+
+  .terminal-timestamp {
+    min-width: 50px;
+    font-size: 10px;
+  }
+
+  .terminal-level {
+    min-width: 16px;
+    font-size: 10px;
+  }
+}

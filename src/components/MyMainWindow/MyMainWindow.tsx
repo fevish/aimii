@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import Settings from '../Settings/Settings';
 import { SvgIcon } from '../SvgIcon/SvgIcon';
@@ -6,6 +6,7 @@ import { Onboarding } from '../Onboarding';
 import { CardButton } from '../CardButton/CardButton';
 import { UserPreferencesContent } from '../CardButton/UserPreferencesContent';
 import { SecondaryCardContent } from '../CardButton/SecondaryCardContent';
+import { Terminal } from '../Terminal/Terminal';
 import './MyMainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
@@ -46,8 +47,7 @@ export const MyMainWindow: React.FC = () => {
     selectedGame: '',
     sensitivity: '',
     dpi: '',
-    edpi: '',
-    knowsEdpi: null
+    edpi: ''
   });
 
   // Card states
@@ -63,8 +63,7 @@ export const MyMainWindow: React.FC = () => {
     selectedGame: '',
     sensitivity: '',
     dpi: '',
-    edpi: '',
-    knowsEdpi: null as boolean | null
+    edpi: ''
   });
   const [userPreferencesSettingsStep, setUserPreferencesSettingsStep] = useState(1);
 
@@ -99,6 +98,8 @@ export const MyMainWindow: React.FC = () => {
     () => currentGame && canonicalSettings && currentGame.isSupported,
     [currentGame, canonicalSettings]
   );
+
+
 
   // Separate function to update sensitivity suggestion when settings change
   const updateSensitivitySuggestion = React.useCallback(async () => {
@@ -138,7 +139,10 @@ export const MyMainWindow: React.FC = () => {
     }
   }, [currentGame, allDetectedGames]);
 
-  console.log('allDetectedGames', allDetectedGames);
+  // Show welcome message when MyMainWindow renders
+  React.useEffect(() => {
+    console.log(`aimii v${process.env.APP_VERSION} successfully loaded`);
+  }, []);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -195,8 +199,7 @@ export const MyMainWindow: React.FC = () => {
       selectedGame: '',
       sensitivity: '',
       dpi: canonicalSettings?.dpi?.toString() || '800',
-      edpi: '',
-      knowsEdpi: null
+      edpi: ''
     });
     setUserPreferencesSettingsStep(1);
   };
@@ -213,8 +216,7 @@ export const MyMainWindow: React.FC = () => {
       selectedGame: '',
       sensitivity: '',
       dpi: canonicalSettings?.dpi?.toString() || '800',
-      edpi: '',
-      knowsEdpi: null
+      edpi: ''
     });
     setUserPreferencesSettingsStep(1);
   };
@@ -251,6 +253,26 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
+    const handleUserPreferencesDataChange = useCallback((field: string, value: string) => {
+    setUserPreferencesSettingsData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+
+      // Auto-calculate eDPI for display when sensitivity or DPI changes
+      if (field === 'sensitivity' || field === 'dpi') {
+        const sens = field === 'sensitivity' ? parseFloat(value) : parseFloat(newData.sensitivity);
+        const dpi = field === 'dpi' ? parseInt(value) : parseInt(newData.dpi);
+        if (!isNaN(sens) && !isNaN(dpi) && sens > 0 && dpi > 0) {
+          newData.edpi = Math.round(sens * dpi).toString();
+        }
+      }
+
+      return newData;
+    });
+  }, []);
+
   const handleResetSettingsFromCard = () => {
     setIsUserPreferencesCardOpen(false);
     // handleResetCanonicalSettings(); // This function is removed
@@ -278,6 +300,7 @@ export const MyMainWindow: React.FC = () => {
       const eDPI = dpi * sensitivity;
       const success = await (window.settings as any).setBaselineSettings(mouseTravel, dpi, game, sensitivity, eDPI);
       if (success) {
+        console.log('User preferences updated and saved:', { mouseTravel, dpi, game, sensitivity});
         // Reload data to update the UI
         await loadAllData();
         setShowUserPreferencesForm(false);
@@ -320,7 +343,7 @@ export const MyMainWindow: React.FC = () => {
       setCanonicalSettings(null);
 
       setSuggestedSensitivity(null);
-      setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '', knowsEdpi: null });
+      setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '' });
       setOnboardingStep(0);
       setShowOnboarding(true);
 
@@ -349,11 +372,24 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-  const handleOnboardingDataChange = (field: string, value: string) => {
-    setOnboardingData(prev => ({
-      ...prev,
-      [field]: field === 'knowsEdpi' ? value === 'true' : value
-    }));
+    const handleOnboardingDataChange = (field: string, value: string) => {
+    setOnboardingData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+
+      // Auto-calculate eDPI for display when sensitivity or DPI changes
+      if (field === 'sensitivity' || field === 'dpi') {
+        const sens = field === 'sensitivity' ? parseFloat(value) : parseFloat(newData.sensitivity);
+        const dpi = field === 'dpi' ? parseInt(value) : parseInt(newData.dpi);
+        if (!isNaN(sens) && !isNaN(dpi) && sens > 0 && dpi > 0) {
+          newData.edpi = Math.round(sens * dpi).toString();
+        }
+      }
+
+      return newData;
+    });
   };
 
   const handleCompleteOnboarding = async () => {
@@ -419,7 +455,8 @@ export const MyMainWindow: React.FC = () => {
       // Hide onboarding and show main screen
       setShowOnboarding(false);
       setOnboardingStep(0);
-      setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '800', edpi: '', knowsEdpi: null });
+      setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '800', edpi: '' });
+      console.log('Onboarding complete. User preferences saved:', { mouseTravel, dpi: dpiNum, game: favoriteGame, sensitivity: favoriteSensitivity });
       setMessage('Baseline saved successfully!');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
@@ -556,11 +593,7 @@ export const MyMainWindow: React.FC = () => {
                         settingsStep={userPreferencesSettingsStep}
                         isLoading={isLoading}
                         message={message}
-                        onDataChange={(field: string, value: string) => setUserPreferencesSettingsData(prev => ({
-                          ...prev,
-                          [field]: field === 'knowsEdpi' ? value === 'true' : value
-                        }))
-                        }
+                        onDataChange={handleUserPreferencesDataChange}
                         onNext={handleUserPreferencesNext}
                         onBack={handleUserPreferencesBack}
                         onShowForm={handleShowUserPreferencesForm}
@@ -589,13 +622,11 @@ export const MyMainWindow: React.FC = () => {
           <Settings handleRestartOnboarding={handleRestartOnboarding} />
         )}
 
-        {!showOnboarding && (
-          <section className="ad-section">
-            {/* <div className="ad-container" style={{ width: '400px', height: '300px', background: 'transparent' }}>
-              <owadview />
-            </div> */}
-          </section>
-        )}
+        <section className="ad-section" hidden={showOnboarding}>
+          <div className="terminal-container">
+            <Terminal />
+          </div>
+        </section>
       </main>
 
     </div >

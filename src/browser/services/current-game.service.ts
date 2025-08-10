@@ -95,6 +95,7 @@ export class CurrentGameService extends EventEmitter {
     const game = this.allDetectedGames.find(g => this.normalizeGameId(g.id) === normalizedId);
     if (game) {
       this.currentGameInfo = game;
+      console.log('Game Changed:', game.name);
       this.emit('game-changed', game);
     }
   }
@@ -236,7 +237,6 @@ export class CurrentGameService extends EventEmitter {
   private scheduleUpdate(): void {
     this.clearUpdateTimeout();
     this.updateTimeout = setTimeout(() => {
-      console.log('[CurrentGameService] scheduleUpdate → updateGameState');
       this.updateGameState();
     }, this.config.UPDATE_DEBOUNCE_MS);
   }
@@ -244,7 +244,6 @@ export class CurrentGameService extends EventEmitter {
   private updateGameState(): void {
     const now = Date.now();
     if (now - this.lastUpdateTime < this.config.UPDATE_DEBOUNCE_MS) {
-      console.log('[CurrentGameService] Skipping updateGameState due to debounce');
       return;
     }
 
@@ -265,10 +264,7 @@ export class CurrentGameService extends EventEmitter {
         gameInfo: newGameInfo,
         detectedGamesCount: newDetectedGamesCount
       };
-      console.log('[CurrentGameService] Emitting game-changed:', {
-        current: newGameInfo ? { id: this.normalizeGameId(newGameInfo.id), name: newGameInfo.name } : null,
-        all: this.allDetectedGames.map(g => ({ id: this.normalizeGameId(g.id), name: g.name, src: g.detectionSource }))
-      });
+
       this.emit('game-changed', newGameInfo);
     }
   }
@@ -295,25 +291,29 @@ export class CurrentGameService extends EventEmitter {
     detected.push(...this.getOverlayGames());
     detected.push(...this.getCustomDetectedGames());
 
-    console.log('[CurrentGameService] Source sizes:', {
-      gep: detected.filter(g => g.detectionSource === 'gep').map(g => ({ id: this.normalizeGameId(g.id), name: g.name })),
-      overlay: detected.filter(g => g.detectionSource === 'overlay').map(g => ({ id: this.normalizeGameId(g.id), name: g.name })),
-      custom: detected.filter(g => g.detectionSource === 'custom').map(g => ({ id: this.normalizeGameId(g.id), name: g.name }))
-    });
-
     // Deduplicate the detected games (in case multiple sources detect the same game)
     const uniqueDetectedGames = this.deduplicateGames(detected);
 
-    const before = this.allDetectedGames.map(g => ({ id: this.normalizeGameId(g.id), name: g.name }));
-    const after = uniqueDetectedGames.map(g => ({ id: this.normalizeGameId(g.id), name: g.name }));
+        // Log newly detected games
+    const previousGameIds = new Set(this.allDetectedGames.map(g => this.normalizeGameId(g.id)));
+    const newGames = uniqueDetectedGames.filter(g => !previousGameIds.has(this.normalizeGameId(g.id)));
 
-    if (JSON.stringify(before) !== JSON.stringify(after)) {
-      console.log('[CurrentGameService] allDetectedGames changed:', {
-        before,
-        after,
-        added: after.filter(a => !before.some(b => b.id === a.id)),
-        removed: before.filter(b => !after.some(a => a.id === b.id))
-      });
+    if (newGames.length === 1) {
+      console.log(`Game detected: ${newGames[0].name}`);
+    } else if (newGames.length > 1) {
+      const gameNames = newGames.map(game => game.name).join(', ');
+      console.log(`Games detected: ${gameNames}`);
+    }
+
+    // Log games that have exited
+    const currentGameIds = new Set(uniqueDetectedGames.map(g => this.normalizeGameId(g.id)));
+    const exitedGames = this.allDetectedGames.filter(g => !currentGameIds.has(this.normalizeGameId(g.id)));
+
+    if (exitedGames.length === 1) {
+      console.log(`Game exited: ${exitedGames[0].name}`);
+    } else if (exitedGames.length > 1) {
+      const gameNames = exitedGames.map(game => game.name).join(', ');
+      console.log(`Games exited: ${gameNames}`);
     }
 
     // Replace the detected games list with only currently detected games
@@ -370,9 +370,6 @@ export class CurrentGameService extends EventEmitter {
       }
     }
 
-    if (games.length) {
-      console.log('[CurrentGameService] getGepGames:', games.map(g => this.normalizeGameId(g.id)));
-    }
     return games;
   }
 
@@ -384,7 +381,6 @@ export class CurrentGameService extends EventEmitter {
     const overwolfGameId = this.normalizeGameId(classIdOrEmpty);
     const gameData = this.gamesService.getGameByOwId(overwolfGameId);
 
-    console.log('[CurrentGameService] getOverlayGames:', { id: overwolfGameId, name: gameData?.game || activeGame.gameInfo?.name });
     return [{
       id: overwolfGameId as unknown as number,
       name: gameData?.game || activeGame.gameInfo?.name || 'Unknown Game',
@@ -421,9 +417,6 @@ export class CurrentGameService extends EventEmitter {
       }
     }
 
-    if (customGames.length) {
-      console.log('[CurrentGameService] getCustomDetectedGames:', customGames.map(g => this.normalizeGameId(g.id)));
-    }
     return customGames;
   }
 
@@ -440,8 +433,6 @@ export class CurrentGameService extends EventEmitter {
   }
 
   private async performPeriodicVerification(): Promise<void> {
-    console.log('[CurrentGameService] performPeriodicVerification called');
-
     const verificationPromises: Promise<void>[] = [];
 
     // Only verify custom detected games (not GEP games - GEP handles its own state)
@@ -465,21 +456,15 @@ export class CurrentGameService extends EventEmitter {
     if (!this.gepService || !this.customGameDetectorService) return;
 
     const activeGamesToCheck: number[] = Array.from(this.gepService.activeGames);
-    console.log('[CurrentGameService] Verifying GEP active games:', activeGamesToCheck);
 
     for (const gameId of activeGamesToCheck) {
       const gameData = this.gamesService.getGameByOwId(gameId.toString());
       if (gameData?.processName) {
-        console.log(`[CurrentGameService] Checking process for ${gameData.game} (${gameId}): ${gameData.processName}`);
         const isRunning = await this.customGameDetectorService.isProcessRunning(gameData.processName);
-        console.log(`[CurrentGameService] Process running result for ${gameData.game}: ${isRunning}`);
 
         if (!isRunning) {
-          console.log(`[CurrentGameService] Removing ${gameData.game} (${gameId}) from GEP - process not detected`);
           this.removeGepGame(gameId);
         }
-      } else {
-        console.log(`[CurrentGameService] Skipping verification for ${gameData?.game || gameId} - no process name configured`);
       }
     }
   }

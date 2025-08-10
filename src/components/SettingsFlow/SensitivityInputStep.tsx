@@ -31,7 +31,7 @@ export const SensitivityInputStep: React.FC<SensitivityInputStepProps> = ({
       {isPreferences ? (
         <>
           <h2>Update sensitivity</h2>
-          <p>What in‑game sensitivity do you currently use in {selectedGame || 'your game'}?</p>
+          <p>What in‑game sensitivity do you use in {selectedGame || 'your game'}?</p>
         </>
       ) : (
         <>

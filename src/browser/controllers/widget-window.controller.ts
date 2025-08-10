@@ -46,32 +46,24 @@ export class WidgetWindowController {
     // Listen for hotkey changes from settings
     this.hotkeyService.on('hotkey-changed', (id: string, updatedHotkey: any) => {
       if (id === 'widget-toggle') {
-        console.log('[WidgetWindowController] Widget hotkey changed, re-registering...');
         this.hotkeysRegistered = false; // Reset registration flag
         this.registerHotkey(); // Re-register with new hotkey
 
         // Notify widget about hotkey change
         if (this.widgetWindow) {
-          console.log('[WidgetWindowController] Notifying widget about hotkey change:', id);
           this.widgetWindow.window.webContents.send('hotkey-changed', id, updatedHotkey);
-        } else {
-          console.log('[WidgetWindowController] Widget window not available, cannot notify about hotkey change');
         }
       }
     });
 
     // Listen for hotkey reset
     this.hotkeyService.on('hotkeys-reset', () => {
-      console.log('[WidgetWindowController] Hotkeys reset, re-registering widget hotkey...');
       this.hotkeysRegistered = false; // Reset registration flag
       this.registerHotkey(); // Re-register with default hotkey
 
       // Notify widget about hotkey reset
       if (this.widgetWindow) {
-        console.log('[WidgetWindowController] Notifying widget about hotkeys reset');
         this.widgetWindow.window.webContents.send('hotkeys-reset');
-      } else {
-        console.log('[WidgetWindowController] Widget window not available, cannot notify about hotkeys reset');
       }
     });
   }
@@ -323,11 +315,8 @@ export class WidgetWindowController {
     // Get current widget hotkey configuration from HotkeyService
     const widgetHotkeyInfo = this.hotkeyService.getHotkeyInfo('widget-toggle');
     if (!widgetHotkeyInfo) {
-      console.log('[WidgetWindowController] No widget hotkey configured, skipping registration');
       return;
     }
-
-    console.log('[WidgetWindowController] Registering widget hotkey:', widgetHotkeyInfo.displayText);
 
     // Register widget toggle hotkey with current configuration
     this.overlayService.overlayApi.hotkeys.register({
@@ -340,7 +329,6 @@ export class WidgetWindowController {
       },
       passthrough: true
     }, (hotkey, state) => {
-      console.log('[WidgetWindowController] Widget hotkey pressed:', hotkey.name, state);
       if (state === 'pressed') {
         this.toggleVisibility();
       }
@@ -362,7 +350,6 @@ export class WidgetWindowController {
     });
 
     this.hotkeysRegistered = true;
-    console.log('[WidgetWindowController] Widget hotkeys registered successfully');
   }
 
   private registerWindowEvents(): void {

@@ -47,7 +47,7 @@ export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
       {isPreferences ? (
         <>
           <h2>Reference game</h2>
-          <p>Choose the game that reflects your current settings.</p>
+          <p>Choose a game to establish your baseline.</p>
         </>
       ) : (
         <>
