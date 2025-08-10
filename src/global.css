@@ -200,6 +200,7 @@ button {
   text-transform: none;
   letter-spacing: normal;
   font-family: inherit;
+  z-index: 1;
   svg {
     height: calc(1.5 * var(--spacing));
     width: auto;

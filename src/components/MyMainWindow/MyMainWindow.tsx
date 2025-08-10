@@ -486,10 +486,10 @@ export const MyMainWindow: React.FC = () => {
                     {!currentGame && (
                       <>
                         <h2>Your ready to go!</h2>
-                        <p>Launch a game we'll recommend a sensitivity for you based on your saved preferences.</p>
+                        <p>Launch a game and we'll recommend a sensitivity for you based on your saved preferences.</p>
 
                         <div className="notes-section">
-                          <h3>Early Access Notes</h3>
+                          <h3>Notes</h3>
                           <ul>
                             <li>
                               <p>
@@ -595,6 +595,6 @@ export const MyMainWindow: React.FC = () => {
         )}
       </main>
 
-      </div >
+    </div >
   );
 };
