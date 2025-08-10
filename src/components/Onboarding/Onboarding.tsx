@@ -16,7 +16,6 @@ interface OnboardingData {
   sensitivity: string;
   dpi: string;
   edpi: string;
-  knowsEdpi: boolean | null;
 }
 
 interface OnboardingProps {

@@ -13,7 +13,6 @@ interface UserPreferencesContentProps {
     sensitivity: string;
     dpi: string;
     edpi: string;
-    knowsEdpi: boolean | null;
   };
   settingsStep: number;
   isLoading: boolean;
@@ -41,7 +40,6 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
   onShowForm,
   onCancelForm
 }) => {
-  console.log('canonicalSettings', canonicalSettings);
   return (
     <>
       {showForm ? (

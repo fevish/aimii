@@ -17,8 +17,7 @@ interface SettingsData {
   selectedGame: string;
   sensitivity: string;
   dpi: string;
-  edpi: string; // unused in this flow but kept for compatibility
-  knowsEdpi: boolean | null; // unused in this flow but kept for compatibility
+  edpi: string;
 }
 
 interface SettingsFlowProps {

@@ -8,12 +8,12 @@ export interface GameData {
 }
 
 export interface BaselineSettings {
-  mouseTravel: number; // cm for 360° turn
-  dpi: number;
-  trueSens: number; // derived: Math.round(mouseTravel * 10)
-  favoriteGame: string; // user's chosen canonical game
+  mouseTravel: number; // PRIMARY: cm for 360° turn - the core metric
+  dpi: number; // user's mouse DPI setting
+  trueSens: number; // derived: Math.round(mouseTravel * 10) - alternative representation
+  favoriteGame: string; // user's chosen reference game
   favoriteSensitivity: number; // sensitivity for favoriteGame at 'dpi'
-  eDPI: number; // derived: dpi * favoriteSensitivity
+  eDPI: number; // derived for display: dpi * favoriteSensitivity - not used in calculations
 }
 
 export interface HotkeyInfo {

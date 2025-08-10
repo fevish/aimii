@@ -34,7 +34,7 @@ export const DpiInputStep: React.FC<DpiInputStepProps> = ({
       ) : (
         <div className="welcome-message" hidden>
           <h2>Welcome to aimii</h2>
-          <p>To get started, let's lock in your true sensitivity.</p>
+          <p>To get started, let's lock in your mouse travel distance (cm/360°).</p>
         </div>
       )}
       {!isPreferences &&
