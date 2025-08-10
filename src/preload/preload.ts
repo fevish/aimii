@@ -1,4 +1,3 @@
-console.log(`aimii v${process.env.APP_VERSION} successfully loaded`);
 const { contextBridge, ipcRenderer } = require('electron');
 
 async function initialize () {
@@ -37,7 +36,6 @@ contextBridge.exposeInMainWorld('gep', {
     return ipcRenderer.invoke('restart-initialization');
   },
 });
-
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openWidgetDevTools: () => {
@@ -191,5 +189,3 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     ipcRenderer.removeAllListeners(channel);
   }
 });
-
-

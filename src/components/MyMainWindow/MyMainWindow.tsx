@@ -141,7 +141,10 @@ export const MyMainWindow: React.FC = () => {
     }
   }, [currentGame, allDetectedGames]);
 
-
+  // Show welcome message when MyMainWindow renders
+  React.useEffect(() => {
+    console.log(`aimii v${process.env.APP_VERSION} successfully loaded`);
+  }, []);
 
   React.useEffect(() => {
     let isMounted = true;

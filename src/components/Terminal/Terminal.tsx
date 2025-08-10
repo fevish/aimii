@@ -257,9 +257,11 @@ export const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
         )}
         <div className="terminal-controls">
           {isVisible && (
-            <button onClick={clearLogs} className="terminal-btn terminal-clear-btn">
-              Clear
-            </button>
+            <>
+              <button onClick={clearLogs} className="terminal-btn terminal-clear-btn">
+                Clear
+              </button>
+            </>
           )}
           <button onClick={toggleVisibility} className="terminal-btn terminal-close-btn">
             {isVisible ? 'Hide' : 'Show'}
