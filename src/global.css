@@ -193,7 +193,7 @@ button {
   background: var(--dark);
   color: var(--primary);
   border: 1px solid var(--primary);
-  border-radius: var(--radius);
+  border-radius: calc(2 * var(--radius));
   font-weight: normal;
   cursor: pointer;
   transition: all 0.2s ease;
