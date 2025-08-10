@@ -591,6 +591,9 @@ export const MyMainWindow: React.FC = () => {
 
         {!showOnboarding && (
           <section className="ad-section">
+            {/* <div className="ad-container" style={{ width: '400px', height: '300px', background: 'transparent' }}>
+              <owadview />
+            </div> */}
           </section>
         )}
       </main>

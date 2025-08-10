@@ -70,4 +70,13 @@ declare global {
   }
 }
 
+// Extend JSX namespace for custom elements
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      owadview: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+    }
+  }
+}
+
 export {};
