@@ -300,6 +300,7 @@ export const MyMainWindow: React.FC = () => {
       const eDPI = dpi * sensitivity;
       const success = await (window.settings as any).setBaselineSettings(mouseTravel, dpi, game, sensitivity, eDPI);
       if (success) {
+        console.log('User preferences updated and saved:', { mouseTravel, dpi, game, sensitivity});
         // Reload data to update the UI
         await loadAllData();
         setShowUserPreferencesForm(false);
@@ -455,6 +456,7 @@ export const MyMainWindow: React.FC = () => {
       setShowOnboarding(false);
       setOnboardingStep(0);
       setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '800', edpi: '' });
+      console.log('Onboarding complete. User preferences saved:', { mouseTravel, dpi: dpiNum, game: favoriteGame, sensitivity: favoriteSensitivity });
       setMessage('Baseline saved successfully!');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
@@ -620,13 +622,11 @@ export const MyMainWindow: React.FC = () => {
           <Settings handleRestartOnboarding={handleRestartOnboarding} />
         )}
 
-                {!showOnboarding && (
-          <section className="ad-section">
-            <div className="terminal-container">
-              <Terminal />
-            </div>
-          </section>
-        )}
+        <section className="ad-section" hidden={showOnboarding}>
+          <div className="terminal-container">
+            <Terminal />
+          </div>
+        </section>
       </main>
 
     </div >

@@ -241,7 +241,7 @@ export const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
         </div>
       )}
       <div className="terminal-footer">
-        {isVisible && (
+        {/* {isVisible && (
           <div className="terminal-command-line">
             <span className="terminal-prompt">{'>'}</span>
             <input
@@ -254,7 +254,7 @@ export const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
               ref={commandInputRef}
             />
           </div>
-        )}
+        )} */}
         <div className="terminal-controls">
           {isVisible && (
             <>
