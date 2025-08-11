@@ -7,6 +7,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(1px);
   z-index: 1;
 }
 
@@ -74,12 +75,17 @@
           justify-content: space-between;
         }
 
+        .pref-btn {
+          border-radius: calc(1 * var(--radius));
+        }
+
         .setting-label {
           color: var(--dark);
         }
 
         .setting-value {
           color: var(--dark);
+          line-height: 75%;
         }
       }
     }

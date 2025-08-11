@@ -44,7 +44,7 @@ export const CardButton: React.FC<CardButtonProps> = ({
         />
       )}
 
-            <div
+      <div
         className={`card-button ${isOpen ? 'card-open' : ''} ${className}`}
         onClick={handleCardClick}
       >
@@ -55,7 +55,7 @@ export const CardButton: React.FC<CardButtonProps> = ({
           </button>
         </div>
 
-        <div className="card-content" onClick={(e) => e.stopPropagation()}>
+        <div className="card-content" onClick={e => e.stopPropagation()}>
           {isOpen && (
             <>
               <div className="card-header">

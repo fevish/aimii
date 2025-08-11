@@ -1,19 +1,18 @@
 import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
-import { WINDOW_CONFIG } from '../services/window-state.service';
+import { WINDOW_CONFIG, WindowStateService } from '../services/window-state.service';
 
 import { WidgetWindowController } from './widget-window.controller';
 import { OverlayService } from '../services/overlay.service';
 import { overwolf } from '@overwolf/ow-electron';
-import { OverlayHotkeysService } from '../services/overlay-hotkeys.service';
 
 import { setMainWindowForConsole } from '../index';
 import { GamesService } from '../services/games.service';
 import { SettingsService } from '../services/settings.service';
 import { CurrentGameService } from '../services/current-game.service';
 import { SensitivityConverterService } from '../services/sensitivity-converter.service';
-import { WindowStateService } from '../services/window-state.service';
+
 import { HotkeyService } from '../services/hotkey.service';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
@@ -33,7 +32,6 @@ export class MainWindowController {
     private readonly gepService: GameEventsService,
     private readonly overlayService: OverlayService,
     private readonly createWidgetWinController: () => WidgetWindowController,
-    private readonly overlayHotkeysService: OverlayHotkeysService,
     private readonly gamesService: GamesService,
     private readonly settingsService: SettingsService,
     private readonly currentGameService: CurrentGameService,
@@ -46,8 +44,6 @@ export class MainWindowController {
 
     gepService.on('log', this.printLogMessage.bind(this));
     overlayService.on('log', this.printLogMessage.bind(this));
-
-    overlayHotkeysService.on('log', this.printLogMessage.bind(this));
 
     owElectronApp.overwolf.packages.on('crashed', (e: any, ...args: any[]) => {
       this.printLogMessage('package crashed', ...args);
@@ -65,7 +61,7 @@ export class MainWindowController {
 
   private setupGameChangeListener(): void {
     // Listen for game changes from the CurrentGameService
-    this.currentGameService.on('game-changed', (gameInfo) => {
+    this.currentGameService.on('game-changed', gameInfo => {
       this.printLogMessage('Current game changed:', gameInfo?.name || 'No game');
 
       // Notify all renderer processes about the game change
@@ -86,10 +82,11 @@ export class MainWindowController {
   /**
    *
    */
-  public printLogMessage(message: String, ...args: any[]) {
+  public printLogMessage(message: string, ...args: any[]) {
     if (!this.browserWindow || (this.browserWindow?.isDestroyed() ?? true)) {
       return;
     }
+
     this.browserWindow?.webContents?.send('console-message', message, ...args);
   }
 
@@ -100,7 +97,7 @@ export class MainWindowController {
     return this.browserWindow;
   }
 
-  //----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   private logPackageManagerErrors(e: any, packageName: any, ...args: any[]) {
     this.printLogMessage(
       'Overwolf Package Manager error!',
@@ -241,13 +238,13 @@ export class MainWindowController {
     });
   }
 
-    /**
+  /**
    * Handle window close event - minimize to tray instead of closing
    */
   private setupWindowCloseHandler(): void {
     if (!this.browserWindow) return;
 
-    this.browserWindow.on('close', (event) => {
+    this.browserWindow.on('close', event => {
       // Prevent the default close behavior
       event.preventDefault();
 
@@ -297,50 +294,54 @@ export class MainWindowController {
       return this.gamesService.getEnabledGameIds();
     });
 
-    // Canonical settings IPC handlers
-    ipcMain.handle('settings-get-canonical', () => {
-      const settings = this.settingsService.getCanonicalSettings();
-      // Ensure edpi is included for frontend compatibility
-      if (settings && !settings.edpi) {
-        settings.edpi = settings.sensitivity * settings.dpi;
+    // Settings IPC handlers
+    ipcMain.handle('settings-get-baseline', () => {
+      const baseline = this.settingsService.getBaselineSettings();
+      if (!baseline) return null;
+      const trueSens = this.sensitivityConverterService.calculateTrueSens(baseline.mouseTravel);
+
+      // Calculate eDPI if not present but we have the required data
+      let eDPI = baseline.eDPI;
+      if (!eDPI && baseline.dpi && baseline.favoriteSensitivity) {
+        eDPI = baseline.dpi * baseline.favoriteSensitivity;
       }
-      return settings;
+
+      return { ...baseline, trueSens, eDPI };
     });
 
-    ipcMain.handle('settings-set-canonical', (event, game: string, sensitivity: number, dpi: number) => {
-      this.settingsService.setCanonicalSettings(game, sensitivity, dpi);
-      const edpi = sensitivity * dpi;
-      this.printLogMessage(`Canonical settings saved: ${game}, sensitivity: ${sensitivity}, DPI: ${dpi}, eDPI: ${edpi}`);
+    ipcMain.handle('settings-set-baseline', (event, mouseTravel: number, dpi: number, favoriteGame?: string, favoriteSensitivity?: number, eDPI?: number) => {
+      this.settingsService.setBaselineSettings(mouseTravel, dpi, favoriteGame, favoriteSensitivity, eDPI);
+      this.printLogMessage(`Baseline settings saved: mouseTravel: ${mouseTravel}cm, DPI: ${dpi}${favoriteGame ? ", favoriteGame: " + favoriteGame : ''}${favoriteSensitivity ? ", favoriteSensitivity: " + favoriteSensitivity : ''}${eDPI ? ", eDPI: " + eDPI : ''}`);
 
       // Notify main window about settings change
       if (this.browserWindow && !this.browserWindow.isDestroyed()) {
-        this.browserWindow.webContents.send('canonical-settings-changed');
+        this.browserWindow.webContents.send('baseline-settings-changed');
       }
 
-      // Notify widget about settings change (pass the new settings with edpi)
+      // Notify widget about settings change
       if (this.widgetController?.overlayBrowserWindow) {
-        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', { game, sensitivity, dpi, edpi });
+        this.widgetController.overlayBrowserWindow.window.webContents.send('baseline-settings-changed', { mouseTravel, dpi });
       }
 
       return true;
     });
 
-    ipcMain.handle('settings-has-canonical', () => {
-      return this.settingsService.hasCanonicalSettings();
+    ipcMain.handle('settings-has-baseline', () => {
+      return this.settingsService.hasBaselineSettings();
     });
 
-    ipcMain.handle('settings-clear-canonical', () => {
-      this.settingsService.clearCanonicalSettings();
-      this.printLogMessage('Canonical settings cleared');
+    ipcMain.handle('settings-clear-baseline', () => {
+      this.settingsService.clearBaselineSettings();
+      this.printLogMessage('Baseline settings cleared');
 
       // Notify main window about settings change
       if (this.browserWindow && !this.browserWindow.isDestroyed()) {
-        this.browserWindow.webContents.send('canonical-settings-changed');
+        this.browserWindow.webContents.send('baseline-settings-changed');
       }
 
-      // Notify widget about settings change (pass null to indicate cleared)
+      // Notify widget about settings change
       if (this.widgetController?.overlayBrowserWindow) {
-        this.widgetController.overlayBrowserWindow.window.webContents.send('canonical-settings-changed', null);
+        this.widgetController.overlayBrowserWindow.window.webContents.send('baseline-settings-changed', null);
       }
 
       return true;
@@ -400,22 +401,22 @@ export class MainWindowController {
     });
 
     ipcMain.handle('sensitivity-get-all-conversions', () => {
-      return this.sensitivityConverterService.getAllConversionsFromCanonical();
+      return this.sensitivityConverterService.getAllConversionsFromBaseline();
     });
 
-    ipcMain.handle('sensitivity-get-canonical-cm360', () => {
-      return this.sensitivityConverterService.getCanonicalCm360();
+    ipcMain.handle('sensitivity-convert-from-game', (event, gameData: any, sensitivity: number, dpi: number) => {
+      return this.sensitivityConverterService.calculateMouseTravelFromGame(gameData, sensitivity, dpi);
     });
 
-    ipcMain.handle('sensitivity-convert', (event, fromGame: string, toGame: string, sensitivity: number, dpi: number) => {
-      const fromGameData = this.gamesService.getGameByName(fromGame);
-      const toGameData = this.gamesService.getGameByName(toGame);
+    ipcMain.handle('sensitivity-get-current-mouse-travel', () => {
+      return this.sensitivityConverterService.getCurrentMouseTravel();
+    });
 
-      if (!fromGameData || !toGameData) {
-        return null;
-      }
+    ipcMain.handle('sensitivity-get-true-sens', () => {
+      const baselineSettings = this.settingsService.getBaselineSettings();
+      if (!baselineSettings) return null;
 
-      return this.sensitivityConverterService.convertSensitivity(fromGameData, toGameData, sensitivity, dpi);
+      return this.sensitivityConverterService.calculateTrueSens(baselineSettings.mouseTravel);
     });
 
     ipcMain.handle('gep-set-required-feature', async () => {
@@ -428,7 +429,7 @@ export class MainWindowController {
     });
 
     ipcMain.handle('restart-initialization', async () => {
-      this.printLogMessage('=== Re-initializing AIMII ===');
+      this.printLogMessage('=== Re-initializing aimii ===');
 
       // Get enabled games from games.json
       const gameIds = this.gamesService.getEnabledGameIds();
@@ -457,7 +458,6 @@ export class MainWindowController {
       this.printLogMessage('=== Re-initialization complete ===');
       return true;
     });
-
 
 
     // Hotkey service IPC handlers
@@ -529,34 +529,28 @@ export class MainWindowController {
     await this.createWidget();
   }
 
-  private async createWidget(): Promise<void> {
-    const controller = this.createWidgetWinController();
-    this.widgetController = controller; // Store reference
-
-    await controller.createWidget();
-
-    controller.overlayBrowserWindow?.window.on('closed', () => {
-      this.printLogMessage('widget window closed');
-      this.widgetController = null; // Clear reference
-    });
+  private async createWidget() {
+    // create a browser window for overlay widget and load a url
+    this.widgetController = this.createWidgetWinController();
+    await this.widgetController.createWidget();
   }
 
-  private async toggleWidget(): Promise<void> {
-    if (!this.widgetController) {
-      // Create widget if it doesn't exist
-      await this.createWidget();
-    } else {
-      await this.widgetController.toggleVisibility();
-    }
-  }
-
-  private openWidgetDevTools() {
+  private async toggleWidget() {
     if (this.widgetController) {
-      this.widgetController.openDevTools();
-      this.printLogMessage('Opening widget dev tools...');
-    } else {
-      this.printLogMessage('Widget not created yet. Create widget first.');
+      this.widgetController.toggleVisibility();
+      return;
     }
+
+    this.widgetController = this.createWidgetWinController();
+    await this.widgetController.createWidget();
+  }
+
+  private async openWidgetDevTools() {
+    if (!this.widgetController) {
+      return;
+    }
+
+    this.widgetController.openDevTools();
   }
 
   /**

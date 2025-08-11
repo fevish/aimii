@@ -1,33 +1,18 @@
 import React from 'react';
 import { SettingsFlow } from '../SettingsFlow/SettingsFlow';
-
-interface CanonicalSettings {
-  game: string;
-  sensitivity: number;
-  dpi: number;
-  edpi: number;
-}
-
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
+import { BaselineSettings, GameData } from '../../types/app';
 
 interface UserPreferencesContentProps {
   showForm: boolean;
-  canonicalSettings: CanonicalSettings | null;
-  cm360: number | null;
+  canonicalSettings: BaselineSettings | null;
+  mouseTravel: number | null;
+  trueSens: number | null; // accept trueSens via props
   games: GameData[];
   settingsData: {
     selectedGame: string;
     sensitivity: string;
     dpi: string;
     edpi: string;
-    knowsEdpi: boolean | null;
   };
   settingsStep: number;
   isLoading: boolean;
@@ -42,7 +27,8 @@ interface UserPreferencesContentProps {
 export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
   showForm,
   canonicalSettings,
-  cm360,
+  mouseTravel,
+  trueSens,
   games,
   settingsData,
   settingsStep,
@@ -65,47 +51,49 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
           message={message}
           onDataChange={onDataChange}
           onNext={onNext}
-          onBack={onBack}
+          onBack={() => { if (settingsStep === 1) { onCancelForm(); } else { onBack(); } }}
           onComplete={onNext}
           showProgress={false}
           inputPrefix="card"
+          context="preferences"
         />
       ) : canonicalSettings ? (
         <div className="current-settings">
-
           <div className="main-setting">
             <div className="setting-row">
-              <p>// {message ? (message.includes('Error') ? 'Error updating eDPI' : 'UPDATED eDPI') : 'YOUR SAVED eDPI'}
+              <p>// MOUSE TRAVEL (cm/360°)
                 <button
-                  className="btn btn-secondary btn-outline"
+                  className="btn btn-secondary btn-outline pref-btn"
                   onClick={onShowForm}
                 >
-                  Change eDPI
+                  Change
                 </button>
               </p>
-              {/* <span className="setting-label">eDPI</span> */}
-              <span className="setting-value">{canonicalSettings.edpi}
-              </span>
+              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)}</span>
             </div>
           </div>
           <p>// EQUIVALENT TO</p>
           <div className="settings-grid">
             <div className="setting-row">
               <span className="setting-label">Game</span>
-              <span className="setting-value">{canonicalSettings.game}</span>
+              <span className="setting-value">{canonicalSettings.favoriteGame || 'Baseline (Any)'}</span>
             </div>
             <div className="setting-row">
               <span className="setting-label">Sensitivity</span>
-              <span className="setting-value">{canonicalSettings.sensitivity}</span>
+              <span className="setting-value">{canonicalSettings.favoriteSensitivity}</span>
             </div>
             <div className="setting-row">
-              <span className="setting-label">DPI</span>
+              <span className="setting-label">eDPI</span>
+              <span className="setting-value">{canonicalSettings.eDPI}</span>
+            </div>
+            <div className="setting-row">
+              <span className="setting-label">Mouse DPI</span>
               <span className="setting-value">{canonicalSettings.dpi}</span>
             </div>
-            <div className="setting-row">
-              <span className="setting-label">CM/360°</span>
-              <span className="setting-value">{cm360 !== null ? `${cm360} cm` : 'Calculating...'}</span>
-            </div>
+            {/* <div className="setting-row">
+              <span className="setting-label">Mouse Travel (cm/360°)</span>
+              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)}</span>
+            </div> */}
           </div>
         </div>
       ) : (

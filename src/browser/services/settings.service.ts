@@ -1,13 +1,7 @@
 import { app } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
-
-export interface CanonicalGameSettings {
-  game: string;
-  sensitivity: number;
-  dpi: number;
-  edpi: number;
-}
+import { BaselineSettings } from '../../types/app';
 
 export interface HotkeyConfig {
   id: string;
@@ -22,17 +16,23 @@ export interface HotkeyConfig {
   enabled: boolean;
 }
 
+// Storage-only baseline (does not include derived fields like trueSens)
+interface StorageBaselineSettings {
+  mouseTravel: number;
+  dpi: number;
+  favoriteGame?: string;
+  favoriteSensitivity?: number;
+  eDPI?: number;
+}
+
 export interface UserSettings {
   widget: {
     position: { x: number; y: number };
     visible: boolean;
   };
-  canonical: CanonicalGameSettings | null;
+  baseline: StorageBaselineSettings | null;
   hotkeys: HotkeyConfig[];
   theme: string;
-  // Add more settings categories as needed
-  // ui: { theme: string; fontSize: number };
-  // game: { autoStart: boolean; hotkeys: any };
 }
 
 export class SettingsService {
@@ -54,7 +54,7 @@ export class SettingsService {
         position: { x: 100, y: 100 },
         visible: false
       },
-      canonical: null,
+      baseline: null,
       hotkeys: [],
       theme: 'default'
     };
@@ -66,9 +66,14 @@ export class SettingsService {
         const data = fs.readFileSync(this.settingsPath, 'utf8');
         const loadedSettings = JSON.parse(data);
 
-        // Migrate old canonical settings to include edpi
-        if (loadedSettings.canonical && !loadedSettings.canonical.edpi) {
-          loadedSettings.canonical.edpi = loadedSettings.canonical.sensitivity * loadedSettings.canonical.dpi;
+        // Migrate old canonical settings to include eDPI if needed
+        if (
+          loadedSettings.baseline &&
+          loadedSettings.baseline.favoriteSensitivity &&
+          loadedSettings.baseline.dpi &&
+          !loadedSettings.baseline.eDPI
+        ) {
+          loadedSettings.baseline.eDPI = loadedSettings.baseline.favoriteSensitivity * loadedSettings.baseline.dpi;
         }
 
         // Merge with defaults to ensure all properties exist
@@ -110,23 +115,37 @@ export class SettingsService {
     this.saveSettings();
   }
 
-  // Canonical game settings methods
-  public getCanonicalSettings(): CanonicalGameSettings | null {
-    return this.settings.canonical;
+  // Canonical game settings methods (storage-level)
+  public getBaselineSettings(): StorageBaselineSettings | null {
+    return this.settings.baseline;
   }
 
-  public setCanonicalSettings(game: string, sensitivity: number, dpi: number): void {
-    const edpi = sensitivity * dpi;
-    this.settings.canonical = { game, sensitivity, dpi, edpi };
+  public setBaselineSettings(
+    mouseTravel: number,
+    dpi: number,
+    favoriteGame?: string,
+    favoriteSensitivity?: number,
+    eDPI?: number
+  ): void {
+    const existing: Partial<StorageBaselineSettings> = this.settings.baseline || {};
+    const next: StorageBaselineSettings = {
+      mouseTravel,
+      dpi,
+      favoriteGame: favoriteGame ?? existing.favoriteGame,
+      favoriteSensitivity: favoriteSensitivity ?? existing.favoriteSensitivity,
+      eDPI: eDPI ?? existing.eDPI
+    };
+
+    this.settings.baseline = next;
     this.saveSettings();
   }
 
-  public hasCanonicalSettings(): boolean {
-    return this.settings.canonical !== null;
+  public hasBaselineSettings(): boolean {
+    return this.settings.baseline !== null;
   }
 
-  public clearCanonicalSettings(): void {
-    this.settings.canonical = null;
+  public clearBaselineSettings(): void {
+    this.settings.baseline = null;
     this.saveSettings();
   }
 
@@ -185,6 +204,7 @@ export class SettingsService {
       if (!(key in current) || typeof current[key] !== 'object') {
         current[key] = {};
       }
+
       current = current[key];
     }
 

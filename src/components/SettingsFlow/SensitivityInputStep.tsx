@@ -4,16 +4,18 @@ interface SensitivityInputStepProps {
   sensitivity: string;
   selectedGame: string;
   onDataChange: (field: string, value: string) => void;
-  onNext: () => void;
   inputId?: string;
+  context?: 'onboarding' | 'preferences';
+  onNext?: () => void;
 }
 
 export const SensitivityInputStep: React.FC<SensitivityInputStepProps> = ({
   sensitivity,
   selectedGame,
   onDataChange,
-  onNext,
-  inputId = 'sensitivity-input'
+  inputId = 'sensitivity-input',
+  context = 'onboarding',
+  onNext
 }) => {
   React.useEffect(() => {
     const input = document.getElementById(inputId);
@@ -22,21 +24,35 @@ export const SensitivityInputStep: React.FC<SensitivityInputStepProps> = ({
     }
   }, [inputId]);
 
+  const isPreferences = context === 'preferences';
+
   return (
     <div className="settings-step">
-      <h2>Choose your sensitivity</h2>
-      <p>Enter your in-game sensitivity for {selectedGame}.</p>
+      {isPreferences ? (
+        <>
+          <h2>Update sensitivity</h2>
+          <p>What in‑game sensitivity do you use in {selectedGame || 'your game'}?</p>
+        </>
+      ) : (
+        <>
+          <h2>Set your sensitivity</h2>
+          <p>What in‑game sensitivity do you use in {selectedGame || 'your game'}?</p>
+        </>
+      )}
 
       <div className="form-group">
-        <label htmlFor={inputId}>In-Game Sensitivity</label>
+        <label htmlFor={inputId}>In‑Game Sensitivity</label>
         <input
           id={inputId}
           type="text"
           value={sensitivity}
-          onChange={(e) => onDataChange('sensitivity', e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && sensitivity) {
-              onNext();
+          onChange={e => onDataChange('sensitivity', e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && sensitivity && onNext) {
+              const num = parseFloat(sensitivity);
+              if (!isNaN(num) && num > 0) {
+                onNext();
+              }
             }
           }}
           placeholder="0.35"

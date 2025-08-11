@@ -1,7 +1,6 @@
 import 'reflect-metadata';
-import {app as ElectronApp } from 'electron';
-import { Application } from "./application";
-import { OverlayHotkeysService } from './services/overlay-hotkeys.service';
+import {app as ElectronApp, BrowserWindow } from 'electron';
+import { Application } from './application';
 import { OverlayService } from './services/overlay.service';
 import { GameEventsService } from './services/gep.service';
 import { MainWindowController } from './controllers/main-window.controller';
@@ -12,14 +11,14 @@ import { SettingsService } from './services/settings.service';
 import { GamesService } from './services/games.service';
 import { CurrentGameService } from './services/current-game.service';
 import { SensitivityConverterService } from './services/sensitivity-converter.service';
-import { BrowserWindow } from 'electron';
+
 import { WindowStateService } from './services/window-state.service';
 import { HotkeyService } from './services/hotkey.service';
 import { CustomGameDetectorService } from './services/custom-game-detector.service';
 
 // Simple global console override - just like a normal website
 let mainWindow: BrowserWindow | null = null;
-let mainWindowController: MainWindowController | null = null;
+const mainWindowController: MainWindowController | null = null;
 let earlyLogs: Array<{ args: any[], timestamp: number }> = [];
 
 // Extend global type for cleanup
@@ -43,10 +42,12 @@ const safeStringify = (obj: any): string => {
       if (typeof value === 'function') return `[Function: ${value.name || 'anonymous'}]`;
       if (typeof value === 'object' && value !== null) {
         if (seen.has(value)) {
-          return `[Circular Reference]`;
+          return '[Circular Reference]';
         }
+
         seen.add(value);
       }
+
       return value;
     }, 2);
   } catch (error) {
@@ -58,7 +59,7 @@ const sendToChrome = (args: any[]) => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     const serializedArgs = args.map(arg => safeStringify(arg));
     mainWindow.webContents.executeJavaScript(`
-      console.log(${serializedArgs.map(arg => `'${String(arg).replace(/'/g, "\\'").replace(/\n/g, '\\n')}'`).join(', ')});
+      console.log(${serializedArgs.map(arg => `'${String(arg).replace(/'/g, '\\\'').replace(/\n/g, '\\n')}'`).join(', ')});
     `).catch(() => {});
   }
 };
@@ -87,7 +88,6 @@ export const setMainWindowForConsole = (window: BrowserWindow) => {
  */
 const bootstrap = (): Application => {
   const overlayService = new OverlayService();
-  const overlayHotkeysService = new OverlayHotkeysService(overlayService);
   const gepService = new GameEventsService();
 
   const settingsService = new SettingsService();
@@ -103,17 +103,15 @@ const bootstrap = (): Application => {
   customGameDetectorService = new CustomGameDetectorService(gamesService);
 
 
-
   const createWidgetWindowControllerFactory = (): WidgetWindowController => {
     const controller = new WidgetWindowController(overlayService, settingsService, currentGameService, hotkeyService);
     return controller;
-  }
+  };
 
   const mainWindowController = new MainWindowController(
     gepService,
     overlayService,
     createWidgetWindowControllerFactory,
-    overlayHotkeysService,
     gamesService,
     settingsService,
     currentGameService,
@@ -132,7 +130,7 @@ const bootstrap = (): Application => {
   global.mainWindowController = mainWindowController;
 
   return new Application(overlayService, gepService, mainWindowController, gamesService);
-}
+};
 
 const app = bootstrap();
 

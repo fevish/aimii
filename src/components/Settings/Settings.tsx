@@ -33,6 +33,10 @@ interface CanonicalSettings {
   edpi: number;
 }
 
+interface SettingsProps {
+  handleRestartOnboarding: () => Promise<void>;
+}
+
 declare global {
   interface Window {
     hotkeys: {
@@ -57,7 +61,7 @@ declare global {
   }
 }
 
-const Settings: React.FC = () => {
+const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   const [hotkeys, setHotkeys] = useState<HotkeyConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingHotkey, setEditingHotkey] = useState<string | null>(null);
@@ -123,9 +127,11 @@ const Settings: React.FC = () => {
     const newTheme = event.target.value;
     try {
       await window.settings.setTheme(newTheme);
+      const themeLabel = availableThemes.find(t => t.value === newTheme)?.label || newTheme;
+      console.log('Theme changed:', { theme: newTheme, label: themeLabel });
       setCurrentTheme(newTheme);
       applyTheme(newTheme);
-      setMessage(`Theme changed to ${availableThemes.find(t => t.value === newTheme)?.label}`);
+      setMessage(`Theme changed to ${themeLabel}`);
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Failed to change theme:', error);
@@ -243,6 +249,7 @@ const Settings: React.FC = () => {
         modifierParts.push('Ctrl');
       }
     }
+
     if (shift) {
       if (location === 2) {
         modifierParts.push('R-Shift');
@@ -250,6 +257,7 @@ const Settings: React.FC = () => {
         modifierParts.push('Shift');
       }
     }
+
     if (alt) {
       if (location === 2) {
         modifierParts.push('R-Alt');
@@ -295,7 +303,7 @@ const Settings: React.FC = () => {
         case 219: keyName = '['; break;
         case 220: keyName = '\\'; break;
         case 221: keyName = ']'; break;
-        case 222: keyName = "'"; break;
+        case 222: keyName = '\''; break;
         default: keyName = `Key${keyCode}`; break;
       }
     }
@@ -303,9 +311,10 @@ const Settings: React.FC = () => {
     // Handle key combinations
     if (modifierParts.length > 0) {
       return `${modifierParts.join('+')}+${keyName}`;
-    } else {
-      return keyName;
     }
+
+    return keyName;
+
   };
 
   const loadHotkeys = async () => {
@@ -325,7 +334,15 @@ const Settings: React.FC = () => {
     try {
       const success = await window.hotkeys.updateHotkey(id, updates);
       if (success) {
-        setHotkeys(prev => prev.map(hk => hk.id === id ? { ...hk, ...updates } : hk));
+        // Get the hotkey name for logging
+        const hotkey = hotkeys.find(hk => hk.id === id);
+        const displayText = getDisplayText(updates.keyCode || 0,
+          updates.modifiers?.ctrl || false,
+          updates.modifiers?.shift || false,
+          updates.modifiers?.alt || false,
+          0);
+        console.log('Hotkey updated:', displayText);
+        setHotkeys(prev => prev.map(hk => (hk.id === id ? { ...hk, ...updates } : hk)));
         setMessage('Hotkey updated successfully');
         setTimeout(() => setMessage(''), 3000);
       } else {
@@ -394,7 +411,7 @@ const Settings: React.FC = () => {
         case 219: keyName = '['; break;
         case 220: keyName = '\\'; break;
         case 221: keyName = ']'; break;
-        case 222: keyName = "'"; break;
+        case 222: keyName = '\''; break;
         default: keyName = `Key${hotkey.keyCode}`; break;
       }
     }
@@ -402,9 +419,10 @@ const Settings: React.FC = () => {
     // Handle key combinations
     if (modifierParts.length > 0) {
       return `${modifierParts.join('+')}+${keyName}`;
-    } else {
-      return keyName;
     }
+
+    return keyName;
+
   };
 
   const handleKeyCapture = (hotkey: HotkeyConfig) => {
@@ -453,36 +471,49 @@ const Settings: React.FC = () => {
     <div className="settings-container">
       <div className="settings-header">
         <h2>Settings</h2>
-        {message && <div className="message">{message}</div>}
+        {/* {message && <div className="message">{message}</div>} */}
       </div>
 
       <div className="settings-content">
         <section className="hotkeys-section">
-          <div className="section-header">
-            <h3>Hotkeys</h3>
-          </div>
 
           <div className="hotkeys-list">
             {hotkeys.map(hotkey => (
               <div key={hotkey.id} className="hotkey-item">
                 <div className="hotkey-info">
-                  <h4>{hotkey.name}</h4>
+                  <h4>{hotkey.name} Hotkey</h4>
                   <p className="hotkey-description">{hotkey.description}</p>
                 </div>
 
-                <div className="hotkey-controls">
-                  <div className="hotkey-display">
-                    <button
-                      onClick={() => handleKeyCapture(hotkey)}
-                      className="hotkey-btn"
-                      disabled={!hotkey.enabled || editingHotkey === hotkey.id}
-                    >
-                      {editingHotkey === hotkey.id && capturedKeys
-                        ? capturedKeys.displayText
-                        : getHotkeyDisplayText(hotkey)
-                      }
-                    </button>
-                  </div>
+                <div className="hotkey-actions">
+                  <button
+                    onClick={() => handleKeyCapture(hotkey)}
+                    className="hotkey-btn"
+                    disabled={!hotkey.enabled || editingHotkey === hotkey.id}
+                  >
+                    {editingHotkey === hotkey.id
+                      ? (capturedKeys ? capturedKeys.displayText : 'Type new keys..')
+                      : getHotkeyDisplayText(hotkey)
+                    }
+                  </button>
+
+                  {editingHotkey === hotkey.id && (
+                    <>
+                      <button
+                        onClick={handleSaveHotkey}
+                        className="save-btn"
+                        disabled={!capturedKeys}
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelCapture}
+                        className="cancel-btn"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -494,13 +525,10 @@ const Settings: React.FC = () => {
         </section>
 
         <section className="theme-section">
-          <div className="section-header">
-            <h3>Theme</h3>
-          </div>
 
           <div className="theme-controls">
             <div className="form-group select-theme">
-              <label htmlFor="theme-select">Select Theme</label>
+              <h4>Select Theme</h4>
               <div className="select-wrapper">
                 <select
                   id="theme-select"
@@ -517,43 +545,25 @@ const Settings: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Kill Switch Section */}
+        <section className="settings-section">
+          <div className="setting-item">
+            <div className="setting-info">
+              <h4>Reset Application</h4>
+              <p className="setting-description">Clears all user + app settings and restarts onboarding.</p>
+            </div>
+            <button
+              onClick={handleRestartOnboarding}
+              className="danger-btn"
+              title="Restart App and Clear Settings"
+            >
+              💀 Kill Switch
+            </button>
+          </div>
+        </section>
       </div>
 
-      {editingHotkey && (
-        <div
-          className="key-capture-overlay"
-          onClick={handleCancelCapture}
-          tabIndex={0}
-          ref={overlayRef}
-        >
-          <div className="key-capture-active" onClick={(e) => e.stopPropagation()}>
-            <div className="captured-keys">
-              {capturedKeys
-                ? capturedKeys.displayText
-                : modifierDisplay
-                  ? modifierDisplay
-                  : 'Press keys...'
-              }
-            </div>
-
-            <div className="capture-actions">
-              <button
-                onClick={handleSaveHotkey}
-                className="save-btn"
-                disabled={!capturedKeys}
-              >
-                Save
-              </button>
-              <button
-                onClick={handleCancelCapture}
-                className="cancel-btn"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

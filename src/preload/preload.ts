@@ -1,24 +1,23 @@
-console.log('** preload **')
-const { contextBridge, ipcRenderer  } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 async function initialize () {
   function replaceText (selector: string, text: string) {
-   const element = document.querySelector<HTMLElement>(selector);
-   if (element) {
-     element.innerText = text;
-   }
- }
+    const element = document.querySelector<HTMLElement>(selector);
+    if (element) {
+      element.innerText = text;
+    }
+  }
 
- replaceText('.electron-version', `ow-electron v${process.versions.electron}`);
+  replaceText('.electron-version', `ow-electron v${process.versions.electron}`);
 }
 
 contextBridge.exposeInMainWorld('app', {
- initialize
+  initialize
 });
 
 contextBridge.exposeInMainWorld('gep', {
   onMessage: (func: (...args: any[]) => void) => {
-    ipcRenderer.on('console-message',(e: any, ...args: any[]) => {
+    ipcRenderer.on('console-message', (e: any, ...args: any[]) => {
       // Log to Chrome console instead of terminal
       console.log(...args);
       func(...args);
@@ -37,10 +36,6 @@ contextBridge.exposeInMainWorld('gep', {
     return ipcRenderer.invoke('restart-initialization');
   },
 });
-
-
-
-
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openWidgetDevTools: () => {
@@ -67,17 +62,17 @@ contextBridge.exposeInMainWorld('games', {
 });
 
 contextBridge.exposeInMainWorld('settings', {
-  getCanonicalSettings: () => {
-    return ipcRenderer.invoke('settings-get-canonical');
+  getBaselineSettings: () => {
+    return ipcRenderer.invoke('settings-get-baseline');
   },
-  setCanonicalSettings: (game: string, sensitivity: number, dpi: number) => {
-    return ipcRenderer.invoke('settings-set-canonical', game, sensitivity, dpi);
+  setBaselineSettings: (mouseTravel: number, dpi: number, favoriteGame?: string, favoriteSensitivity?: number, eDPI?: number) => {
+    return ipcRenderer.invoke('settings-set-baseline', mouseTravel, dpi, favoriteGame, favoriteSensitivity, eDPI);
   },
-  clearCanonicalSettings: () => {
-    return ipcRenderer.invoke('settings-clear-canonical');
+  hasBaselineSettings: () => {
+    return ipcRenderer.invoke('settings-has-baseline');
   },
-  hasCanonicalSettings: () => {
-    return ipcRenderer.invoke('settings-has-canonical');
+  clearBaselineSettings: () => {
+    return ipcRenderer.invoke('settings-clear-baseline');
   },
   getTheme: () => {
     return ipcRenderer.invoke('settings-get-theme');
@@ -140,15 +135,16 @@ contextBridge.exposeInMainWorld('sensitivityConverter', {
   getSuggestedForCurrentGame: () => {
     return ipcRenderer.invoke('sensitivity-get-suggested-for-current-game');
   },
-  getAllConversions: () => {
+  getAllConversionsFromBaseline: () => {
     return ipcRenderer.invoke('sensitivity-get-all-conversions');
   },
-  convert: (fromGame: string, toGame: string, sensitivity: number, dpi: number) => {
-    return ipcRenderer.invoke('sensitivity-convert', fromGame, toGame, sensitivity, dpi);
+  calculateMouseTravelFromGame: (gameData: any, sensitivity: number, dpi: number) => {
+    return ipcRenderer.invoke('sensitivity-convert-from-game', gameData, sensitivity, dpi);
   },
-  getCanonicalCm360: () => {
-    return ipcRenderer.invoke('sensitivity-get-canonical-cm360');
-  }
+  getCurrentMouseTravel: () => {
+    return ipcRenderer.invoke('sensitivity-get-current-mouse-travel');
+  },
+  getTrueSens: () => ipcRenderer.invoke('sensitivity-get-true-sens'),
 });
 
 contextBridge.exposeInMainWorld('hotkeys', {
@@ -185,4 +181,11 @@ contextBridge.exposeInMainWorld('windowControls', {
   close: () => ipcRenderer.invoke('close-window')
 });
 
-
+contextBridge.exposeInMainWorld('ipcRenderer', {
+  on: (channel: string, func: (...args: any[]) => void) => {
+    ipcRenderer.on(channel, (event: any, ...args: any[]) => func(...args));
+  },
+  removeAllListeners: (channel: string) => {
+    ipcRenderer.removeAllListeners(channel);
+  }
+});

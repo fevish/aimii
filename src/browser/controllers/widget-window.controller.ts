@@ -1,10 +1,10 @@
-import path from "path";
-import { OverlayService } from "../services/overlay.service";
-import { OverlayBrowserWindow, OverlayWindowOptions, PassthroughType, ZOrderType } from "@overwolf/ow-electron-packages-types";
-import { SettingsService } from "../services/settings.service";
-import { CurrentGameService } from "../services/current-game.service";
-import { HotkeyService } from "../services/hotkey.service";
-import { ipcMain } from "electron";
+import path from 'path';
+import { OverlayService } from '../services/overlay.service';
+import { OverlayBrowserWindow, OverlayWindowOptions, PassthroughType, ZOrderType } from '@overwolf/ow-electron-packages-types';
+import { SettingsService } from '../services/settings.service';
+import { CurrentGameService } from '../services/current-game.service';
+import { HotkeyService } from '../services/hotkey.service';
+import { ipcMain } from 'electron';
 
 export class WidgetWindowController {
   private widgetWindow: OverlayBrowserWindow | null = null;
@@ -16,13 +16,13 @@ export class WidgetWindowController {
   private readonly WIDGET_HOTKEY = {
     keyCode: 77, // M key
     modifiers: { ctrl: true, shift: true, alt: false },
-    name: "toggleWidget"
+    name: 'toggleWidget'
   };
 
   private readonly DEV_TOOLS_HOTKEY = {
     keyCode: 73, // I key
     modifiers: { ctrl: true, shift: true, alt: false },
-    name: "openWidgetDevTools"
+    name: 'openWidgetDevTools'
   };
 
   constructor(
@@ -46,32 +46,24 @@ export class WidgetWindowController {
     // Listen for hotkey changes from settings
     this.hotkeyService.on('hotkey-changed', (id: string, updatedHotkey: any) => {
       if (id === 'widget-toggle') {
-        console.log('[WidgetWindowController] Widget hotkey changed, re-registering...');
         this.hotkeysRegistered = false; // Reset registration flag
         this.registerHotkey(); // Re-register with new hotkey
 
         // Notify widget about hotkey change
         if (this.widgetWindow) {
-          console.log('[WidgetWindowController] Notifying widget about hotkey change:', id);
           this.widgetWindow.window.webContents.send('hotkey-changed', id, updatedHotkey);
-        } else {
-          console.log('[WidgetWindowController] Widget window not available, cannot notify about hotkey change');
         }
       }
     });
 
     // Listen for hotkey reset
     this.hotkeyService.on('hotkeys-reset', () => {
-      console.log('[WidgetWindowController] Hotkeys reset, re-registering widget hotkey...');
       this.hotkeysRegistered = false; // Reset registration flag
       this.registerHotkey(); // Re-register with default hotkey
 
       // Notify widget about hotkey reset
       if (this.widgetWindow) {
-        console.log('[WidgetWindowController] Notifying widget about hotkeys reset');
         this.widgetWindow.window.webContents.send('hotkeys-reset');
-      } else {
-        console.log('[WidgetWindowController] Widget window not available, cannot notify about hotkeys reset');
       }
     });
   }
@@ -86,28 +78,23 @@ export class WidgetWindowController {
       return this.currentGameService.getCurrentGameInfo();
     });
 
-    ipcMain.handle('widget-get-canonical-settings', () => {
-      return this.settingsService.getCanonicalSettings();
+    ipcMain.handle('widget-get-baseline-settings', () => {
+      return this.settingsService.getBaselineSettings();
     });
 
     ipcMain.handle('widget-get-suggested-sensitivity', () => {
       // We need access to the sensitivity converter service
       // For now, we'll calculate it directly here
-      const canonicalSettings = this.settingsService.getCanonicalSettings();
+      const baselineSettings = this.settingsService.getBaselineSettings();
       const currentGame = this.currentGameService.getCurrentGameInfo();
 
-      if (!canonicalSettings || !currentGame || !currentGame.isSupported) {
-        return null;
-      }
-
-      // Don't suggest conversion if we're already in the canonical game
-      if (canonicalSettings.game === currentGame.name) {
+      if (!baselineSettings || !currentGame || !currentGame.isSupported) {
         return null;
       }
 
       // Return the data needed for conversion - the main window will handle the calculation
       return {
-        canonicalSettings,
+        baselineSettings,
         currentGame
       };
     });
@@ -117,6 +104,7 @@ export class WidgetWindowController {
     if (this.widgetWindow) {
       return; // Widget already exists
     }
+
     const options: OverlayWindowOptions = {
       name: 'aimii-widget',
       height: 200,
@@ -211,14 +199,17 @@ export class WidgetWindowController {
       newX = 0;
       needsReposition = true;
     }
+
     if (newY < 0) {
       newY = 0;
       needsReposition = true;
     }
+
     if (newX + bounds.width > gameWidth) {
       newX = gameWidth - bounds.width;
       needsReposition = true;
     }
+
     if (newY + bounds.height > gameHeight) {
       newY = gameHeight - bounds.height;
       needsReposition = true;
@@ -324,11 +315,8 @@ export class WidgetWindowController {
     // Get current widget hotkey configuration from HotkeyService
     const widgetHotkeyInfo = this.hotkeyService.getHotkeyInfo('widget-toggle');
     if (!widgetHotkeyInfo) {
-      console.log('[WidgetWindowController] No widget hotkey configured, skipping registration');
       return;
     }
-
-    console.log('[WidgetWindowController] Registering widget hotkey:', widgetHotkeyInfo.displayText);
 
     // Register widget toggle hotkey with current configuration
     this.overlayService.overlayApi.hotkeys.register({
@@ -341,7 +329,6 @@ export class WidgetWindowController {
       },
       passthrough: true
     }, (hotkey, state) => {
-      console.log('[WidgetWindowController] Widget hotkey pressed:', hotkey.name, state);
       if (state === 'pressed') {
         this.toggleVisibility();
       }
@@ -363,7 +350,6 @@ export class WidgetWindowController {
     });
 
     this.hotkeysRegistered = true;
-    console.log('[WidgetWindowController] Widget hotkeys registered successfully');
   }
 
   private registerWindowEvents(): void {
@@ -384,6 +370,7 @@ export class WidgetWindowController {
         if (this.savePositionTimeout) {
           clearTimeout(this.savePositionTimeout);
         }
+
         this.savePositionTimeout = setTimeout(() => {
           this.settingsService.setWidgetPosition(bounds.x, bounds.y);
         }, 500);

@@ -1,56 +1,72 @@
 import React from 'react';
-
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
+import { GameData } from '../../types/app';
+import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 
 interface GameSelectionStepProps {
   games: GameData[];
   selectedGame: string;
   onDataChange: (field: string, value: string) => void;
   inputId?: string;
+  context?: 'onboarding' | 'preferences';
+  onNext?: () => void;
 }
 
 export const GameSelectionStep: React.FC<GameSelectionStepProps> = ({
   games,
   selectedGame,
   onDataChange,
-  inputId = 'game-select'
+  inputId = 'game-select',
+  context = 'onboarding',
+  onNext
 }) => {
+  const isPreferences = context === 'preferences';
+
   React.useEffect(() => {
-    const select = document.getElementById(inputId);
-    if (select) {
-      select.focus();
-    }
+    const el = document.getElementById(inputId) as HTMLInputElement | null;
+    if (el) el.focus();
   }, [inputId]);
+
+  // Convert games to options format for SearchableSelect
+  const gameOptions = games.map(game => ({
+    value: game.game,
+    label: game.game
+  }));
+
+  const handleGameChange = (value: string) => {
+    onDataChange('selectedGame', value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && selectedGame && onNext) {
+      onNext();
+    }
+  };
 
   return (
     <div className="settings-step">
-      <h2>Choose your eDPI</h2>
-      <p>Don't know your eDPI? Select your most played game below.</p>
+      {isPreferences ? (
+        <>
+          <h2>Reference game</h2>
+          <p>Choose a game to establish your baseline.</p>
+        </>
+      ) : (
+        <>
+          <h2>Set a reference game</h2>
+          <p>Choose a game to establish your baseline.</p>
+        </>
+      )}
 
       <div className="form-group">
-        <label htmlFor={inputId}>Select your most played game</label>
-        <div className="select-wrapper">
-          <select
-            id={inputId}
-            value={selectedGame}
-            onChange={(e) => onDataChange('selectedGame', e.target.value)}
-            required
-          >
-            <option value="">Select a Game</option>
-            {games.map((game) => (
-              <option key={game.game} value={game.game}>
-                {game.game}
-              </option>
-            ))}
-          </select>
-        </div>
+        <label htmlFor={inputId}>Game</label>
+        <SearchableSelect
+          id={inputId}
+          value={selectedGame}
+          options={gameOptions}
+          placeholder="Select a game"
+          onChange={handleGameChange}
+          onKeyDown={handleKeyDown}
+          required
+        />
       </div>
     </div>
   );

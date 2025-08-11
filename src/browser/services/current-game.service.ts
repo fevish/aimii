@@ -1,6 +1,6 @@
-import { OverlayService } from "./overlay.service";
-import { GamesService } from "./games.service";
-import { CustomGameDetectorService } from "./custom-game-detector.service";
+import { OverlayService } from './overlay.service';
+import { GamesService } from './games.service';
+import { CustomGameDetectorService } from './custom-game-detector.service';
 import EventEmitter from 'events';
 
 /**
@@ -77,7 +77,6 @@ export class CurrentGameService extends EventEmitter {
    * Get the currently selected game information
    */
   public getCurrentGameInfo(): CurrentGameInfo | null {
-    this.updateGameState();
     return this.currentGameInfo;
   }
 
@@ -85,7 +84,6 @@ export class CurrentGameService extends EventEmitter {
    * Get all currently detected games from all sources
    */
   public getAllDetectedGames(): CurrentGameInfo[] {
-    this.updateGameState();
     return this.allDetectedGames;
   }
 
@@ -93,9 +91,11 @@ export class CurrentGameService extends EventEmitter {
    * Set the current game by ID
    */
   public setCurrentGame(gameId: number): void {
-    const game = this.allDetectedGames.find(g => g.id === gameId);
+    const normalizedId = this.normalizeGameId(gameId);
+    const game = this.allDetectedGames.find(g => this.normalizeGameId(g.id) === normalizedId);
     if (game) {
       this.currentGameInfo = game;
+      console.log('Game Changed:', game.name);
       this.emit('game-changed', game);
     }
   }
@@ -185,6 +185,7 @@ export class CurrentGameService extends EventEmitter {
       if (this.gamesService.getGameByOwId(normalizedGameId)) {
         event.inject();
       }
+
       this.scheduleUpdate();
     });
 
@@ -206,7 +207,14 @@ export class CurrentGameService extends EventEmitter {
       this.scheduleUpdate();
     });
 
-    gepService.on('ready', () => {
+    gepService.on('ready', async () => {
+      try {
+        // Ensure features are set and populate already-running games
+        await gepService.setRequiredFeaturesForAllSupportedGames?.();
+        await gepService.checkForAlreadyRunningGames?.();
+      } catch (_) {
+        // ignore
+      }
       setTimeout(() => {
         this.scheduleUpdate();
         this.startPeriodicCheck();
@@ -256,6 +264,7 @@ export class CurrentGameService extends EventEmitter {
         gameInfo: newGameInfo,
         detectedGamesCount: newDetectedGamesCount
       };
+
       this.emit('game-changed', newGameInfo);
     }
   }
@@ -276,25 +285,50 @@ export class CurrentGameService extends EventEmitter {
   // ============================================================================
 
   private updateAllDetectedGames(): void {
-    const detectedGames: CurrentGameInfo[] = [];
+    // Collect games from all detection sources. Overlay may flap; merge rather than replace
+    const detected: CurrentGameInfo[] = [];
+    detected.push(...this.getGepGames());
+    detected.push(...this.getOverlayGames());
+    detected.push(...this.getCustomDetectedGames());
 
-    // Collect games from all detection sources
-    detectedGames.push(...this.getGepGames());
-    detectedGames.push(...this.getOverlayGames());
-    detectedGames.push(...this.getCustomDetectedGames());
+    // Deduplicate the detected games (in case multiple sources detect the same game)
+    const uniqueDetectedGames = this.deduplicateGames(detected);
 
-    // Remove duplicates and update state
-    this.allDetectedGames = this.deduplicateGames(detectedGames);
+        // Log newly detected games
+    const previousGameIds = new Set(this.allDetectedGames.map(g => this.normalizeGameId(g.id)));
+    const newGames = uniqueDetectedGames.filter(g => !previousGameIds.has(this.normalizeGameId(g.id)));
+
+    if (newGames.length === 1) {
+      console.log(`Game detected: ${newGames[0].name}`);
+    } else if (newGames.length > 1) {
+      const gameNames = newGames.map(game => game.name).join(', ');
+      console.log(`Games detected: ${gameNames}`);
+    }
+
+    // Log games that have exited
+    const currentGameIds = new Set(uniqueDetectedGames.map(g => this.normalizeGameId(g.id)));
+    const exitedGames = this.allDetectedGames.filter(g => !currentGameIds.has(this.normalizeGameId(g.id)));
+
+    if (exitedGames.length === 1) {
+      console.log(`Game exited: ${exitedGames[0].name}`);
+    } else if (exitedGames.length > 1) {
+      const gameNames = exitedGames.map(game => game.name).join(', ');
+      console.log(`Games exited: ${gameNames}`);
+    }
+
+    // Replace the detected games list with only currently detected games
+    this.allDetectedGames = uniqueDetectedGames;
     this.updateCurrentGameSelection();
   }
 
   private deduplicateGames(games: CurrentGameInfo[]): CurrentGameInfo[] {
     const uniqueGames: CurrentGameInfo[] = [];
-    const seenIds = new Set<number>();
+    const seenIds = new Set<string>();
 
     for (const game of games) {
-      if (!seenIds.has(game.id)) {
-        seenIds.add(game.id);
+      const id = this.normalizeGameId(game.id);
+      if (!seenIds.has(id)) {
+        seenIds.add(id);
         uniqueGames.push(game);
       }
     }
@@ -303,7 +337,11 @@ export class CurrentGameService extends EventEmitter {
   }
 
   private updateCurrentGameSelection(): void {
-    if (!this.currentGameInfo || !this.allDetectedGames.find(g => g.id === this.currentGameInfo?.id)) {
+    const currentIdStr = this.currentGameInfo ? this.normalizeGameId(this.currentGameInfo.id) : null;
+    const hasCurrent = currentIdStr !== null && this.allDetectedGames.some(g => this.normalizeGameId(g.id) === currentIdStr);
+
+    // Only change current game if no current game is set OR current game is no longer detected
+    if (!hasCurrent) {
       this.currentGameInfo = this.allDetectedGames[0] || null;
     }
   }
@@ -318,14 +356,15 @@ export class CurrentGameService extends EventEmitter {
     const games: CurrentGameInfo[] = [];
 
     for (const gameId of this.gepService.activeGames) {
-      const gameData = this.gamesService.getGameByOwId(this.normalizeGameId(gameId));
+      const normalizedId = this.normalizeGameId(gameId);
+      const gameData = this.gamesService.getGameByOwId(normalizedId);
       if (gameData) {
         games.push({
-          id: gameId,
+          id: normalizedId as unknown as number,
           name: gameData.game,
           owGameName: gameData.owGameName,
           isSupported: true,
-          gameData: gameData,
+          gameData,
           detectionSource: 'gep'
         });
       }
@@ -338,12 +377,13 @@ export class CurrentGameService extends EventEmitter {
     const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
     if (!activeGame) return [];
 
-    const overwolfGameId = this.normalizeGameId(activeGame.gameInfo.classId || '');
+    const classIdOrEmpty: string = String(((activeGame as any)?.gameInfo?.classId) ?? '');
+    const overwolfGameId = this.normalizeGameId(classIdOrEmpty);
     const gameData = this.gamesService.getGameByOwId(overwolfGameId);
 
     return [{
-      id: activeGame.gameInfo.classId,
-      name: gameData?.game || activeGame.gameInfo.name || 'Unknown Game',
+      id: overwolfGameId as unknown as number,
+      name: gameData?.game || activeGame.gameInfo?.name || 'Unknown Game',
       owGameName: gameData?.owGameName,
       isSupported: !!gameData,
       gameData: gameData || null,
@@ -358,17 +398,20 @@ export class CurrentGameService extends EventEmitter {
     const customGames: CurrentGameInfo[] = [];
 
     for (const detectedGame of detectedGames) {
-      const gameData = this.gamesService.getAllGames().find(game =>
-        game.processName && game.processName.toLowerCase() === detectedGame.processName.toLowerCase()
-      );
+      const gameData = this.gamesService
+        .getAllGames()
+        .find(game => (
+          game.processName &&
+          game.processName.toLowerCase() === detectedGame.processName.toLowerCase()
+        ));
 
       if (gameData) {
         customGames.push({
-          id: parseInt(detectedGame.pid),
+          id: this.normalizeGameId(gameData.owGameId) as unknown as number,
           name: gameData.game,
           owGameName: gameData.owGameName,
           isSupported: gameData.enable_for_app,
-          gameData: gameData,
+          gameData,
           detectionSource: 'custom'
         });
       }
@@ -392,11 +435,18 @@ export class CurrentGameService extends EventEmitter {
   private async performPeriodicVerification(): Promise<void> {
     const verificationPromises: Promise<void>[] = [];
 
-    if (this.customGameDetectorService) {
+    // Only verify custom detected games (not GEP games - GEP handles its own state)
+    if (this.customGameDetectorService !== null) {
       verificationPromises.push(this.customGameDetectorService.verifyRunningGames());
     }
 
-    verificationPromises.push(this.verifyGepActiveGames());
+    // Skip aggressive GEP verification - GEP handles its own game exit events
+    // verificationPromises.push(this.verifyGepActiveGames());
+
+    // Also proactively check for already running games to add any that started without events
+    if (this.gepService && this.gepService.checkForAlreadyRunningGames) {
+      verificationPromises.push(this.gepService.checkForAlreadyRunningGames());
+    }
 
     await Promise.all(verificationPromises);
     this.updateGameState();
@@ -411,6 +461,7 @@ export class CurrentGameService extends EventEmitter {
       const gameData = this.gamesService.getGameByOwId(gameId.toString());
       if (gameData?.processName) {
         const isRunning = await this.customGameDetectorService.isProcessRunning(gameData.processName);
+
         if (!isRunning) {
           this.removeGepGame(gameId);
         }

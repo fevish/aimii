@@ -1,123 +1,105 @@
 /* Settings Styles - Minimalistic Typewriter Theme */
+.settings-container {
 
-.key-capture-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  cursor: pointer;
-  user-select: none;
-  backdrop-filter: blur(1px);
-}
+  .settings-content {
+    display: flex;
+    flex-flow: column;
+    gap: 2rem;
+  }
 
-.key-capture-overlay:focus {
-  outline: none;
-}
+  h4 {
+    margin-bottom: calc(0.5 * var(--spacing));
+  }
 
-.key-capture-active {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(0.5 * var(--spacing));
-  background: var(--dark);
-  border: 1px solid var(--primary);
-  border-radius: var(--radius);
-  padding: calc(0.5 * var(--spacing));
-  box-shadow: none;
-}
+  button {
+    padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
+  }
 
-.captured-keys {
-  color: var(--primary);
-  text-align: center;
-  min-width: 150px;
-  padding: calc(0.5 * var(--spacing));
-  background: var(--dark);
-  border-radius: var(--radius);
-  border: 1px solid var(--secondary);
-}
+  button.hotkey-btn {
+    &:disabled {
+      opacity: 1;
+      color: currentColor;
+    }
+    margin-right: 3rem;
+  }
 
-.capture-actions {
-  display: flex;
-  gap: calc(0.5 * var(--spacing));
-}
+  .hotkey-actions {
+    display: flex;
+    align-items: center;
+    gap: calc(0.5 * var(--spacing));
+  }
 
-.save-btn {
-  background: var(--dark);
-  color: var(--primary);
-  border: 1px solid var(--primary);
-  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: none;
-  letter-spacing: normal;
-  align-self: auto;
-}
+  .key-capture-active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(0.5 * var(--spacing));
+    background: var(--dark);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
+    padding: calc(0.5 * var(--spacing));
+    box-shadow: none;
+  }
 
-.save-btn:hover:not(:disabled) {
-  background: var(--primary);
-  color: var(--dark);
-  transform: none;
-  box-shadow: none;
-}
+  .captured-keys {
+    color: var(--primary);
+    text-align: center;
+    min-width: 150px;
+    padding: calc(0.5 * var(--spacing));
+    background: var(--dark);
+    border-radius: var(--radius);
+    border: 1px solid var(--secondary);
+  }
 
-.save-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  background: var(--dark);
-  border-color: var(--secondary);
-  color: var(--secondary);
-}
+  .capture-actions {
+    display: flex;
+    gap: calc(0.5 * var(--spacing));
+  }
 
-.cancel-btn {
-  background: var(--dark);
-  border: 1px solid var(--secondary);
-  color: var(--secondary);
-  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: none;
-  letter-spacing: normal;
-  align-self: auto;
-}
 
-.cancel-btn:hover {
-  background: var(--secondary);
-  color: var(--dark);
-  transform: none;
-}
+  .modifier-warning {
+    background: var(--dark);
+    color: var(--secondary);
+    padding: calc(0.5 * var(--spacing));
+    border-radius: var(--radius);
+    text-align: center;
+    max-width: 250px;
+    border: 1px solid var(--secondary);
+  }
 
-.modifier-warning {
-  background: var(--dark);
-  color: var(--secondary);
-  padding: calc(0.5 * var(--spacing));
-  border-radius: var(--radius);
-  text-align: center;
-  max-width: 250px;
-  border: 1px solid var(--secondary);
-}
+  /* Theme Section */
+  .theme-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing);
+  }
 
-/* Theme Section */
-.theme-section {
-  margin-top: var(--spacing);
-}
+  /* Remove the old overlay content */
+  .key-capture-overlay::before,
+  .key-capture-overlay::after {
+    display: none;
+  }
 
-.theme-controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing);
-}
+  .select-wrapper {
+    width: fit-content;
+  }
 
-/* Remove the old overlay content */
-.key-capture-overlay::before,
-.key-capture-overlay::after {
-  display: none;
+  .form-group {
+    margin: 0;
+  }
+
+  .select-wrapper {
+    &:before {
+      right: calc(1 * var(--spacing));
+      height: calc(1.5 * var(--spacing));
+      width: calc(1.5 * var(--spacing));
+    }
+  }
+
+  .form-group select {
+    height: auto;
+    font-size: 0.75rem;
+    padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
+    padding-right: calc(3 * var(--spacing));
+  }
 }

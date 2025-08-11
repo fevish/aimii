@@ -4,18 +4,7 @@ import './Widget.css';
 // Import the interface from the service
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
-
-interface CanonicalSettings {
-  game: string;
-  sensitivity: number;
-  dpi: number;
-}
-
-interface HotkeyInfo {
-  keyCode: number;
-  modifiers: { ctrl: boolean; shift: boolean; alt: boolean };
-  displayText: string;
-}
+import { BaselineSettings, HotkeyInfo } from '../../types/app';
 
 // Local type for electronAPI
 type ElectronAPI = {
@@ -24,12 +13,13 @@ type ElectronAPI = {
 };
 
 const Widget: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentGame, setCurrentGame] = useState<CurrentGameInfo | null>(null);
   const [suggestedSensitivity, setSuggestedSensitivity] = useState<SensitivityConversion | null>(null);
-  const [canonicalSettings, setCanonicalSettings] = useState<CanonicalSettings | null>(null);
+  const [canonicalSettings, setCanonicalSettings] = useState<BaselineSettings | null>(null);
   const [hotkeyInfo, setHotkeyInfo] = useState<HotkeyInfo | null>(null);
   const [cm360, setCm360] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrentGame = async () => {
     try {
@@ -44,6 +34,7 @@ const Widget: React.FC = () => {
         if (prevGame.id === gameInfo.id && prevGame.name === gameInfo.name && prevGame.isSupported === gameInfo.isSupported) {
           return prevGame; // No change, keep previous state
         }
+
         return gameInfo;
       });
     } catch (error) {
@@ -52,24 +43,24 @@ const Widget: React.FC = () => {
     }
   };
 
-  const fetchCanonicalSettings = async () => {
+  const fetchBaselineSettings = async () => {
     try {
       const { ipcRenderer } = require('electron');
-      const settings = await ipcRenderer.invoke('widget-get-canonical-settings');
+      const settings = await ipcRenderer.invoke('widget-get-baseline-settings');
 
       // Only update if settings have actually changed
       setCanonicalSettings(prevSettings => {
         if (!prevSettings && !settings) return prevSettings;
         if (!prevSettings || !settings) return settings;
-        if (prevSettings.game === settings.game &&
-            prevSettings.sensitivity === settings.sensitivity &&
+        if (prevSettings.mouseTravel === settings.mouseTravel &&
             prevSettings.dpi === settings.dpi) {
           return prevSettings; // No change, keep previous state
         }
+
         return settings;
       });
     } catch (error) {
-      console.error('Failed to fetch canonical settings:', error);
+      console.error('Failed to fetch baseline settings:', error);
       setCanonicalSettings(null);
     }
   };
@@ -77,9 +68,7 @@ const Widget: React.FC = () => {
   const fetchHotkeyInfo = async () => {
     try {
       const { ipcRenderer } = require('electron');
-      console.log('[Widget] Fetching hotkey info...');
       const hotkey = await ipcRenderer.invoke('widget-get-hotkey-info');
-      console.log('[Widget] Received hotkey info:', hotkey);
       setHotkeyInfo(hotkey);
     } catch (error) {
       console.error('[Widget] Failed to fetch hotkey info:', error);
@@ -96,11 +85,11 @@ const Widget: React.FC = () => {
       setSuggestedSensitivity(prevSuggestion => {
         if (!prevSuggestion && !suggestion) return prevSuggestion;
         if (!prevSuggestion || !suggestion) return suggestion;
-        if (prevSuggestion.fromGame === suggestion.fromGame &&
-            prevSuggestion.toGame === suggestion.toGame &&
+        if (prevSuggestion.gameName === suggestion.gameName &&
             prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
           return prevSuggestion; // No change, keep previous state
         }
+
         return suggestion;
       });
     } catch (error) {
@@ -109,25 +98,30 @@ const Widget: React.FC = () => {
     }
   };
 
-  const fetchCanonicalCm360 = async () => {
+  const fetchMouseTravel = async () => {
     try {
       const { ipcRenderer } = require('electron');
-      const cm360Value = await ipcRenderer.invoke('sensitivity-get-canonical-cm360');
-      setCm360(cm360Value);
+      const mouseTravel = await ipcRenderer.invoke('sensitivity-get-current-mouse-travel');
+      setCm360(mouseTravel);
     } catch (error) {
-      console.error('Failed to fetch cm/360°:', error);
+      console.error('Failed to fetch mouse travel:', error);
       setCm360(null);
     }
   };
 
   const fetchData = async () => {
-    await Promise.all([fetchCurrentGame(), fetchCanonicalSettings(), fetchHotkeyInfo(), fetchSuggestedSensitivity(), fetchCanonicalCm360()]);
+    await Promise.all([
+      fetchCurrentGame(),
+      fetchBaselineSettings(),
+      fetchHotkeyInfo(),
+      fetchSuggestedSensitivity(),
+      fetchMouseTravel()
+    ]);
   };
 
-  // Check if current game matches canonical game
-  const isPlayingCanonicalGame = React.useMemo(() =>
-    currentGame && canonicalSettings &&
-    currentGame.name === canonicalSettings.game && currentGame.isSupported,
+  // Show suggestions for any supported game when we have baseline settings
+  const shouldShowSuggestion = React.useMemo(
+    () => currentGame && canonicalSettings && currentGame.isSupported,
     [currentGame, canonicalSettings]
   );
 
@@ -146,65 +140,47 @@ const Widget: React.FC = () => {
         console.error('Error loading theme:', error);
       }
     };
+
     initializeTheme();
 
     // Set up IPC listener for game change events
     const { ipcRenderer } = require('electron');
 
     const handleGameChanged = () => {
-      console.log('Game changed event received in widget');
       fetchData(); // Refresh all data when game changes
     };
 
     // Listen for game change events from main process
     ipcRenderer.on('current-game-changed', handleGameChanged);
 
-    // Listen for canonical settings changes
-    const handleCanonicalSettingsChanged = (settings: any) => {
-      console.log('[Widget] Canonical settings changed event received:', settings);
-
-      // Refresh all data when canonical settings change
-      // This ensures the widget updates properly when the canonical game changes
-      fetchData();
+    // Listen for baseline settings changes
+    const handleBaselineSettingsChanged = (settings: any) => {
+      setCanonicalSettings(settings);
     };
 
-    // Listen for canonical settings change events from main process
-    ipcRenderer.on('canonical-settings-changed', handleCanonicalSettingsChanged);
+    ipcRenderer.on('baseline-settings-changed', handleBaselineSettingsChanged);
 
     // Listen for theme changes
     const handleThemeChanged = (event: any, theme: string) => {
-      console.log('[Widget] Theme changed event received:', theme);
       applyTheme(theme);
     };
 
-    // Listen for theme change events from main process
     ipcRenderer.on('theme-changed', handleThemeChanged);
 
     // Listen for hotkey change events
     const handleHotkeyChanged = (id: string, updatedHotkey: any) => {
-      console.log('[Widget] Hotkey changed event received:', id, updatedHotkey);
       if (id === 'widget-toggle') {
-        console.log('[Widget] Widget hotkey changed, refreshing display...');
-        fetchHotkeyInfo(); // Refresh hotkey info when widget hotkey changes
+        fetchHotkeyInfo();
       }
     };
 
     const handleHotkeysReset = () => {
-      console.log('[Widget] Hotkeys reset event received');
-      console.log('[Widget] Refreshing hotkey display...');
-      fetchHotkeyInfo(); // Refresh hotkey info when hotkeys are reset
+      fetchHotkeyInfo();
     };
 
     // Listen for hotkey change events from main process
     ipcRenderer.on('hotkey-changed', handleHotkeyChanged);
     ipcRenderer.on('hotkeys-reset', handleHotkeysReset);
-
-    // Fallback: reduced frequency polling for canonical settings changes
-    // (since settings changes don't have events)
-    const settingsInterval = setInterval(fetchCanonicalSettings, 10000); // Check settings every 10 seconds
-
-    // Fallback: poll for hotkey changes every 5 seconds (in case events don't work)
-    const hotkeyInterval = setInterval(fetchHotkeyInfo, 5000); // Check hotkey every 5 seconds
 
     // Add hotkey listeners for dev tools
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -223,27 +199,18 @@ const Widget: React.FC = () => {
 
     return () => {
       ipcRenderer.removeListener('current-game-changed', handleGameChanged);
-      ipcRenderer.removeListener('canonical-settings-changed', handleCanonicalSettingsChanged);
+      ipcRenderer.removeListener('baseline-settings-changed', handleBaselineSettingsChanged);
       ipcRenderer.removeListener('theme-changed', handleThemeChanged);
       ipcRenderer.removeListener('hotkey-changed', handleHotkeyChanged);
       ipcRenderer.removeListener('hotkeys-reset', handleHotkeysReset);
-      clearInterval(settingsInterval);
-      clearInterval(hotkeyInterval);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
   // Theme application function
   const applyTheme = (theme: string) => {
-    const htmlElement = document.documentElement;
-
-    // Remove all theme classes
-    htmlElement.classList.remove('default', 'high-contrast');
-
-    // Add the selected theme class
-    if (theme !== 'default') {
-      htmlElement.classList.add(theme);
-    }
+    const { applyTheme: setTheme } = require('../../utils/theme');
+    setTheme(theme);
   };
 
   return (
@@ -264,32 +231,38 @@ const Widget: React.FC = () => {
         </button>
       </div>
       <div className="widget-content">
-        {isLoading ? (
-          <p className="game-status loading">Loading...</p>
-        ) : (
-          <div className="current-game-info">
-            <div className="game-display">
-              <p>Game Detected: <b className="game-name">{currentGame?.name}</b></p>
+        {isLoading
+          ? (
+            <p className="game-status loading">Loading...</p>
+          )
+          : (
+            <div className="current-game-info">
+              <div className="game-display">
+                <p>Game Detected: <b className="game-name">{currentGame?.name}</b></p>
+              </div>
+              {suggestedSensitivity
+                ? (
+                  <div className="sensitivity-suggestion">
+                    <p>Converted Sensitivity</p>
+                    <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity.toFixed(3)}</p>
+                    {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
+                  </div>
+                )
+                : !canonicalSettings
+                  ? (
+                    <div className="sensitivity-suggestion">
+                      <p>No baseline configured</p>
+                    </div>
+                  )
+                  : (
+                    <div className="sensitivity-suggestion">
+                      <p>Using baseline settings</p>
+                      {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
+                    </div>
+                  )
+              }
             </div>
-            {isPlayingCanonicalGame ? (
-              <div className="sensitivity-suggestion">
-                <p>Sensitivity</p>
-                <p className="suggested-value">{canonicalSettings?.sensitivity}</p>
-                {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
-              </div>
-            ) : suggestedSensitivity ? (
-              <div className="sensitivity-suggestion">
-                <p>Converted Sensitivity</p>
-                <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity}</p>
-                {cm360 && <p className="cm360-info">{cm360} cm/360°</p>}
-              </div>
-            ) : !canonicalSettings ? (
-              <div className="sensitivity-suggestion">
-                <p>No canon game selected</p>
-              </div>
-            ) : null}
-          </div>
-        )}
+          )}
       </div>
     </div>
   );
