@@ -33,7 +33,7 @@
 }
 
 .progress-step.active {
-  background: currentColor;
+  background: var(--primary);
   color: var(--dark);
 }
 
@@ -150,8 +150,7 @@
 }
 
 .settings-btn-next:hover:not(:disabled) {
-  background: currentColor;
-  opacity: 0.9;
+  opacity: 0.7;
 }
 
 .settings-btn:disabled {

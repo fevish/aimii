@@ -138,7 +138,7 @@ label {
 
   &:before {
     content: '';
-    position: absokjlute;
+    position: absolute;
     pointer-events: none;
     top: 50%;
     transform: translateY(-50%);
@@ -213,7 +213,7 @@ button {
 }
 
 button:hover {
-  background: currentColor;
+  background: var(--primary);
   color: var(--dark);
   box-shadow: none;
 }
