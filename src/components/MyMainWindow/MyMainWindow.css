@@ -211,28 +211,6 @@ section {
   }
 }
 
-/* Settings Grid */
-.settings-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(2 * var(--spacing)) calc(0.25 * var(--spacing));
-  padding-left: calc(2.5 * var(--spacing));
-  font-size: 1.7em;
-}
-
-.setting-row {
-  display: flex;
-  flex-flow: column;
-  padding: calc(0.25 * var(--spacing)) 0;
-}
-
-.setting-label {
-  color: currentColor;
-  font-size: 0.65em;
-  opacity: 0.7;
-  margin-bottom: calc(0.75 * var(--spacing));
-}
-
 .main-setting {
   font-weight: 800;
   margin-bottom: auto;

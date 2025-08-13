@@ -54,7 +54,7 @@ const Widget: React.FC = () => {
         if (!prevSettings && !settings) return prevSettings;
         if (!prevSettings || !settings) return settings;
         if (prevSettings.mouseTravel === settings.mouseTravel &&
-            prevSettings.dpi === settings.dpi) {
+          prevSettings.dpi === settings.dpi) {
           return prevSettings; // No change, keep previous state
         }
 
@@ -87,7 +87,7 @@ const Widget: React.FC = () => {
         if (!prevSuggestion && !suggestion) return prevSuggestion;
         if (!prevSuggestion || !suggestion) return suggestion;
         if (prevSuggestion.gameName === suggestion.gameName &&
-            prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
+          prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
           return prevSuggestion; // No change, keep previous state
         }
 
@@ -216,21 +216,16 @@ const Widget: React.FC = () => {
 
   return (
     <div className="widget-container">
-      <div className="widget-header">
-        <div className="hotkey-info">
-          <p><b>Show/Hide:</b> {hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
-        </div>
-        <button
-          className="window-control-btn close-btn"
-          title="Close Widget"
-          onClick={() => {
-            const { ipcRenderer } = require('electron');
-            ipcRenderer.invoke('toggleWidget');
-          }}
-        >
-          ✕
-        </button>
-      </div>
+      <button
+        className="window-control-btn close-btn"
+        title="Close Widget"
+        onClick={() => {
+          const { ipcRenderer } = require('electron');
+          ipcRenderer.invoke('toggleWidget');
+        }}
+      >
+        ✕
+      </button>
       <div className="widget-content">
         {isLoading
           ? (
@@ -239,14 +234,24 @@ const Widget: React.FC = () => {
           : (
             <div className="current-game-info">
               <div className="game-display">
-                <p>Game Detected: <b className="game-name">{currentGame?.name}</b></p>
+                <p>// Sens for: <b className="game-name">{currentGame?.name}</b></p>
               </div>
               {suggestedSensitivity
                 ? (
                   <div className="sensitivity-suggestion">
-                    <p>Converted Sensitivity</p>
                     <p className="suggested-value">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
-                    {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
+                    {/* {cm360 &&
+                      <div className="settings-grid">
+                        <div className="setting-row">
+                          <span className="setting-label">eDPI</span>
+                          <span className="setting-value">{Math.round(suggestedSensitivity.suggestedSensitivity * suggestedSensitivity.userDPI)}</span>
+                        </div>
+                        <div className="setting-row">
+                          <span className="setting-label">Mouse Travel (cm/360°)</span>
+                          <span className="setting-value">{cm360 ? cm360.toFixed(2) : '-'}</span>
+                        </div>
+                      </div>
+                    } */}
                   </div>
                 )
                 : !canonicalSettings
@@ -264,6 +269,9 @@ const Widget: React.FC = () => {
               }
             </div>
           )}
+      </div>
+      <div className="hotkey-info">
+        <p><b>Show/Hide:</b> {hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
       </div>
     </div>
   );
