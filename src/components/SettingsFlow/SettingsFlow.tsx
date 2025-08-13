@@ -125,7 +125,7 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
       <div className="settings-navigation">
         {showBackButton && (
           <button
-            className="settings-btn settings-btn-back"
+            className="btn btn-outline settings-btn settings-btn-back"
             onClick={onBack}
             disabled={isLoading}
           >

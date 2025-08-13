@@ -67,6 +67,18 @@ export const MyMainWindow: React.FC = () => {
   });
   const [userPreferencesSettingsStep, setUserPreferencesSettingsStep] = useState(1);
 
+  // Calculator state (persisted when card closes)
+  const [calculatorState, setCalculatorState] = useState({
+    fromGame: null as any,
+    toGame: null as any,
+    fromSensitivity: '',
+    fromDpi: '',
+    convertedSensitivity: 0,
+    eDpi: 0,
+    inches360: 0,
+    cm360: 0
+  });
+
   const handleMinimize = () => {
     window.windowControls.minimize();
   };
@@ -610,7 +622,10 @@ export const MyMainWindow: React.FC = () => {
                       onClose={handleCloseSecondaryCard}
                       className="card-secondary"
                     >
-                      <SecondaryCardContent />
+                      <SecondaryCardContent
+                      calculatorState={calculatorState}
+                      onCalculatorStateChange={setCalculatorState}
+                    />
                     </CardButton>
                   </div>
                 </section>

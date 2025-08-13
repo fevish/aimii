@@ -33,14 +33,14 @@
 
 .select-input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: currentColor;
   background-color: var(--dark);
 }
 
 .select-input[readonly] {
   cursor: pointer;
   background-color: var(--dark);
-  color: var(--light);
+  color: currentColor;
 }
 
 .select-arrow, .select-arrow:hover,
@@ -77,12 +77,12 @@
   left: 0;
   right: 0;
   background-color: var(--dark);
-  border: 1px solid var(--primary);
+  border: 1px solid currentColor;
   border-top: none;
   border-bottom-left-radius: calc(2 * var(--radius));
   max-height: 160px;
   overflow-y: auto;
-  scrollbar-color: var(--primary) var(--dark);
+  scrollbar-color: currentColor var(--dark);
   scrollbar-width: thin;
   z-index: 1000;
 }
@@ -97,7 +97,7 @@
   padding: var(--spacing) calc(2 * var(--spacing));
   font-size: 0.8rem;
   cursor: pointer;
-  color: var(--light);
+  color: currentColor;
   transition: background-color 0.2s ease;
 }
 
@@ -109,15 +109,8 @@
 
 .select-option.selected {
   background-color: var(--secondary);
-  color: var(--light);
+  color: currentColor;
 }
-
-.select-option.selected:hover,
-.select-option.selected.highlighted {
-  background-color: var(--primary);
-  color: var(--dark);
-}
-
 .select-no-results {
   padding: var(--spacing) calc(2 * var(--spacing));
   font-size: 1.2rem;

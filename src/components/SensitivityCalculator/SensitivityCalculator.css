@@ -1,18 +1,43 @@
 .sensitivity-calculator {
   display: flex;
   flex-flow: column;
+  justify-content: space-between;
+  height: 100%;
   gap: calc(1 * var(--spacing));
-  input {
-    font-size: 1.5rem;
+  p {
+    color: currentColor;
   }
+  input {
+    font-size: 1rem;
+    padding: calc(0.75 * var(--spacing));
+    padding-right: calc(2.5 * var(--spacing));
+  }
+
   label {
     margin-bottom: calc(0.5 * var(--spacing));
+  }
+
+  .select-arrow,
+  .select-arrow:hover,
+  .select-clear,
+  .select-clear:hover {
+    right: calc(1 * var(--spacing));
+  }
+
+  .select-clear {
+    svg {
+      height: calc(1 * var(--spacing));
+      width: calc(1 * var(--spacing));
+    }
+  }
+  .select-option {
+    padding: calc(0.75 * var(--spacing));
   }
 }
 
 .game-selection {
-  display: flex;
-  flex-flow: row;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: calc(1 * var(--spacing));
 
   .game-input {
@@ -20,6 +45,13 @@
     flex-flow: column;
   }
 
+}
+
+.results-container {
+  margin-top: auto;
+  display: flex;
+  flex-flow: column;
+  gap: calc(1 * var(--spacing));
 }
 
 .sensitivity-inputs {
