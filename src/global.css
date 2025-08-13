@@ -11,8 +11,10 @@
 html:root {
   --primary: #00ff88;
   --secondary: #44aa66;
-  --dark: #001122;
+  --dark: #242529;
   --light: #00ff88;
+  --white: #f1f1f1;
+  --offwhite: #c8c8c8;
   --gray: #225544;
   --light-gray: #66cc88;
 
@@ -125,7 +127,7 @@ ul {
 /* Form Elements */
 label {
   font-weight: normal;
-  color: var(--primary);
+  color: currentColor;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin-bottom: calc(0.5 * var(--spacing));
@@ -158,12 +160,19 @@ select {
 select,
 input {
   padding: calc(0.25 * var(--spacing));
-  border: 1px solid var(--secondary);
+  border: 1px solid currentColor;
   border-radius: calc(2 * var(--radius));
   background-color: var(--dark);
-  color: var(--light);
+  color: currentColor;
   transition: all 0.2s ease;
   font-family: inherit;
+  min-width: 0;
+  width: 100%;
+}
+
+input::placeholder {
+  color: currentColor;
+  opacity: 0.7;
 }
 
 select:focus,
@@ -177,10 +186,6 @@ input:focus {
 select option {
   background-color: var(--dark);
   color: var(--light);
-}
-
-input::placeholder {
-  color: var(--secondary);
 }
 
 /* Buttons */
@@ -200,7 +205,6 @@ button {
   text-transform: none;
   letter-spacing: normal;
   font-family: inherit;
-  z-index: 1;
   svg {
     height: calc(1.5 * var(--spacing));
     width: auto;

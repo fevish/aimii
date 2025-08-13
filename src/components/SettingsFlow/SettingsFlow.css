@@ -6,6 +6,7 @@
   padding: calc(2 * var(--spacing));
   display: flex;
   flex-flow: column;
+  color: var(--primary);
 }
 
 .settings-progress {

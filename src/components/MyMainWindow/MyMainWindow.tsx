@@ -602,8 +602,8 @@ export const MyMainWindow: React.FC = () => {
                     </CardButton>
 
                     <CardButton
-                      title="Placeholder"
-                      value="WIP"
+                      title="Calculator"
+                      value=""
                       iconName="arrow-north-east"
                       isOpen={isSecondaryCardOpen}
                       onToggle={handleOpenSecondaryCard}

@@ -18,9 +18,9 @@
   width: 100%;
   padding: calc(0.25 * var(--spacing));
   padding-right: calc(3 * var(--spacing));
-  border: 1px solid var(--secondary);
-  background-color: var(--dark);
-  color: var(--light);
+  border: 1px solid currentColor;
+  background-color: transparent;
+  color: currentColor;
   transition: all 0.2s ease;
   font-family: inherit;
   -webkit-appearance: none;
@@ -51,7 +51,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--primary);
+  color: currentColor;
   cursor: pointer;
   padding: calc(0.25 * var(--spacing));
   display: flex;
@@ -60,7 +60,7 @@
   transition: all 0.2s ease;
   border-radius: var(--radius);
   svg {
-    fill: var(--primary);
+    fill: currentColor;
     width: calc(1.55 * var(--spacing));
     height: calc(1.55 * var(--spacing));
   }

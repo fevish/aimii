@@ -1,0 +1,34 @@
+.sensitivity-calculator {
+  display: flex;
+  flex-flow: column;
+  gap: calc(1 * var(--spacing));
+  input {
+    font-size: 1.5rem;
+  }
+  label {
+    margin-bottom: calc(0.5 * var(--spacing));
+  }
+}
+
+.game-selection {
+  display: flex;
+  flex-flow: row;
+  gap: calc(1 * var(--spacing));
+
+  .game-input {
+    display: flex;
+    flex-flow: column;
+  }
+
+}
+
+.sensitivity-inputs {
+  display: grid;
+  gap: calc(1 * var(--spacing));
+  grid-template-columns: 1fr 1fr;
+
+  .input-group {
+    display: flex;
+    flex-flow: column;
+  }
+}
