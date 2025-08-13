@@ -285,7 +285,7 @@ button:disabled {
 .settings-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: calc(2 * var(--spacing)) calc(0.25 * var(--spacing));
+  gap: calc(2 * var(--spacing)) calc(1.5 * var(--spacing));
   padding-left: calc(2.5 * var(--spacing));
   font-size: 1.7em;
 }

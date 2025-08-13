@@ -14,6 +14,7 @@ import { GameData, BaselineSettings, HotkeyInfo } from '../../types/app';
 import { GameInfo } from './GameInfo';
 import { useMainWindowData } from './useMainWindowData';
 import { formatSensitivity } from '../../utils/format';
+import { applyTheme } from '../../utils/theme';
 
 export const MyMainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
@@ -155,6 +156,31 @@ export const MyMainWindow: React.FC = () => {
   // Show welcome message when MyMainWindow renders
   React.useEffect(() => {
     console.log(`aimii v${process.env.APP_VERSION} successfully loaded`);
+  }, []);
+
+  // Initialize theme on startup
+  React.useEffect(() => {
+    const initializeTheme = async () => {
+      try {
+        const theme = await window.settings.getTheme();
+        applyTheme(theme);
+      } catch (error) {
+        console.error('Error loading theme:', error);
+      }
+    };
+
+    initializeTheme();
+
+    // Set up theme change listener
+    const handleThemeChanged = (theme: string) => {
+      applyTheme(theme);
+    };
+
+    window.settings.onThemeChanged(handleThemeChanged);
+
+    return () => {
+      window.settings.removeThemeListener();
+    };
   }, []);
 
   React.useEffect(() => {
