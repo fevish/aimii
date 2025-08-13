@@ -1,6 +1,7 @@
 import React from 'react';
 import { SettingsFlow } from '../SettingsFlow/SettingsFlow';
 import { BaselineSettings, GameData } from '../../types/app';
+import { formatSensitivity } from '../../utils/format';
 
 interface UserPreferencesContentProps {
   showForm: boolean;
@@ -69,7 +70,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
                   Change
                 </button>
               </p>
-              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)}</span>
+              <span className="setting-value">{formatSensitivity(canonicalSettings.mouseTravel)}</span>
             </div>
           </div>
           <p>// EQUIVALENT TO</p>
@@ -92,7 +93,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
             </div>
             {/* <div className="setting-row">
               <span className="setting-label">Mouse Travel (cm/360°)</span>
-              <span className="setting-value">{canonicalSettings.mouseTravel.toFixed(2)}</span>
+              <span className="setting-value">{formatSensitivity(canonicalSettings.mouseTravel)}</span>
             </div> */}
           </div>
         </div>

@@ -5,6 +5,7 @@ import './Widget.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import { BaselineSettings, HotkeyInfo } from '../../types/app';
+import { formatSensitivity } from '../../utils/format';
 
 // Local type for electronAPI
 type ElectronAPI = {
@@ -244,7 +245,7 @@ const Widget: React.FC = () => {
                 ? (
                   <div className="sensitivity-suggestion">
                     <p>Converted Sensitivity</p>
-                    <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity.toFixed(3)}</p>
+                    <p className="suggested-value">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
                     {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
                   </div>
                 )

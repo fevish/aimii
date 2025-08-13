@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { GameData } from '../../data/games.data';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
+import { formatSensitivity } from '../../utils/format';
 import './SensitivityCalculator.css';
 
 interface SensitivityCalculatorProps {
@@ -42,109 +43,157 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
     label: game.game
   }));
 
-  // Calculate conversion when inputs change
+  // Debounced sensitivity calculation
+  const debouncedCalculateSensitivity = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (fromGame: any, toGame: any, fromSensitivity: string) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (!fromGame || !toGame || !fromSensitivity) {
+            setConvertedSensitivity(0);
+            return;
+          }
+
+          const fromSens = parseFloat(fromSensitivity);
+          if (isNaN(fromSens)) {
+            return;
+          }
+
+          // Calculate sensitivity conversion (DPI independent)
+          let convertedSens: number;
+          let cm360From: number;
+
+          // For sensitivity conversion, we need to use a standard DPI to normalize the conversion
+          // This ensures the conversion is consistent regardless of user's DPI input
+          const standardDpi = 800;
+
+          // First, calculate cm/360 from the "from" game using standard DPI
+          if (fromGame.specialConversion && fromGame.conversionParams) {
+            const params = fromGame.conversionParams;
+
+            if (params.linearCoefficient && params.offset && params.multiplier) {
+              // Battlefield-style: ((linearCoefficient * sensitivity + offset) * multiplier) * dpi
+              const inches360 = 360 / (((params.linearCoefficient * fromSens + params.offset) * params.multiplier) * standardDpi);
+              cm360From = inches360 * 2.54;
+            } else if (params.constant && params.offset) {
+              // GTA5-style: constant / (dpi * (sensitivity + offset))
+              const inches360 = params.constant / (standardDpi * (fromSens + params.offset));
+              cm360From = inches360 * 2.54;
+            } else {
+              // Fallback to standard calculation
+              const inches360 = 360 / (fromGame.scalingFactor * fromSens * standardDpi);
+              cm360From = inches360 * 2.54;
+            }
+          } else {
+            // Standard calculation
+            const inches360 = 360 / (fromGame.scalingFactor * fromSens * standardDpi);
+            cm360From = inches360 * 2.54;
+          }
+
+          // Now convert from cm/360 to the "to" game sensitivity using standard DPI
+          if (toGame.specialConversion && toGame.conversionParams) {
+            const params = toGame.conversionParams;
+            const inches360 = cm360From / 2.54;
+
+            if (params.linearCoefficient && params.offset && params.multiplier) {
+              // Battlefield-style inverse
+              convertedSens = ((360 / (inches360 * params.multiplier)) - params.offset) / params.linearCoefficient;
+            } else if (params.constant && params.offset) {
+              // GTA5-style inverse
+              convertedSens = (params.constant / (standardDpi * inches360)) - params.offset;
+            } else {
+              // Fallback to standard calculation
+              convertedSens = 360 / (toGame.scalingFactor * standardDpi * inches360);
+            }
+          } else {
+            // Standard calculation
+            const inches360 = cm360From / 2.54;
+            convertedSens = 360 / (toGame.scalingFactor * standardDpi * inches360);
+          }
+
+          setConvertedSensitivity(convertedSens);
+          console.log('Calculated Sensitivity:', {
+            fromGame: fromGame?.game,
+            fromSens: formatSensitivity(fromSens),
+            toGame: toGame?.game,
+            toSens: formatSensitivity(convertedSens)
+          });
+        }, 700); // 300ms debounce delay
+      };
+    })(),
+    []
+  );
+
+  // Trigger debounced calculation when inputs change
   useEffect(() => {
-    if (!fromGame || !toGame || !fromSensitivity) {
-      setConvertedSensitivity(0);
-      setEDpi(0);
-      setInches360(0);
-      setCm360(0);
-      return;
-    }
+    debouncedCalculateSensitivity(fromGame, toGame, fromSensitivity);
+  }, [fromGame, toGame, fromSensitivity, debouncedCalculateSensitivity]);
 
-    const fromSens = parseFloat(fromSensitivity);
-    if (isNaN(fromSens)) {
-      return;
-    }
+    // Debounced DPI calculation
+  const debouncedCalculateDpi = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (fromGame: any, toGame: any, fromSensitivity: string, fromDpi: string, convertedSensitivity: number) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (!fromGame || !toGame || !fromSensitivity || !convertedSensitivity) {
+            setEDpi(0);
+            setInches360(0);
+            setCm360(0);
+            return;
+          }
 
-            // Calculate sensitivity conversion (DPI independent)
-    let convertedSens: number;
-    let cm360From: number;
+          const fromSens = parseFloat(fromSensitivity);
+          const fromDpiNum = parseFloat(fromDpi);
 
-    // For sensitivity conversion, we need to use a standard DPI to normalize the conversion
-    // This ensures the conversion is consistent regardless of user's DPI input
-    const standardDpi = 800;
+          if (isNaN(fromSens) || isNaN(fromDpiNum)) {
+            setEDpi(0);
+            setInches360(0);
+            setCm360(0);
+            return;
+          }
 
-    // First, calculate cm/360 from the "from" game using standard DPI
-    if (fromGame.specialConversion && fromGame.conversionParams) {
-      const params = fromGame.conversionParams;
+          // Calculate cm/360 using the user's actual DPI
+          let cm360WithUserDpi: number;
 
-      if (params.linearCoefficient && params.offset && params.multiplier) {
-        // Battlefield-style: ((linearCoefficient * sensitivity + offset) * multiplier) * dpi
-        const inches360 = 360 / (((params.linearCoefficient * fromSens + params.offset) * params.multiplier) * standardDpi);
-        cm360From = inches360 * 2.54;
-      } else if (params.constant && params.offset) {
-        // GTA5-style: constant / (dpi * (sensitivity + offset))
-        const inches360 = params.constant / (standardDpi * (fromSens + params.offset));
-        cm360From = inches360 * 2.54;
-      } else {
-        // Fallback to standard calculation
-        const inches360 = 360 / (fromGame.scalingFactor * fromSens * standardDpi);
-        cm360From = inches360 * 2.54;
-      }
-    } else {
-      // Standard calculation
-      const inches360 = 360 / (fromGame.scalingFactor * fromSens * standardDpi);
-      cm360From = inches360 * 2.54;
-    }
+          if (fromGame.specialConversion && fromGame.conversionParams) {
+            const params = fromGame.conversionParams;
+            let inches360: number;
 
-    // Now convert from cm/360 to the "to" game sensitivity using standard DPI
-    if (toGame.specialConversion && toGame.conversionParams) {
-      const params = toGame.conversionParams;
-      const inches360 = cm360From / 2.54;
+            if (params.linearCoefficient && params.offset && params.multiplier) {
+              inches360 = 360 / (((params.linearCoefficient * fromSens + params.offset) * params.multiplier) * fromDpiNum);
+            } else if (params.constant && params.offset) {
+              inches360 = params.constant / (fromDpiNum * (fromSens + params.offset));
+            } else {
+              inches360 = 360 / (fromGame.scalingFactor * fromSens * fromDpiNum);
+            }
+            cm360WithUserDpi = inches360 * 2.54;
+          } else {
+            const inches360 = 360 / (fromGame.scalingFactor * fromSens * fromDpiNum);
+            cm360WithUserDpi = inches360 * 2.54;
+          }
 
-      if (params.linearCoefficient && params.offset && params.multiplier) {
-        // Battlefield-style inverse
-        convertedSens = ((360 / (inches360 * params.multiplier)) - params.offset) / params.linearCoefficient;
-      } else if (params.constant && params.offset) {
-        // GTA5-style inverse
-        convertedSens = (params.constant / (standardDpi * inches360)) - params.offset;
-      } else {
-        // Fallback to standard calculation
-        convertedSens = 360 / (toGame.scalingFactor * standardDpi * inches360);
-      }
-    } else {
-      // Standard calculation
-      const inches360 = cm360From / 2.54;
-      convertedSens = 360 / (toGame.scalingFactor * standardDpi * inches360);
-    }
+          setEDpi(convertedSensitivity * fromDpiNum);
+          setInches360(cm360WithUserDpi / 2.54);
+          setCm360(cm360WithUserDpi);
 
-    setConvertedSensitivity(convertedSens);
+          console.log('Calculated from DPI:', {
+            fromSens: formatSensitivity(fromSens),
+            toSens: formatSensitivity(convertedSensitivity),
+            eDpi: convertedSensitivity * fromDpiNum,
+            cm360: cm360WithUserDpi
+          });
+        }, 700); // 700ms debounce delay (same as sensitivity)
+      };
+    })(),
+    []
+  );
 
-                // Calculate additional metrics using the user's DPI input
-    const fromDpiNum = parseFloat(fromDpi);
-
-    if (!isNaN(fromDpiNum)) {
-      // Calculate cm/360 using the user's actual DPI
-      let cm360WithUserDpi: number;
-
-      if (fromGame.specialConversion && fromGame.conversionParams) {
-        const params = fromGame.conversionParams;
-        let inches360: number;
-
-        if (params.linearCoefficient && params.offset && params.multiplier) {
-          inches360 = 360 / (((params.linearCoefficient * fromSens + params.offset) * params.multiplier) * fromDpiNum);
-        } else if (params.constant && params.offset) {
-          inches360 = params.constant / (fromDpiNum * (fromSens + params.offset));
-        } else {
-          inches360 = 360 / (fromGame.scalingFactor * fromSens * fromDpiNum);
-        }
-        cm360WithUserDpi = inches360 * 2.54;
-      } else {
-        const inches360 = 360 / (fromGame.scalingFactor * fromSens * fromDpiNum);
-        cm360WithUserDpi = inches360 * 2.54;
-      }
-
-      setEDpi(convertedSens * fromDpiNum);
-      setInches360(cm360WithUserDpi / 2.54);
-      setCm360(cm360WithUserDpi);
-    } else {
-      // Clear additional metrics if DPI not provided
-      setEDpi(0);
-      setInches360(0);
-      setCm360(0);
-    }
-  }, [fromGame, toGame, fromSensitivity, fromDpi, toDpi]);
+  // Trigger debounced DPI calculation when inputs change
+  useEffect(() => {
+    debouncedCalculateDpi(fromGame, toGame, fromSensitivity, fromDpi, convertedSensitivity);
+  }, [fromGame, toGame, fromSensitivity, fromDpi, convertedSensitivity, debouncedCalculateDpi]);
 
   // Notify parent of state changes
   useEffect(() => {
@@ -303,7 +352,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
         <div className="main-setting">
           <div className="setting-row">
             <p>// Converted Sens {toGame && `(${toGame.game})`}</p>
-            <span className="setting-value">{convertedSensitivity ? convertedSensitivity.toFixed(3) : '0' }</span>
+            <span className="setting-value">{convertedSensitivity ? formatSensitivity(convertedSensitivity) : '0' }</span>
           </div>
         </div>
         {/* Results */}
@@ -312,11 +361,11 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
           <div className="settings-grid">
             <div className="setting-row">
               <span className="setting-label">eDPI</span>
-              <span className="setting-value">{eDpi ? eDpi.toFixed(2) : '-'}</span>
+              <span className="setting-value">{eDpi ? eDpi.toFixed(0) : '-'}</span>
             </div>
             <div className="setting-row">
               <span className="setting-label">Cm/360°</span>
-              <span className="setting-value">{cm360 ? cm360.toFixed(2) : '-'}</span>
+              <span className="setting-value">{cm360 ? cm360.toFixed(1) : '-'}</span>
             </div>
             {/* <div className="setting-row">
               <button className="reset-button" onClick={handleReset}>

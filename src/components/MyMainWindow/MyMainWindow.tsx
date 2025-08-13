@@ -13,6 +13,7 @@ import { SensitivityConversion } from '../../browser/services/sensitivity-conver
 import { GameData, BaselineSettings, HotkeyInfo } from '../../types/app';
 import { GameInfo } from './GameInfo';
 import { useMainWindowData } from './useMainWindowData';
+import { formatSensitivity } from '../../utils/format';
 
 export const MyMainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
@@ -587,7 +588,7 @@ export const MyMainWindow: React.FC = () => {
                   <div className="cards-section">
                     <CardButton
                       title="Mouse Travel"
-                      value={canonicalSettings?.mouseTravel ? `${canonicalSettings.mouseTravel.toFixed(2)}` : 'Not set'}
+                      value={canonicalSettings?.mouseTravel ? `${formatSensitivity(canonicalSettings.mouseTravel)}` : 'Not set'}
                       iconName="arrow-north-east"
                       isOpen={isUserPreferencesCardOpen}
                       onToggle={handleOpenUserPreferencesCard}
