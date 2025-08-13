@@ -364,7 +364,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
               <span className="setting-value">{eDpi ? eDpi.toFixed(0) : '-'}</span>
             </div>
             <div className="setting-row">
-              <span className="setting-label">Cm/360°</span>
+              <span className="setting-label">Mouse Travel (cm/360°)</span>
               <span className="setting-value">{cm360 ? cm360.toFixed(1) : '-'}</span>
             </div>
             {/* <div className="setting-row">
