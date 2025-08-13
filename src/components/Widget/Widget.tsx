@@ -216,16 +216,21 @@ const Widget: React.FC = () => {
 
   return (
     <div className="widget-container">
-      <button
-        className="window-control-btn close-btn"
-        title="Close Widget"
-        onClick={() => {
-          const { ipcRenderer } = require('electron');
-          ipcRenderer.invoke('toggleWidget');
-        }}
-      >
-        ✕
-      </button>
+      <div className="widget-header">
+        <div className="hotkey-info">
+          <p><b>Show/Hide:</b> {hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
+        </div>
+        <button
+          className="window-control-btn close-btn"
+          title="Close Widget"
+          onClick={() => {
+            const { ipcRenderer } = require('electron');
+            ipcRenderer.invoke('toggleWidget');
+          }}
+        >
+          ✕
+        </button>
+      </div>
       <div className="widget-content">
         {isLoading
           ? (
@@ -235,43 +240,40 @@ const Widget: React.FC = () => {
             <div className="current-game-info">
               <div className="game-display">
                 <p>// Sens for: <b className="game-name">{currentGame?.name}</b></p>
-              </div>
-              {suggestedSensitivity
-                ? (
-                  <div className="sensitivity-suggestion">
-                    <p className="suggested-value">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
-                    {/* {cm360 &&
-                      <div className="settings-grid">
-                        <div className="setting-row">
-                          <span className="setting-label">eDPI</span>
-                          <span className="setting-value">{Math.round(suggestedSensitivity.suggestedSensitivity * suggestedSensitivity.userDPI)}</span>
-                        </div>
-                        <div className="setting-row">
-                          <span className="setting-label">Mouse Travel (cm/360°)</span>
-                          <span className="setting-value">{cm360 ? cm360.toFixed(2) : '-'}</span>
-                        </div>
-                      </div>
-                    } */}
-                  </div>
-                )
-                : !canonicalSettings
+                {suggestedSensitivity
                   ? (
                     <div className="sensitivity-suggestion">
-                      <p>No baseline configured</p>
+                      <p className="suggested-value">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
+                      {cm360 &&
+                        <div className="settings-grid">
+                          <div className="setting-row">
+                            <span className="setting-label">eDPI</span>
+                            <span className="setting-value">{Math.round(suggestedSensitivity.suggestedSensitivity * suggestedSensitivity.userDPI)}</span>
+                          </div>
+                          <div className="setting-row">
+                            <span className="setting-label">cm/360°</span>
+                            <span className="setting-value">{cm360 ? cm360.toFixed(2) : '-'}</span>
+                          </div>
+                        </div>
+                      }
                     </div>
                   )
-                  : (
-                    <div className="sensitivity-suggestion">
-                      <p>Using baseline settings</p>
-                      {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
-                    </div>
-                  )
-              }
+                  : !canonicalSettings
+                    ? (
+                      <div className="sensitivity-suggestion">
+                        <p>No baseline configured</p>
+                      </div>
+                    )
+                    : (
+                      <div className="sensitivity-suggestion">
+                        <p>Using baseline settings</p>
+                        {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
+                      </div>
+                    )
+                }
+              </div>
             </div>
           )}
-      </div>
-      <div className="hotkey-info">
-        <p><b>Show/Hide:</b> {hotkeyInfo ? hotkeyInfo.displayText : 'Loading...'}</p>
       </div>
     </div>
   );

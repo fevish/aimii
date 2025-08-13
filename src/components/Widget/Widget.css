@@ -5,8 +5,7 @@
 }
 
 #widget-root {
-  /* height: 100vh; */
-  height: 100%;
+  height: 100vh;
 }
 
 .widget-container {
@@ -22,10 +21,25 @@
   -webkit-app-region: drag;
 }
 
+.widget-header {
+  display: flex;
+  flex-flow: row;
+  padding: 0.5rem 1rem;
+}
+
+.hotkey-info {
+  font-size: 0.9em;
+  text-align: center;
+  opacity: 0.8;
+  padding: 0.25rem;
+  color: var(--secondary);
+  p {
+    margin: 0;
+  }
+}
+
+
 .window-control-btn {
-  position: absolute;
-  top: 0.7rem;
-  right: 1rem;
   background: transparent;
   border: none;
   color: var(--secondary);
@@ -44,39 +58,27 @@
   color: var(--dark);
 }
 
-.widget-header h3 {
-  margin: 0;
-  text-shadow: none;
-}
-
 .widget-content {
-  padding: 1rem 1.5rem;
+  padding: 0 1.5rem;
+  padding-bottom: 0.5rem;
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: calc(0.5 * var(--spacing));
   .settings-grid {
+    font-size: 1.15rem;
     padding: 0;
+    margin-bottom: 0.3rem;
+    .setting-label {
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
   }
 }
 
 .widget-content > p {
   margin: 0;
   color: var(--secondary);
-}
-
-.hotkey-info {
-  padding-bottom: 0.5rem;
-  text-align: center;
-}
-.hotkey-info p {
-  color: var(--secondary);
-}
-
-.hotkey-info p:first-child {
-  margin-bottom: 4px;
-  color: var(--primary);
-  opacity: 1;
 }
 
 /* Hover effect for interactivity */
@@ -93,13 +95,15 @@
 }
 
 .game-display {
-  flex: 1;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
 }
 
 .game-display p {
   font-size: 1em;
   margin: 0;
-  margin-right: 2rem;
+  color: var(--primary);
 }
 
 .game-name {
