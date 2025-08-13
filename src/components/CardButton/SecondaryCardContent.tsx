@@ -1,15 +1,31 @@
 import React from 'react';
+import { SensitivityCalculator } from '../SensitivityCalculator';
+import { gamesData } from '../../data/games.data';
+import { GameData } from '../../data/games.data';
 
 interface SecondaryCardContentProps {
-  // Add props as needed for the secondary card
+  calculatorState: {
+    fromGame: GameData | null;
+    toGame: GameData | null;
+    fromSensitivity: string;
+    fromDpi: string;
+    convertedSensitivity: number;
+    eDpi: number;
+    inches360: number;
+    cm360: number;
+  };
+  onCalculatorStateChange: (newState: any) => void;
 }
 
-export const SecondaryCardContent: React.FC<SecondaryCardContentProps> = () => {
+export const SecondaryCardContent: React.FC<SecondaryCardContentProps> = ({
+  calculatorState,
+  onCalculatorStateChange
+}) => {
   return (
-    <div className="secondary-card-content">
-      <h4>Secondary Card</h4>
-      <p>This is a placeholder for the secondary card content.</p>
-      <p>You can customize this component with specific functionality as needed.</p>
-    </div>
+    <SensitivityCalculator
+      gamesData={gamesData}
+      initialState={calculatorState}
+      onStateChange={onCalculatorStateChange}
+    />
   );
 };

@@ -11,8 +11,10 @@
 html:root {
   --primary: #00ff88;
   --secondary: #44aa66;
-  --dark: #001122;
+  --dark: #242529;
   --light: #00ff88;
+  --white: #f1f1f1;
+  --offwhite: #c8c8c8;
   --gray: #225544;
   --light-gray: #66cc88;
 
@@ -65,14 +67,14 @@ h1 {
 
 h2 {
   margin: 0 0 var(--spacing) 0;
-  color: var(--primary);
+  color: currentColor;
   letter-spacing: 0.5px;
   font-weight: normal;
 }
 
 h3 {
   margin: 0 0 var(--spacing) 0;
-  color: var(--primary);
+  color: currentColor;
   letter-spacing: 0.5px;
   font-weight: normal;
   font-size: 1.3em;
@@ -102,7 +104,7 @@ p {
 }
 
 b {
-  color: var(--primary);
+  color: currentColor;
 }
 
 a,
@@ -125,7 +127,7 @@ ul {
 /* Form Elements */
 label {
   font-weight: normal;
-  color: var(--primary);
+  color: currentColor;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin-bottom: calc(0.5 * var(--spacing));
@@ -143,7 +145,7 @@ label {
     right: calc(1.75 * var(--spacing));
     width: calc(2.25 * var(--spacing));
     height: calc(2.25 * var(--spacing));
-    background-color: var(--primary);
+    background-color: currentColor;
     -webkit-mask-image: url('./assets/svg/chevron-down.svg');
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
@@ -158,29 +160,33 @@ select {
 select,
 input {
   padding: calc(0.25 * var(--spacing));
-  border: 1px solid var(--secondary);
+  border: 1px solid currentColor;
   border-radius: calc(2 * var(--radius));
   background-color: var(--dark);
-  color: var(--light);
+  color: currentColor;
   transition: all 0.2s ease;
   font-family: inherit;
+  min-width: 0;
+  width: 100%;
+}
+
+input::placeholder {
+  color: currentColor;
+  opacity: 0.7;
 }
 
 select:focus,
 input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: currentColor;
   background-color: var(--dark);
-  box-shadow: inset 0 0 0 1px var(--primary);
+  box-shadow: inset 0 0 0 1px currentColor;
 }
 
 select option {
   background-color: var(--dark);
-  color: var(--light);
-}
-
-input::placeholder {
-  color: var(--secondary);
+  color: currentColor;
+  opacity: 0.8;
 }
 
 /* Buttons */
@@ -191,8 +197,8 @@ button, button:hover, button:focus, button:focus-visible {
 button {
   padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
   background: var(--dark);
-  color: var(--primary);
-  border: 1px solid var(--primary);
+  color: currentColor;
+  border: 1px solid currentColor;
   border-radius: calc(2 * var(--radius));
   font-weight: normal;
   cursor: pointer;
@@ -200,7 +206,6 @@ button {
   text-transform: none;
   letter-spacing: normal;
   font-family: inherit;
-  z-index: 1;
   svg {
     height: calc(1.5 * var(--spacing));
     width: auto;
@@ -223,9 +228,9 @@ button:disabled {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: currentColor;
   color: var(--dark);
-  border: 2px solid var(--primary);
+  border: 2px solid currentColor;
 }
 
 .btn-primary:hover {
@@ -250,13 +255,12 @@ button:disabled {
   border: 1px solid currentColor;
 }
 .btn-outline:hover {
-  background: var(--dark);
-  color: var(--primary);
+  box-shadow: inset 0 0 0 1px currentColor;
 }
 
 /* My Sens */
 .my-sens {
-  background-color: var(--primary);
+  background-color: currentColor;
   mask: center center no-repeat;
   transition: background-color 0.3s ease-in-out;
   position: relative;
@@ -277,6 +281,30 @@ button:disabled {
   }
 }
 
+/* Settings Grid */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(2 * var(--spacing)) calc(1.5 * var(--spacing));
+  padding-left: calc(2.5 * var(--spacing));
+  font-size: 1.7em;
+}
+
+.setting-row {
+  display: flex;
+  flex-flow: column;
+  padding: calc(0.25 * var(--spacing)) 0;
+}
+
+.setting-label {
+  color: currentColor;
+  font-size: 0.65em;
+  opacity: 0.7;
+  margin-bottom: calc(0.75 * var(--spacing));
+}
+
+
+
 /* Messages */
 .message {
   padding: calc(0.5 * var(--spacing));
@@ -287,7 +315,7 @@ button:disabled {
 
 .message.success {
   background: var(--dark);
-  color: var(--primary);
+  color: currentColor;
 }
 
 .message.error {

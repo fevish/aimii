@@ -13,21 +13,31 @@
   width: 100%;
   height: 100%;
   background: var(--dark);
-  border-radius: 10px;
+  border-radius: calc(5 * var(--radius));
   overflow: hidden;
   color: var(--light);
   display: flex;
   flex-direction: column;
+  -webkit-app-region: drag;
 }
 
 .widget-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0.5rem 0 0.5rem;
-  background: transparent;
-  -webkit-app-region: drag;
+  flex-flow: row;
+  padding: 0.5rem 1rem;
 }
+
+.hotkey-info {
+  font-size: 0.9em;
+  text-align: center;
+  opacity: 0.8;
+  padding: 0.25rem;
+  color: var(--secondary);
+  p {
+    margin: 0;
+  }
+}
+
 
 .window-control-btn {
   background: transparent;
@@ -36,10 +46,11 @@
   padding: 2px 6px;
   transition: all 0.2s ease;
   border-radius: var(--radius);
-  -webkit-app-region: no-drag;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: auto;
+  z-index: 2;
 }
 
 .window-control-btn:hover {
@@ -47,54 +58,27 @@
   color: var(--dark);
 }
 
-.widget-header h3 {
-  margin: 0;
-  text-align: center;
-  text-shadow: none;
-}
-
 .widget-content {
-  padding: 0.5rem 1rem 1rem 1rem;
+  padding: 0 1.5rem;
+  padding-bottom: 0.5rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: calc(0.5 * var(--spacing));
-  -webkit-app-region: no-drag; /* Content area should not be draggable */
+  .settings-grid {
+    font-size: 1.15rem;
+    padding: 0;
+    margin-bottom: 0.3rem;
+    .setting-label {
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+  }
 }
 
 .widget-content > p {
   margin: 0;
-  text-align: center;
   color: var(--secondary);
-}
-
-.widget-placeholder {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--dark);
-  border-radius: var(--radius);
-  padding: calc(0.5 * var(--spacing));
-  text-align: center;
-  border: 1px solid var(--secondary);
-}
-
-.widget-placeholder p {
-  margin: 4px 0;
-  color: var(--secondary);
-}
-
-.hotkey-info p {
-  color: var(--secondary);
-}
-
-.hotkey-info p:first-child {
-  margin-bottom: 4px;
-  color: var(--primary);
-  opacity: 1;
 }
 
 /* Hover effect for interactivity */
@@ -106,22 +90,20 @@
 
 /* Current Game Styles */
 .current-game-info {
-  background: var(--dark);
-  border-radius: var(--radius);
-  padding: calc(1.5 * var(--spacing));
-  border: 1px solid var(--secondary);
-  text-align: center;
   position: relative;
+  height: 100%;
 }
 
 .game-display {
-  text-align: center;
-  flex: 1;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
 }
 
 .game-display p {
   font-size: 1em;
   margin: 0;
+  color: var(--primary);
 }
 
 .game-name {
@@ -143,6 +125,11 @@
 
 /* Sensitivity Suggestion Styles */
 .sensitivity-suggestion {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding-left: calc(1.7 * var(--spacing));
   p {
     font-size: 1.2em;
     margin: calc(0.5 * var(--spacing)) 0;
@@ -152,8 +139,12 @@
     margin: 0;
     color: var(--light);
     text-shadow: none;
-    font-size: 2.5rem;
+    font-size: 3.5rem;
     font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 }
 
@@ -166,39 +157,4 @@
   margin: 0;
   color: var(--secondary);
   font-weight: 800;
-}
-
-/* Current Settings Styles */
-.current-settings {
-  background: var(--dark);
-  border-radius: var(--radius);
-  padding: calc(0.5 * var(--spacing));
-  border: 1px solid var(--secondary);
-}
-
-.current-settings h4 {
-  margin: 0 0 calc(0.5 * var(--spacing)) 0;
-  text-align: center;
-}
-
-.settings-details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.setting-item {
-  margin: 0;
-  color: var(--light);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.setting-item .label {
-  color: var(--secondary);
-}
-
-.setting-item:first-child .label {
-  color: var(--primary);
 }

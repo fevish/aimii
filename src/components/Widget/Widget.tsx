@@ -5,6 +5,7 @@ import './Widget.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import { BaselineSettings, HotkeyInfo } from '../../types/app';
+import { formatSensitivity } from '../../utils/format';
 
 // Local type for electronAPI
 type ElectronAPI = {
@@ -53,7 +54,7 @@ const Widget: React.FC = () => {
         if (!prevSettings && !settings) return prevSettings;
         if (!prevSettings || !settings) return settings;
         if (prevSettings.mouseTravel === settings.mouseTravel &&
-            prevSettings.dpi === settings.dpi) {
+          prevSettings.dpi === settings.dpi) {
           return prevSettings; // No change, keep previous state
         }
 
@@ -86,7 +87,7 @@ const Widget: React.FC = () => {
         if (!prevSuggestion && !suggestion) return prevSuggestion;
         if (!prevSuggestion || !suggestion) return suggestion;
         if (prevSuggestion.gameName === suggestion.gameName &&
-            prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
+          prevSuggestion.suggestedSensitivity === suggestion.suggestedSensitivity) {
           return prevSuggestion; // No change, keep previous state
         }
 
@@ -238,29 +239,39 @@ const Widget: React.FC = () => {
           : (
             <div className="current-game-info">
               <div className="game-display">
-                <p>Game Detected: <b className="game-name">{currentGame?.name}</b></p>
-              </div>
-              {suggestedSensitivity
-                ? (
-                  <div className="sensitivity-suggestion">
-                    <p>Converted Sensitivity</p>
-                    <p className="suggested-value">{suggestedSensitivity.suggestedSensitivity.toFixed(3)}</p>
-                    {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
-                  </div>
-                )
-                : !canonicalSettings
+                <p>// Sens for: <b className="game-name">{currentGame?.name}</b></p>
+                {suggestedSensitivity
                   ? (
                     <div className="sensitivity-suggestion">
-                      <p>No baseline configured</p>
+                      <p className="suggested-value">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
+                      {cm360 &&
+                        <div className="settings-grid">
+                          <div className="setting-row">
+                            <span className="setting-label">eDPI</span>
+                            <span className="setting-value">{Math.round(suggestedSensitivity.suggestedSensitivity * suggestedSensitivity.userDPI)}</span>
+                          </div>
+                          <div className="setting-row">
+                            <span className="setting-label">cm/360°</span>
+                            <span className="setting-value">{cm360 ? cm360.toFixed(2) : '-'}</span>
+                          </div>
+                        </div>
+                      }
                     </div>
                   )
-                  : (
-                    <div className="sensitivity-suggestion">
-                      <p>Using baseline settings</p>
-                      {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
-                    </div>
-                  )
-              }
+                  : !canonicalSettings
+                    ? (
+                      <div className="sensitivity-suggestion">
+                        <p>No baseline configured</p>
+                      </div>
+                    )
+                    : (
+                      <div className="sensitivity-suggestion">
+                        <p>Using baseline settings</p>
+                        {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
+                      </div>
+                    )
+                }
+              </div>
             </div>
           )}
       </div>

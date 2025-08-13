@@ -7,7 +7,6 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(1px);
   z-index: 1;
 }
 
@@ -23,7 +22,7 @@
     cursor: pointer;
     color: var(--dark);
     background: var(--primary);
-    border: 1px solid var(--gray);
+    border: 1px solid transparent;
     border-radius: calc(6 * var(--radius));
     padding: var(--spacing);
     padding-left: calc(1.5 * var(--spacing));
@@ -32,10 +31,6 @@
 
     &.card-secondary {
       background: #fff;
-      pointer-events: none;
-      .btn-icon {
-        visibility: hidden;
-      }
     }
 
     .card-content {
@@ -43,10 +38,11 @@
       position: absolute;
       display: flex;
       flex-flow: column;
-      left: var(--spacing);
-      bottom: var(--spacing);
+      left: calc(var(--spacing) - 2px);
+      bottom: calc(var(--spacing) - 2px);
       width: 0;
       height: 0;
+      opacity: 0;
       overflow: hidden;
       transition: all 0.75s cubic-bezier(.19, 1, .22, 1);
       border-radius: calc(6 * var(--radius));
@@ -90,16 +86,10 @@
       }
     }
 
-    &:not(.card-open) {
-      .card-content {
-        padding: 0;
-        border: none;
-      }
-    }
-
     /* Expanded card styles */
     &.card-open .card-content {
       background-color: inherit;
+      opacity: 1;
       width: calc(100% - var(--spacing));
       height: calc(100% - var(--spacing));
     }
@@ -136,10 +126,16 @@
     }
 
     &.card-secondary {
+      background: var(--dark);
+      border-color: var(--offwhite);
+      color: var(--white);
       .btn-icon {
-        background: #fff;
-        color: var(--dark);
-        border: 1px solid #999;
+        background: transparent;
+        color: var(--offwhite);
+        border: 1px solid var(--offwhite);
+      }
+      .card-content {
+        color: var(--white);
       }
     }
 

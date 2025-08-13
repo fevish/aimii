@@ -1,6 +1,7 @@
 import React from 'react';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import { BaselineSettings } from '../../types/app';
+import { formatSensitivity } from '../../utils/format';
 
 interface GameInfoProps {
   title: string;
@@ -52,7 +53,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({
       {suggestedSensitivity && (
         <>
           <p className="cool-text">// Suggested Sensitivity for {gameName}</p>
-          <h4>{suggestedSensitivity.suggestedSensitivity.toFixed(3)}</h4>
+          <h4>{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</h4>
         </>
       )}
 
