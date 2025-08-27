@@ -15,11 +15,19 @@ export interface CMPWindowOptions {
 }
 
 export class CMPService {
+  // Test flag to emulate EU user - set to true to test privacy features
+  private static readonly TEST_EU_USER = false;
+
   /**
    * Check if user needs to be informed about CMP (GDPR compliance)
    * @returns Promise<boolean> - true if CMP is required for this user
    */
   async isCMPRequired(): Promise<boolean> {
+    // Test flag override - always return true when testing EU functionality
+    if (CMPService.TEST_EU_USER) {
+      console.log('🧪 CMP Test Mode: Emulating EU user (privacy links will show)');
+      return true;
+    }
     try {
       // First check if user selected EU region during installation
       const winreg = await import('winreg');

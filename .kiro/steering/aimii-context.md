@@ -1,5 +1,8 @@
 # Aimii App Development Context
 
+## Update this file
+The agent is to update aimii-context.md with the latest information and context as we add or change features.
+
 ## Project Overview
 
 **aimii.app** is a mouse sensitivity converter application for FPS games that helps gamers maintain consistent aim across different games by converting sensitivity settings using game-specific formulas and scaling ratios.
@@ -161,6 +164,7 @@ interface SensitivityConversion {
 - **SensitivityService**: Sensitivity calculations and conversions
 - **SettingsService**: User preferences and configuration management
 - **GameDetectionService**: Unified game detection (GEP + custom)
+- **CMPService**: GDPR compliance and privacy management for EU users
 
 ### Shared Components (Target Architecture)
 - **SensitivityDisplay**: Unified sensitivity information display
@@ -271,6 +275,58 @@ The app maintains a database of supported games with their specific scaling fact
 - Overlay rendering in games
 - Hotkey management
 - Window management
+- **Consent Management Platform (CMP)**: GDPR compliance for EU users
+
+### CMP (Consent Management Platform) Integration
+**Full GDPR compliance implementation following Overwolf's CMP requirements:**
+
+#### **Layer 1 (First-Time Notice)**
+- **Location**: NSIS installer + Onboarding component
+- **Purpose**: Initial consent notice for EU users
+- **Implementation**:
+  - Installer shows CMP notice during installation (registry: `HKCU\Software\aimii\GDPRRegion`)
+  - Onboarding component conditionally shows "Privacy Settings" link
+  - Only displays for EU users detected via `app.overwolf.isCMPRequired()`
+
+#### **Layer 2 (Detailed Privacy Settings)**
+- **Location**: Settings component privacy section
+- **Purpose**: Full privacy controls and vendor management
+- **Implementation**:
+  - "Privacy Settings" button in app settings
+  - Opens Overwolf's Ad Privacy Settings window via `app.overwolf.openAdPrivacySettingsWindow()`
+  - Provides granular consent controls for data collection and vendors
+
+#### **CMP Service Architecture**
+```typescript
+// Core CMP service: src/browser/services/cmp.service.ts
+class CMPService {
+  async isCMPRequired(): Promise<boolean>        // EU detection
+  async openPrivacySettings(): Promise<void>    // Layer 2 access
+  async isFirstTimeUser(): Promise<boolean>     // First-time detection
+}
+
+// IPC integration: src/browser/controllers/cmp.controller.ts
+// Preload exposure: window.cmp API for renderer processes
+```
+
+#### **Detection Logic**
+1. **Registry Check**: Installer sets `GDPRRegion` flag for EU users
+2. **Overwolf API Fallback**: Uses `app.overwolf.isCMPRequired()` if no registry
+3. **Safety Default**: Defaults to showing CMP if detection fails
+4. **Test Mode**: `TEST_EU_USER` flag for development testing
+
+#### **User Experience Flow**
+- **Non-EU Users**: No privacy links shown (clean interface)
+- **EU Users**: Privacy links in both onboarding and settings
+- **First-Time EU Users**: CMP notice during installation + onboarding
+- **Returning EU Users**: Access via settings privacy section
+
+#### **Compliance Features**
+- ✅ **Overwolf API Integration**: Uses official `isCMPRequired()` and `openAdPrivacySettingsWindow()`
+- ✅ **Two-Layer Implementation**: Installation notice + detailed settings
+- ✅ **Conditional UI**: Privacy controls only for users who need them
+- ✅ **Proper Error Handling**: Graceful fallbacks and safety defaults
+- ✅ **Test Infrastructure**: Development flags for testing EU functionality
 
 ### Electron Integration
 - IPC communication between main/renderer
@@ -300,6 +356,12 @@ The app maintains a database of supported games with their specific scaling fact
 - `src/my-main.tsx`: Main window entry point
 - `src/widget.tsx`: Overlay widget entry point
 - `src/preload/preload.ts`: Electron preload script for IPC
+
+### CMP Implementation Files
+- `src/browser/services/cmp.service.ts`: Core CMP service for GDPR compliance
+- `src/browser/controllers/cmp.controller.ts`: IPC controller for CMP operations
+- `scripts/installer.nsh`: NSIS installer with CMP Layer 1 implementation
+- Registry: `HKCU\Software\aimii\GDPRRegion`: EU user detection flag
 
 ## Development Workflow
 

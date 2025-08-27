@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SettingsFlow } from '../SettingsFlow/SettingsFlow';
 import './Onboarding.css';
 
@@ -43,6 +43,21 @@ export const Onboarding: React.FC<OnboardingProps> = ({
   onRestart,
   onComplete
 }) => {
+  const [isCMPRequired, setIsCMPRequired] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkCMPRequirement = async () => {
+      try {
+        const required = await window.cmp.isRequired();
+        setIsCMPRequired(required);
+      } catch (error) {
+        console.error('Failed to check CMP requirement:', error);
+        setIsCMPRequired(false);
+      }
+    };
+
+    checkCMPRequirement();
+  }, []);
   // Step 0: Welcome screen with Continue only
   if (onboardingStep === 0) {
     return (
@@ -57,18 +72,20 @@ export const Onboarding: React.FC<OnboardingProps> = ({
             </div>
           </div>
         </div>
-        {/* Simple Privacy Link */}
-        <button className="privacy-link"
-          onClick={async () => {
-            try {
-              await window.cmp.openPrivacySettings();
-            } catch (error) {
-              console.error('Failed to open privacy settings:', error);
-            }
-          }}
-        >
-          Privacy Settings
-        </button>
+        {/* Privacy Link - Only show for EU users */}
+        {isCMPRequired && (
+          <button className="privacy-link"
+            onClick={async () => {
+              try {
+                await window.cmp.openPrivacySettings();
+              } catch (error) {
+                console.error('Failed to open privacy settings:', error);
+              }
+            }}
+          >
+            Privacy Settings
+          </button>
+        )}
       </section>
     );
   }

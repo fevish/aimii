@@ -574,22 +574,25 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
             </button>
           </div>
         </section>
-        <section>
-          <button className="privacy-link"
-            onClick={async () => {
-              try {
-                await window.cmp.openPrivacySettings();
-              } catch (error) {
-                console.error('Failed to open privacy settings:', error);
-                setMessage('Failed to open privacy settings');
-                setTimeout(() => setMessage(''), 3000);
-              }
-            }}
-            title="Manage your data privacy preferences"
-          >
-            Privacy Settings
-          </button>
-        </section>
+        {/* Privacy Settings - Only show for EU users */}
+        {cmpRequired && (
+          <section>
+            <button className="privacy-link"
+              onClick={async () => {
+                try {
+                  await window.cmp.openPrivacySettings();
+                } catch (error) {
+                  console.error('Failed to open privacy settings:', error);
+                  setMessage('Failed to open privacy settings');
+                  setTimeout(() => setMessage(''), 3000);
+                }
+              }}
+              title="Manage your data privacy preferences"
+            >
+              Privacy Settings
+            </button>
+          </section>
+        )}
       </div>
     </div>
   );
