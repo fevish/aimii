@@ -3,6 +3,7 @@
 
 !include "nsDialogs.nsh"
 !include "LogicLib.nsh"
+!include "WinMessages.nsh"
 
 ; Variables for region and consent
 Var RegionSelection
@@ -20,43 +21,42 @@ Function RegionSelectionPage
   nsDialogs::Create 1018
   Pop $0
 
-  ${NSD_CreateLabel} 0 0 100% 20u "Please select your region for privacy compliance:"
+  ; Set custom page title and subtitle
+  SendMessage $HWNDPARENT ${WM_SETTEXT} 0 "STR:aimii Setup"
+  GetDlgItem $0 $HWNDPARENT 1037
+  SendMessage $0 ${WM_SETTEXT} 0 "STR:Welcome to aimii"
+  GetDlgItem $0 $HWNDPARENT 1038
+  SendMessage $0 ${WM_SETTEXT} 0 "STR:"
+
+  ${NSD_CreateLabel} 0 0 100% 30u "This app helps you maintain consistent mouse sensitivity across different FPS games."
   Pop $0
 
-  ${NSD_CreateRadioButton} 10u 30u 200u 15u "European Union (EU)"
+  ${NSD_CreateCheckBox} 0 120u 300u 15u "I am located in the European Union (EU)"
   Pop $1
 
-  ${NSD_CreateRadioButton} 10u 50u 200u 15u "United States"
-  Pop $2
+  ${NSD_CreateLabel} 0 140u 100% 20u "Do not select this if you live in Canada, United States, or other non-EU countries."
+  Pop $0
 
-  ${NSD_CreateRadioButton} 10u 70u 200u 15u "Other"
-  Pop $3
-
-  ; Default to "Other"
-  ${NSD_Check} $3
+  ; Default to unchecked (non-EU)
   StrCpy $RegionSelection "OTHER"
+  StrCpy $ShowConsentPage "0"
 
-  ; Set up callbacks
-  ${NSD_OnClick} $1 RegionEU
-  ${NSD_OnClick} $2 RegionUS
-  ${NSD_OnClick} $3 RegionOther
+  ; Set up callback
+  ${NSD_OnClick} $1 RegionToggle
 
   nsDialogs::Show
 FunctionEnd
 
-Function RegionEU
-  StrCpy $RegionSelection "EU"
-  StrCpy $ShowConsentPage "1"
-FunctionEnd
-
-Function RegionUS
-  StrCpy $RegionSelection "US"
-  StrCpy $ShowConsentPage "0"
-FunctionEnd
-
-Function RegionOther
-  StrCpy $RegionSelection "OTHER"
-  StrCpy $ShowConsentPage "0"
+Function RegionToggle
+  Pop $0 ; Get the checkbox handle
+  ${NSD_GetState} $0 $1
+  ${If} $1 == ${BST_CHECKED}
+    StrCpy $RegionSelection "EU"
+    StrCpy $ShowConsentPage "1"
+  ${Else}
+    StrCpy $RegionSelection "OTHER"
+    StrCpy $ShowConsentPage "0"
+  ${EndIf}
 FunctionEnd
 
 Function RegionSelectionPageLeave
@@ -76,7 +76,7 @@ Function ConsentPage
   ${NSD_CreateLabel} 0 0 100% 40u "As an EU resident, we need your consent to process your data according to GDPR regulations. This includes storing your sensitivity settings and game preferences locally on your device."
   Pop $0
 
-  ${NSD_CreateCheckBox} 10u 50u 300u 15u "I consent to the processing of my data as described"
+  ${NSD_CreateCheckBox} 0 50u 300u 15u "I consent to the processing of my data as described"
   Pop $1
 
   ${NSD_CreateLabel} 0 70u 100% 40u "You can withdraw this consent at any time through the application settings. Without consent, some features may not be available."
@@ -113,4 +113,7 @@ FunctionEnd
   StrCpy $RegionSelection "OTHER"
   StrCpy $ConsentGiven "0"
   StrCpy $ShowConsentPage "0"
+  ; Set installation mode to all users and default directory
+  SetShellVarContext all
+  StrCpy $InstDir "$PROGRAMFILES\aimii"
 !macroend

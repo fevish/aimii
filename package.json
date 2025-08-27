@@ -80,11 +80,15 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "perMachine": true,
+      "allowElevation": true,
+      "runAfterFinish": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "aimii",
       "installerIcon": "./dist/icon.ico",
       "uninstallerIcon": "./dist/icon.ico",
+      "warningsAsErrors": false,
       "include": "build/installer.nsh"
     }
   },
