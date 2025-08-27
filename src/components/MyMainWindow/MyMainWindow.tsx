@@ -16,6 +16,7 @@ import { useMainWindowData } from './useMainWindowData';
 import { formatSensitivity } from '../../utils/format';
 import { applyTheme } from '../../utils/theme';
 
+
 export const MyMainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
   const [sensitivity, setSensitivity] = useState<string>('');
@@ -610,6 +611,8 @@ export const MyMainWindow: React.FC = () => {
                       />
                     )}
                   </div>
+
+
 
                   <div className="cards-section">
                     <CardButton

@@ -70,6 +70,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   const [modifierState, setModifierState] = useState({ ctrl: false, shift: false, alt: false });
   const [modifierDisplay, setModifierDisplay] = useState<string>('');
   const [currentTheme, setCurrentTheme] = useState<string>('default');
+  const [cmpRequired, setCmpRequired] = useState<boolean | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Available themes
@@ -81,7 +82,18 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   useEffect(() => {
     loadHotkeys();
     loadTheme();
+    checkCmpRequirement();
   }, []);
+
+  const checkCmpRequirement = async () => {
+    try {
+      const required = await window.cmp.isRequired();
+      setCmpRequired(required);
+    } catch (error) {
+      console.error('Failed to check CMP requirement:', error);
+      setCmpRequired(false);
+    }
+  };
 
   useEffect(() => {
     if (editingHotkey && overlayRef.current) {
@@ -562,6 +574,40 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
             </button>
           </div>
         </section>
+      </div>
+
+      {/* Subtle Privacy Link at Bottom */}
+      <div style={{
+        textAlign: 'center',
+        padding: '20px',
+        borderTop: '1px solid #eee',
+        marginTop: '20px'
+      }}>
+        <button
+          onClick={async () => {
+            try {
+              await window.cmp.openPrivacySettings();
+            } catch (error) {
+              console.error('Failed to open privacy settings:', error);
+              setMessage('Failed to open privacy settings');
+              setTimeout(() => setMessage(''), 3000);
+            }
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#666',
+            fontSize: '12px',
+            textDecoration: 'underline',
+            cursor: 'pointer',
+            padding: '4px 8px'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.color = '#007bff'}
+          onMouseOut={(e) => e.currentTarget.style.color = '#666'}
+          title="Manage your data privacy preferences"
+        >
+          Privacy Settings
+        </button>
       </div>
 
     </div>

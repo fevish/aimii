@@ -63,6 +63,11 @@ declare global {
       minimize: () => void;
       close: () => void;
     };
+    cmp: {
+      isRequired: () => Promise<boolean>;
+      openPrivacySettings: (options?: any) => Promise<void>;
+      isFirstTimeUser: () => Promise<boolean>;
+    };
     ipcRenderer: {
       on: (channel: string, func: (...args: any[]) => void) => void;
       removeAllListeners: (channel: string) => void;

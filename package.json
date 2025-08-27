@@ -4,8 +4,7 @@
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
-    "name": "fevish",
-    "email": ""
+    "name": "fevish"
   },
   "license": "MIT",
   "discord": "https://discord.gg/Nj2Xj3W4eY",
@@ -18,7 +17,7 @@
     "build": "webpack --mode=development && npm run start",
     "build:prod": "webpack --mode=production",
     "build:ow-electron": "ow-electron-builder --publish=never",
-    "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build:prod && ow-electron-builder --publish=never",
+    "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build:prod && node -e \"require('fs').mkdirSync('build', { recursive: true }); require('fs').copyFileSync('scripts/installer.nsh', 'build/installer.nsh')\" && ow-electron-builder --publish=never",
     "watch": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
     "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
     "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js",
@@ -85,8 +84,12 @@
       "createStartMenuShortcut": true,
       "shortcutName": "aimii",
       "installerIcon": "./dist/icon.ico",
-      "uninstallerIcon": "./dist/icon.ico"
+      "uninstallerIcon": "./dist/icon.ico",
+      "include": "build/installer.nsh"
     }
+  },
+  "dependencies": {
+    "winreg": "^1.2.5"
   },
   "devDependencies": {
     "@overwolf/ow-electron": "^34.5.7",
@@ -98,6 +101,7 @@
     "@types/node": "^18.11.18",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@types/winreg": "^1.2.36",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "concurrently": "^9.1.2",
