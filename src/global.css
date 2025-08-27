@@ -303,6 +303,18 @@ button:disabled {
   margin-bottom: calc(0.75 * var(--spacing));
 }
 
+.privacy-link {
+  width: fit-content;
+  font-size: 0.9em;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  &:hover {
+    background-color: initial;
+    color: currentColor;
+    opacity: 0.7;
+  }
+}
 
 
 /* Messages */

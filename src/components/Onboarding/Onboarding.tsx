@@ -52,44 +52,23 @@ export const Onboarding: React.FC<OnboardingProps> = ({
             <h2>Let's make your aim conistent!</h2>
             <p>To begin, we're going to calculate your <b>Mouse Travel (cm/360°)</b>.</p>
             <p>You can always change this later!</p>
-
-
-
             <div className="settings-navigation">
               <button className="settings-btn settings-btn-next" onClick={onNext} autoFocus>Begin</button>
             </div>
           </div>
         </div>
-
         {/* Simple Privacy Link */}
-        <div style={{
-          textAlign: 'center',
-          padding: '10px',
-          marginTop: '10px'
-        }}>
-          <button
-            onClick={async () => {
-              try {
-                await window.cmp.openPrivacySettings();
-              } catch (error) {
-                console.error('Failed to open privacy settings:', error);
-              }
-            }}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#666',
-              fontSize: '12px',
-              textDecoration: 'underline',
-              cursor: 'pointer',
-              padding: '4px 8px'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.color = '#007bff'}
-            onMouseOut={(e) => e.currentTarget.style.color = '#666'}
-          >
-            Privacy Settings
-          </button>
-        </div>
+        <button className="privacy-link"
+          onClick={async () => {
+            try {
+              await window.cmp.openPrivacySettings();
+            } catch (error) {
+              console.error('Failed to open privacy settings:', error);
+            }
+          }}
+        >
+          Privacy Settings
+        </button>
       </section>
     );
   }
@@ -110,36 +89,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({
           showProgress={true}
           context="onboarding"
         />
-      </div>
-
-      {/* Simple Privacy Link */}
-      <div style={{
-        textAlign: 'center',
-        padding: '10px',
-        marginTop: '10px'
-      }}>
-        <button
-          onClick={async () => {
-            try {
-              await window.cmp.openPrivacySettings();
-            } catch (error) {
-              console.error('Failed to open privacy settings:', error);
-            }
-          }}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#666',
-            fontSize: '12px',
-            textDecoration: 'underline',
-            cursor: 'pointer',
-            padding: '4px 8px'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.color = '#007bff'}
-          onMouseOut={(e) => e.currentTarget.style.color = '#666'}
-        >
-          Privacy Settings
-        </button>
       </div>
     </section>
   );

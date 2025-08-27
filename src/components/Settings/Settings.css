@@ -4,7 +4,7 @@
   .settings-content {
     display: flex;
     flex-flow: column;
-    gap: 2rem;
+    gap: 1.2rem;
   }
 
   h4 {
@@ -101,5 +101,8 @@
     font-size: 0.75rem;
     padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
     padding-right: calc(3 * var(--spacing));
+  }
+  .privacy-link {
+    padding: 0;
   }
 }
