@@ -89,16 +89,26 @@ Function ConsentPage
 
   StrCpy $ConsentGiven "0"
 
+  ; Disable the Next button initially
+  GetDlgItem $2 $HWNDPARENT 1 ; Next button ID is 1
+  EnableWindow $2 0 ; Disable the Next button
+
   nsDialogs::Show
 FunctionEnd
 
 Function ConsentToggle
   Pop $0 ; Get the checkbox handle
   ${NSD_GetState} $0 $1
+
+  ; Get the Next button handle
+  GetDlgItem $2 $HWNDPARENT 1 ; Next button ID is 1
+
   ${If} $1 == ${BST_CHECKED}
     StrCpy $ConsentGiven "1"
+    EnableWindow $2 1 ; Enable the Next button
   ${Else}
     StrCpy $ConsentGiven "0"
+    EnableWindow $2 0 ; Disable the Next button
   ${EndIf}
 FunctionEnd
 
@@ -119,7 +129,3 @@ FunctionEnd
   SetShellVarContext all
   StrCpy $InstDir "$PROGRAMFILES\aimii"
 !macroend
-
-; Removed custom uninstaller code - using defaults
-
-; Removed complex macro - using simple approach instead
