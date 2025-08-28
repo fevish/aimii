@@ -84,7 +84,7 @@
       "allowToChangeInstallationDirectory": true,
       "perMachine": true,
       "allowElevation": true,
-      "runAfterFinish": false,
+      "runAfterFinish": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "aimii",
