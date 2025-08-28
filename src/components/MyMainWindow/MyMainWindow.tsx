@@ -208,25 +208,25 @@ export const MyMainWindow: React.FC = () => {
       const adSection = document.querySelector('.ad-section');
 
       if (!adView || !adSection) {
-        console.warn('Ad detection: owadview or terminal-container not found');
+        // console.warn('Ad detection: owadview or terminal-container not found');
         return null;
       }
 
-                  const handleAdStart = (event: Event) => {
-        console.log(`Ad started: ${event.type}`);
+      const handleAdStart = (event: Event) => {
+        // console.log(`Ad started: ${event.type}`);
         adSection.classList.add('ad-running');
       };
 
       const handleAdEnd = (event: Event) => {
-        console.log(`Ad ended: ${event.type}`);
+        // console.log(`Ad ended: ${event.type}`);
         adSection.classList.remove('ad-running');
       };
 
-            // Wait for WebView to be ready before adding event listeners
+      // Wait for WebView to be ready before adding event listeners
       const setupListeners = () => {
-        console.log('adView element found:', !!adView);
-        console.log('adView tagName:', adView.tagName);
-        console.log('adView constructor:', adView.constructor.name);
+        // console.log('adView element found:', !!adView);
+        // console.log('adView tagName:', adView.tagName);
+        // console.log('adView constructor:', adView.constructor.name);
 
         // Listen for ad start/end events (inspired by ow-native patterns)
         adView.addEventListener('play', handleAdStart);
@@ -235,18 +235,18 @@ export const MyMainWindow: React.FC = () => {
         adView.addEventListener('complete', handleAdEnd);
 
         // Additional events that might be available (from ow-native reference)
-        adView.addEventListener('impression', (e) => console.log('Ad impression:', e));
-        adView.addEventListener('error', (e) => console.log('Ad error:', e));
-        adView.addEventListener('ow_internal_rendered', (e) => console.log('Ad internal rendered:', e));
+        // adView.addEventListener('impression', (e) => console.log('Ad impression:', e));
+        // adView.addEventListener('error', (e) => console.log('Ad error:', e));
+        // adView.addEventListener('ow_internal_rendered', (e) => console.log('Ad internal rendered:', e));
 
-        console.log('Ad detection: Listening for ad start/end events');
+        // console.log('Ad detection: Listening for ad start/end events');
       };
 
       // Check if WebView is already ready, otherwise wait for dom-ready
       try {
         setupListeners();
       } catch (error) {
-        console.log('Ad detection: Waiting for WebView to be ready...');
+        // console.log('Ad detection: Waiting for WebView to be ready...');
         adView.addEventListener('dom-ready', setupListeners, { once: true });
       }
 
@@ -257,9 +257,9 @@ export const MyMainWindow: React.FC = () => {
         adView.removeEventListener('display_ad_loaded', handleAdStart);
         adView.removeEventListener('player_loaded', handleAdStart);
         adView.removeEventListener('complete', handleAdEnd);
-        adView.removeEventListener('impression', console.log);
-        adView.removeEventListener('error', console.log);
-        adView.removeEventListener('ow_internal_rendered', console.log);
+        // adView.removeEventListener('impression', console.log);
+        // adView.removeEventListener('error', console.log);
+        // adView.removeEventListener('ow_internal_rendered', console.log);
         adView.removeEventListener('dom-ready', setupListeners);
       };
     };
