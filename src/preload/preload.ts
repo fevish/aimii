@@ -181,6 +181,18 @@ contextBridge.exposeInMainWorld('windowControls', {
   close: () => ipcRenderer.invoke('close-window')
 });
 
+contextBridge.exposeInMainWorld('cmp', {
+  isRequired: () => {
+    return ipcRenderer.invoke('cmp-is-required');
+  },
+  openPrivacySettings: (options?: any) => {
+    return ipcRenderer.invoke('cmp-open-privacy-settings', options);
+  },
+  isFirstTimeUser: () => {
+    return ipcRenderer.invoke('cmp-is-first-time-user');
+  }
+});
+
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on: (channel: string, func: (...args: any[]) => void) => {
     ipcRenderer.on(channel, (event: any, ...args: any[]) => func(...args));

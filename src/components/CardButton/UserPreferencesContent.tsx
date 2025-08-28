@@ -62,7 +62,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
         <div className="current-settings">
           <div className="main-setting">
             <div className="setting-row">
-              <p>// MOUSE TRAVEL (cm/360°)
+              <p>// MOUSE TRAVEL cm/360°
                 <button
                   className="btn btn-secondary btn-outline pref-btn"
                   onClick={onShowForm}
@@ -92,7 +92,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
               <span className="setting-value">{canonicalSettings.dpi}</span>
             </div>
             {/* <div className="setting-row">
-              <span className="setting-label">Mouse Travel (cm/360°)</span>
+              <span className="setting-label">Mouse Travel cm/360°</span>
               <span className="setting-value">{formatSensitivity(canonicalSettings.mouseTravel)}</span>
             </div> */}
           </div>

@@ -70,6 +70,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   const [modifierState, setModifierState] = useState({ ctrl: false, shift: false, alt: false });
   const [modifierDisplay, setModifierDisplay] = useState<string>('');
   const [currentTheme, setCurrentTheme] = useState<string>('default');
+  const [cmpRequired, setCmpRequired] = useState<boolean | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Available themes
@@ -81,7 +82,18 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   useEffect(() => {
     loadHotkeys();
     loadTheme();
+    checkCmpRequirement();
   }, []);
+
+  const checkCmpRequirement = async () => {
+    try {
+      const required = await window.cmp.isRequired();
+      setCmpRequired(required);
+    } catch (error) {
+      console.error('Failed to check CMP requirement:', error);
+      setCmpRequired(false);
+    }
+  };
 
   useEffect(() => {
     if (editingHotkey && overlayRef.current) {
@@ -562,8 +574,26 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
             </button>
           </div>
         </section>
+        {/* Privacy Settings - Only show for EU users */}
+        {cmpRequired && (
+          <section>
+            <button className="privacy-link"
+              onClick={async () => {
+                try {
+                  await window.cmp.openPrivacySettings();
+                } catch (error) {
+                  console.error('Failed to open privacy settings:', error);
+                  setMessage('Failed to open privacy settings');
+                  setTimeout(() => setMessage(''), 3000);
+                }
+              }}
+              title="Manage your data privacy preferences"
+            >
+              Privacy Settings
+            </button>
+          </section>
+        )}
       </div>
-
     </div>
   );
 };

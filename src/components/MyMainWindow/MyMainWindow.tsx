@@ -16,6 +16,7 @@ import { useMainWindowData } from './useMainWindowData';
 import { formatSensitivity } from '../../utils/format';
 import { applyTheme } from '../../utils/theme';
 
+
 export const MyMainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
   const [sensitivity, setSensitivity] = useState<string>('');
@@ -198,6 +199,75 @@ export const MyMainWindow: React.FC = () => {
     };
   }, [canonicalSettings]);
 
+
+
+  // Ad detection event listeners
+  React.useEffect(() => {
+    const setupAdDetection = () => {
+      const adView = document.querySelector('owadview');
+      const adSection = document.querySelector('.ad-section');
+
+      if (!adView || !adSection) {
+        // console.warn('Ad detection: owadview or terminal-container not found');
+        return null;
+      }
+
+      const handleAdStart = (event: Event) => {
+        // console.log(`Ad started: ${event.type}`);
+        adSection.classList.add('ad-running');
+      };
+
+      const handleAdEnd = (event: Event) => {
+        // console.log(`Ad ended: ${event.type}`);
+        adSection.classList.remove('ad-running');
+      };
+
+      // Wait for WebView to be ready before adding event listeners
+      const setupListeners = () => {
+        // console.log('adView element found:', !!adView);
+        // console.log('adView tagName:', adView.tagName);
+        // console.log('adView constructor:', adView.constructor.name);
+
+        // Listen for ad start/end events (inspired by ow-native patterns)
+        adView.addEventListener('play', handleAdStart);
+        adView.addEventListener('display_ad_loaded', handleAdStart);
+        adView.addEventListener('player_loaded', handleAdStart);
+        adView.addEventListener('complete', handleAdEnd);
+
+        // Additional events that might be available (from ow-native reference)
+        // adView.addEventListener('impression', (e) => console.log('Ad impression:', e));
+        // adView.addEventListener('error', (e) => console.log('Ad error:', e));
+        // adView.addEventListener('ow_internal_rendered', (e) => console.log('Ad internal rendered:', e));
+
+        // console.log('Ad detection: Listening for ad start/end events');
+      };
+
+      // Check if WebView is already ready, otherwise wait for dom-ready
+      try {
+        setupListeners();
+      } catch (error) {
+        // console.log('Ad detection: Waiting for WebView to be ready...');
+        adView.addEventListener('dom-ready', setupListeners, { once: true });
+      }
+
+
+      // Return cleanup function
+      return () => {
+        adView.removeEventListener('play', handleAdStart);
+        adView.removeEventListener('display_ad_loaded', handleAdStart);
+        adView.removeEventListener('player_loaded', handleAdStart);
+        adView.removeEventListener('complete', handleAdEnd);
+        // adView.removeEventListener('impression', console.log);
+        // adView.removeEventListener('error', console.log);
+        // adView.removeEventListener('ow_internal_rendered', console.log);
+        adView.removeEventListener('dom-ready', setupListeners);
+      };
+    };
+
+    const cleanup = setupAdDetection();
+    return cleanup || (() => { });
+  }, []);
+
   const handleToggleWidget = async () => {
     try {
       await window.widget.toggleWidget();
@@ -292,7 +362,7 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-    const handleUserPreferencesDataChange = useCallback((field: string, value: string) => {
+  const handleUserPreferencesDataChange = useCallback((field: string, value: string) => {
     setUserPreferencesSettingsData(prev => {
       const newData = {
         ...prev,
@@ -339,7 +409,7 @@ export const MyMainWindow: React.FC = () => {
       const eDPI = dpi * sensitivity;
       const success = await (window.settings as any).setBaselineSettings(mouseTravel, dpi, game, sensitivity, eDPI);
       if (success) {
-        console.log('User preferences updated and saved:', { mouseTravel, dpi, game, sensitivity});
+        console.log('User preferences updated and saved:', { mouseTravel, dpi, game, sensitivity });
         // Reload data to update the UI
         await loadAllData();
         setShowUserPreferencesForm(false);
@@ -411,7 +481,7 @@ export const MyMainWindow: React.FC = () => {
     }
   };
 
-    const handleOnboardingDataChange = (field: string, value: string) => {
+  const handleOnboardingDataChange = (field: string, value: string) => {
     setOnboardingData(prev => {
       const newData = {
         ...prev,
@@ -611,6 +681,8 @@ export const MyMainWindow: React.FC = () => {
                     )}
                   </div>
 
+
+
                   <div className="cards-section">
                     <CardButton
                       title="Mouse Travel"
@@ -650,9 +722,9 @@ export const MyMainWindow: React.FC = () => {
                       className="card-secondary"
                     >
                       <SecondaryCardContent
-                      calculatorState={calculatorState}
-                      onCalculatorStateChange={setCalculatorState}
-                    />
+                        calculatorState={calculatorState}
+                        onCalculatorStateChange={setCalculatorState}
+                      />
                     </CardButton>
                   </div>
                 </section>
@@ -665,6 +737,7 @@ export const MyMainWindow: React.FC = () => {
         )}
 
         <section className="ad-section" hidden={showOnboarding}>
+          <owadview />
           <div className="terminal-container">
             <Terminal />
           </div>
