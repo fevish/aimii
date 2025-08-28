@@ -19,9 +19,11 @@
     "build:ow-electron": "ow-electron-builder --publish=never",
     "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build:prod && node -e \"require('fs').mkdirSync('build', { recursive: true }); require('fs').copyFileSync('scripts/installer.nsh', 'build/installer.nsh')\" && ow-electron-builder --publish=never",
     "watch": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
+    "watch-ad": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start:test-ad\"",
     "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
     "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js",
     "start": "ow-electron .",
+    "start:test-ad": "ow-electron . --test-ad",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
   },
