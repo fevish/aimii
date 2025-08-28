@@ -252,7 +252,7 @@ const Widget: React.FC = () => {
                           </div>
                           <div className="setting-row">
                             <span className="setting-label">cm/360°</span>
-                            <span className="setting-value">{cm360 ? cm360.toFixed(2) : '-'}</span>
+                            <span className="setting-value">{cm360 ? cm360.toFixed(3) : '-'}</span>
                           </div>
                         </div>
                       }
@@ -267,7 +267,7 @@ const Widget: React.FC = () => {
                     : (
                       <div className="sensitivity-suggestion">
                         <p>Using baseline settings</p>
-                        {cm360 && <p className="cm360-info">{cm360.toFixed(2)} cm/360°</p>}
+                        {cm360 && <p className="cm360-info">{cm360.toFixed(3)} cm/360°</p>}
                       </div>
                     )
                 }
