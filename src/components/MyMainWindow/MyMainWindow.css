@@ -433,7 +433,9 @@ form {
     left: 0;
     height: 100%;
     width: 100%;
-    z-index: 9999;
+    opacity: 0;
+    z-index: 1;
+    transition: 0.25s ease-in-out;
   }
 
   .terminal-container {
@@ -442,10 +444,18 @@ form {
     position: relative;
     opacity: 1;
     transition: 0.25s ease-in-out;
+    background-color: var(--dark);
+    z-index: 2;
   }
 
-  .terminal-container.ad-running {
-    opacity: 0;
+  &.ad-running {
+    owadview {
+      opacity: 1;
+    }
+    .terminal-container {
+      opacity: 0;
+      z-index: 0;
+    }
   }
 
   .terminal-title {

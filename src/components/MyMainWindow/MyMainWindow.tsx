@@ -205,21 +205,21 @@ export const MyMainWindow: React.FC = () => {
   React.useEffect(() => {
     const setupAdDetection = () => {
       const adView = document.querySelector('owadview');
-      const terminalContainer = document.querySelector('.terminal-container');
+      const adSection = document.querySelector('.ad-section');
 
-      if (!adView || !terminalContainer) {
+      if (!adView || !adSection) {
         console.warn('Ad detection: owadview or terminal-container not found');
         return null;
       }
 
                   const handleAdStart = (event: Event) => {
         console.log(`Ad started: ${event.type}`);
-        terminalContainer.classList.add('ad-running');
+        adSection.classList.add('ad-running');
       };
 
       const handleAdEnd = (event: Event) => {
         console.log(`Ad ended: ${event.type}`);
-        terminalContainer.classList.remove('ad-running');
+        adSection.classList.remove('ad-running');
       };
 
             // Wait for WebView to be ready before adding event listeners
