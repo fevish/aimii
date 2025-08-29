@@ -1,15 +1,17 @@
 # Get Started
 
 1. Download and install the [latest release](https://github.com/fevish/aimii/releases/latest)
-2. The app will guide you through the onboarding process which simply involves setting your baseline "mouse travel" from your preferred game, in-game sensitivity for that game, and mouse dpi setting.
-3. Start a game that we support, and the app will auto-detect the game and show you the suggested sensitivity setting using game-conversion formulas.   
+2. The app will guide you through the onboarding process to determine your optimal "mouse travel" aka cm/360°
+3. Launch a game that we support, and the app will auto-detect the game and show you the suggested sensitivity setting using game-conversion formulas.   
 4. _(Optional but appreciated <3)_ Let me know how it works for you in our [Discord](https://discord.gg/Nj2Xj3W4eY). Or just drop by to say hi!
+
+*Note: aimii.app only supports Windows 11 at this time.*
 
 <img width="1298" height="710" alt="image" src="https://github.com/user-attachments/assets/a81c3d3f-2d85-48b7-a05f-a57c340893f9" />
 
-# What is aimii?
+# What is aimii.app?
 
-aimii is a mouse sensitivity "normalizer" for games (currently FPS games specifically).
+aimii.app is a mouse sensitivity "normalizer" for games (currently FPS games specifically).
 
 ### Normalizing your aim
 Most FPS games use unique formulas and scaling ratios for mouse and controllers, so the same in-game sensitivity number can feel completely different from one game to the next, for example:
