@@ -426,6 +426,7 @@ form {
   height: 300px;
   position: relative;
   overflow: hidden;
+  z-index: 10;
 
   owadview {
     position: absolute;
