@@ -27,8 +27,8 @@ For me personally, this difference breaks my muscle memory when switching betwee
 - **Hotkey Support:** Toggle widget visibility with customizable hotkeys
 - **Game Conversion Calculator** Users can calculate aim sensitivity conversions manually without launching a game
 
-## Who am I?
-I'm fevish, a dev/designer/dad who's been a PC gamer my entire life, I've sank the most hours in competitive titles especially Counter-Strike (I've been playing since version 1.3 in 2001. Yes, I'm that old!). I also play a vast array of FPS titles. I've personally always preferred a consistent aim sensitivity when I play FPS titles, so I decided to create aimii.app for myself as both a tool, but also an "indie dev vibe code" challenge for myself.
+## My first solo project!
+Hi, I'm fevish, a dev/designer/dad who's been a PC gamer my entire life, I've sank the most hours in competitive titles especially Counter-Strike (I've been playing since version 1.3 in 2001. Yes, I'm that old!). I also play a vast array of FPS titles. I've personally always preferred a consistent aim sensitivity when I play FPS titles, so I decided to create aimii.app for myself as both a tool, but also an "indie dev vibe code" challenge for myself.
 
 Not to flex but just to give you an idea of my background, here are a few of my gaming achievements over the years:
 - Supreme Master First Class (CSGO) (although some of my old CS friends swear I hit Global Elite for a few days but I don't fully recall)
