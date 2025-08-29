@@ -38,4 +38,4 @@ Not to flex but just to give you an idea of my background, here are a few of my 
 - Many chicken dinners xD (PUBG)
 - 11LP away from Diamond (LoL)
 
-Thanks for the support, I'd love to [hear any feature requests or feedback](https://discord.gg/Nj2Xj3W4eY) on aimii.app! ❤️ @fevish
+Thanks for the support, I'd love to [hear any feature requests or feedback](https://discord.gg/Nj2Xj3W4eY)! ❤️ @fevish
