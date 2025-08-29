@@ -12,7 +12,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--darker);
 }
 
 .terminal-command-line {
@@ -66,7 +65,6 @@
 }
 
 .terminal-content {
-  background: var(--dark);
   overflow-y: auto;
   scrollbar-color: var(--primary) var(--dark);
   scrollbar-width: thin;
