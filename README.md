@@ -1,7 +1,7 @@
 # Get Started
 
 1. Download and install the [latest release](https://github.com/fevish/aimii/releases/latest)
-2. Set your "canonical sensitivity setting" in the app by choosing your preferred: game, in-game sensitivity, and mouse DPI
+2. The app will guide you through the onboarding process which simply involves setting your baseline "mouse travel" from your preferred game, in-game sensitivity for that game, and mouse dpi setting.
 3. Start a game that we support, and the app will auto-detect the game and show you the suggested sensitivity setting using game-conversion formulas.   
 4. _(Optional but appreciated <3)_ Let me know how it works for you in our [Discord](https://discord.gg/Nj2Xj3W4eY). Or just drop by to say hi!
 
@@ -24,7 +24,14 @@ For me personally, this difference breaks my muscle memory when switching betwee
 - **Canonical Settings:** Set your preferred game and sensitivity as a baseline for conversions
 - **Hotkey Support:** Toggle widget visibility with customizable hotkeys
 
-<img width="961" height="546" alt="aimii-v0.0.1" src="https://github.com/user-attachments/assets/e294e805-45ef-4b23-b265-001b7723c9c7" />
+<img width="1298" height="710" alt="image" src="https://github.com/user-attachments/assets/a81c3d3f-2d85-48b7-a05f-a57c340893f9" />
 
+## Who am I?
+I'm fevish, a dev/designer who's been a PC gamer my entire life, I've sank the most hours in competitive titles especially Counter-Strike (I've been playing since version 1.3 in 2001. Yes, I'm that old!). I also play a vast array of FPS titles. I've personally always preferred a consistent aim sensitivity when I play FPS titles, so I decided to create aimii.app for myself as both a tool, but also an "indie dev vibe code" challenge for myself.
 
-Thanks for the support ❤️ @fevish
+Not to flex but just to demonstrate I'm a semi-legit competitive gamer, here are some of my personal gaming achievements over the years:
+- Supreme Master First Class (CSGO) (although some of my old gamer friends swear I hit Global Elite for a few days but I don't fully recall)
+- Diamond (Valorant)
+- 11LP away from Diamond (LoL)
+
+Thanks for the support, I'd love to [hear any feature requests or feedback](https://discord.gg/Nj2Xj3W4eY) on aimii.app! ❤️ @fevish
