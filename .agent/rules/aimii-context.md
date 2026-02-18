@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Aimii App Development Context
 
 ## Update this file
@@ -27,31 +31,6 @@ Different FPS games use unique formulas and scaling ratios for mouse sensitivity
 - **Build System**: Webpack with multiple configurations
 - **UI**: React components with custom styling
 - **State Management**: React Context (being refactored from prop drilling)
-
-### Project Structure
-```
-aimii/
-├── src/                          # Source code
-│   ├── browser/                  # Electron main process logic
-│   │   ├── controllers/          # IPC controllers
-│   │   └── services/             # Business logic services
-│   ├── components/               # React components
-│   │   ├── MyMainWindow/         # Main application window
-│   │   ├── Widget/               # Overlay widget
-│   │   ├── Onboarding/           # First-time setup flow
-│   │   ├── SettingsFlow/         # Settings configuration
-│   │   ├── SensitivityCalculator/ # Manual calculator
-│   │   └── [other components]/   # Various UI components
-│   ├── data/                     # Game data and configurations
-│   ├── types/                    # TypeScript type definitions
-│   ├── utils/                    # Utility functions
-│   ├── preload/                  # Electron preload scripts
-│   └── assets/                   # Static assets (fonts, SVGs)
-├── public/                       # Static HTML files
-├── dist/                         # Build output
-├── .kiro/specs/aimii-modular-refactor/  # Current refactor specification
-└── webpack configs               # Build configurations
-```
 
 ### Core Components (Current)
 1. **Main Window**: Primary interface showing game info, settings, and conversions
@@ -115,26 +94,6 @@ interface SensitivityConversion {
   trueSens: number;
 }
 ```
-
-## Current Architecture Issues (Being Addressed)
-
-### Problems Identified
-1. **Component Duplication**: Similar UI patterns implemented multiple times
-2. **Tight Coupling**: Components directly manage complex state and business logic
-3. **Inconsistent Patterns**: Different approaches for similar functionality
-4. **Service Fragmentation**: Business logic scattered across components
-5. **State Management Complexity**: Prop drilling and inconsistent state updates
-6. **Code Redundancy**: Duplicate implementations of sensitivity calculations, game displays, settings flows
-7. **Type Inconsistencies**: Multiple GameData interfaces with different property names (scalingFactor vs sensitivityScalingFactor)
-8. **Data Model Misalignment**: Types in src/types/app.ts don't match actual data structure in src/data/games.data.ts
-
-### Refactoring Goals
-- Create reusable, modular components
-- Implement unified service layer architecture
-- Establish consistent state management patterns
-- Eliminate code duplication
-- Improve error handling and testing support
-- Maintain backward compatibility
 
 ## Development Guidelines
 
@@ -342,12 +301,6 @@ class CMPService {
 - `src/data/games.data.ts`: Game database with scaling factors and conversion parameters
 - `tsconfig.json`: TypeScript configuration
 - `.eslintrc.json`: ESLint configuration
-
-### Specification Files
-- `.kiro/specs/aimii-modular-refactor/requirements.md`: Detailed requirements
-- `.kiro/specs/aimii-modular-refactor/design.md`: Architecture design
-- `.kiro/specs/aimii-modular-refactor/tasks.md`: Implementation tasks (when created)
-
 ### Important Source Files
 - `src/browser/`: Electron main process logic and services
 - `src/components/`: React application components
@@ -385,160 +338,3 @@ class CMPService {
 5. Test user workflows end-to-end
 
 This context file should be referenced for all aimii development work to ensure consistency and understanding of the project's goals, architecture, and constraints.
-#
-# Current Known Issues
-
-### Type System Inconsistencies
-- **GameData Interface Mismatch**: Two different GameData interfaces exist:
-  - `src/data/games.data.ts`: Uses `scalingFactor` property (correct, matches actual data)
-  - `src/types/app.ts`: Uses `sensitivityScalingFactor` property (outdated)
-- **Missing Properties**: The types/app.ts version is missing several properties that exist in the actual data:
-  - `processName`, `owConstant`, `owGameName`, `specialConversion`, `conversionParams`
-
-### Component Architecture Issues
-- **Duplicate GameData Definitions**: Several components define their own GameData interfaces instead of importing from a central location
-- **Inconsistent Import Patterns**: Some components import from `src/data/games.data.ts`, others from `src/types/app.ts`
-- **Service Layer Fragmentation**: Business logic is scattered across components rather than centralized in services
-
-### Immediate Priorities for Refactoring
-1. **Unify GameData Interface**: Consolidate all GameData definitions to use the complete interface from games.data.ts
-2. **Update Type Imports**: Ensure all components import types from the correct, authoritative source
-3. **Centralize Business Logic**: Move sensitivity calculations and game operations to dedicated services
-4. **Establish Consistent Patterns**: Create shared components for common UI patterns
-
-### Testing Considerations
-- **Sensitivity Math Verification**: Current games database includes complex conversion parameters for games like PUBG, Minecraft, GTA V that use special formulas
-- **Type Safety**: Refactoring must ensure type safety across all GameData usages
-- **Backward Compatibility**: User settings and saved data must continue working after type unification
-## I
-mprovement Opportunities to Watch For
-
-### Common Refactoring Patterns
-When working on aimii, actively look for these improvement opportunities:
-
-#### Component Extraction Opportunities
-- **Repeated UI Patterns**: Game selection dropdowns, sensitivity input fields, loading states, error messages
-- **Complex Components**: Large components that handle multiple responsibilities should be broken down
-- **Conditional Rendering**: Complex conditional UI logic that could be extracted into separate components
-- **Form Patterns**: Repeated form validation and state management patterns
-
-#### Service Consolidation Opportunities
-- **Scattered Business Logic**: Calculations or data transformations happening in multiple components
-- **API Calls**: Direct API/IPC calls in components that should be abstracted into services
-- **State Management**: Complex state logic that could be moved to context providers or custom hooks
-- **Validation Logic**: Repeated validation patterns that could be centralized
-
-#### Code Organization Improvements
-- **File Structure**: Components or utilities that don't follow the established directory structure
-- **Import Patterns**: Inconsistent import paths or circular dependencies
-- **Type Definitions**: Missing or inconsistent TypeScript types
-- **Naming Conventions**: Inconsistent naming that could be standardized
-
-#### Performance and Maintainability
-- **Unnecessary Re-renders**: Components that could benefit from memoization or better state structure
-- **Bundle Size**: Opportunities to lazy load components or optimize imports
-- **Error Boundaries**: Missing error handling that could be improved with proper boundaries
-- **Testing Gaps**: Code that would benefit from better testability through improved structure
-
-### Proactive Suggestions Framework
-When implementing any feature or fix, consider suggesting:
-
-1. **"While working on X, I noticed Y could be improved by Z"**
-2. **"This pattern appears in multiple places - should we extract it into a shared component?"**
-3. **"The business logic here could be moved to a service for better reusability"**
-4. **"This component is getting complex - we could break it down into smaller pieces"**
-5. **"I see an opportunity to reduce code duplication by creating a shared utility"**
-
-### Developer Experience Enhancements
-Look for opportunities to improve the development experience:
-- **Better TypeScript Types**: More specific types that catch errors at compile time
-- **Clearer Interfaces**: Well-documented props and service interfaces
-- **Consistent Patterns**: Standardized approaches for common tasks
-- **Helpful Utilities**: Shared functions that make common operations easier
-- **Better Error Messages**: More descriptive error handling and validation messages
-
-Remember: The goal is not just to implement features, but to continuously improve the codebase's modularity, maintainability, and developer experience. Every interaction with the code is an opportunity to make it better for future development.
-# Develo
-pment Rules and Guidelines
-
-## Core Development Rules
-- **Always use**: aimii (lower case)
-- **Based on**: overwolf-electron sample (not native Overwolf)
-- **Overlay + GEP**: confirmed working
-- **Never make git commits** via assistant
-- **The agent/assistant should NEVER add CSS**, let the user handle this
-- **The agent/assistant should never try to build the app or run NPM or YARN commands**, just prompt the user to do it.
-
-## Core Principles
-- **Event-driven** (no polling); debounce updates (≈200ms for game changes)
-- **Single instance**; DevTools detached and manual (Ctrl+Shift+I)
-- **Use Overwolf gameInfo.classId** (never gameInfo.id)
-- **Keep logic in services**; UI consumes via IPC/preload
-
-## Canonical Settings (BaselineSettings)
-- **mouseTravel** (cm/360°)
-- **dpi**
-- **trueSens** = Math.round(mouseTravel × 10)
-- **favoriteGame** (string)
-- **favoriteSensitivity** (number)
-- **eDPI** = dpi × favoriteSensitivity
-
-**Storage**: SettingsService persists baseline; baseline getter is enriched with trueSens (and eDPI via migration if needed).
-
-## Services Architecture (src/browser/services)
-- **CurrentGameService**: event-driven game detection (GEP-first), debounced
-- **GamesService**: game data + conversions (cm/360 and target sensitivity)
-- **SensitivityConverterService**:
-  - getSuggestedSensitivityForCurrentGame()
-  - getAllConversionsFromBaseline()
-  - calculateMouseTravelFromGame(game, sens, dpi)
-  - calculateTrueSens(mouseTravel) = round(cm × 10)
-- **SettingsService**: baseline, widget, hotkeys, theme
-- **OverlayService**: optimized registration/injection; coordinates with GEP
-
-## IPC/preload (selected)
-### settings:
-- getBaselineSettings() → BaselineSettings (with trueSens/eDPI)
-- setBaselineSettings(mouseTravel, dpi, favoriteGame?, favoriteSensitivity?, eDPI?) → boolean
-- hasBaselineSettings(), clearBaselineSettings()
-
-### currentGame:
-- getCurrentGameInfo(), getAllDetectedGames(), onGameChanged()
-
-### sensitivityConverter:
-- getSuggestedForCurrentGame(), getAllConversionsFromBaseline()
-- calculateMouseTravelFromGame(game, sens, dpi)
-- getCurrentMouseTravel(), getTrueSens()
-
-## UI Components
-- **MyMainWindow**: parallel data load; real-time updates; suggestions
-- **Widget**: compact; listens for baseline changes
-- **SettingsFlow** (3 steps: game, sens, dpi)
-  - **Onboarding**: normal Next/Back
-  - **Preferences**: Back on step 1 closes flow; Back on steps 2–3 navigates back
-- **UserPreferencesContent**: shows canonical settings; opens SettingsFlow (context="preferences")
-
-## Game Detection
-- **Primary**: GEP (O(1) Set) with auto-features
-- **Secondary**: overlay injection; both normalize to classId strings
-
-## Performance Guidelines
-- Debounce game updates; minimal settings sync
-- O(1) ID lookups; Promise.all for parallel loads
-
-## Code Conventions
-- **TypeScript throughout**; shared types in src/types
-- **No inline styles**; use CSS
-- **Do not recompute conversions in UI**; use services via IPC
-
-## Maintenance Notes
-- Unify BaselineSettings type usage: import from src/types/app.ts in backend
-- Consider PreferencesContext and ConversionContext in renderer to centralize access and reduce duplication
-
-## Commit Message Format
-- ≤50 chars, e.g.: "add eDPI to baseline", "fix prefs back behavior"
-
-## Demo Cleanup
-- **Demo-related IPC handlers**: Cleaned up demo-specific IPC communication
-
-This ensures the rules remain accurate and helpful for future development.

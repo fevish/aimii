@@ -1,0 +1,84 @@
+---
+description: Project context and rules for overwolf-electron sample and custom app development.
+globs:
+alwaysApply: true
+---
+
+- Always use: aimii (lower case)
+- Based on: overwolf-electron sample (not native Overwolf)
+- Overlay + GEP confirmed working
+- Never make git commits via assistant
+- The agent/assistant should NEVER add css, let the user handle this
+- The agent/assistant should never try to build the app or run NPM or YARN commands, just prompt the user to do it.
+
+## Core principles
+- Event-driven (no polling); debounce updates (≈200ms for game changes)
+- Single instance; DevTools detached and manual (Ctrl+Shift+I)
+- Use Overwolf gameInfo.classId (never gameInfo.id)
+- Keep logic in services; UI consumes via IPC/preload
+
+## Canonical settings (BaselineSettings)
+- mouseTravel (cm/360°)
+- dpi
+- trueSens = Math.round(mouseTravel × 10)
+- favoriteGame (string)
+- favoriteSensitivity (number)
+- eDPI = dpi × favoriteSensitivity
+
+Storage: SettingsService persists baseline; baseline getter is enriched with trueSens (and eDPI via migration if needed).
+
+## Services (src/browser/services)
+- CurrentGameService: event-driven game detection (GEP-first), debounced
+- GamesService: game data + conversions (cm/360 and target sensitivity)
+- SensitivityConverterService:
+  - getSuggestedSensitivityForCurrentGame()
+  - getAllConversionsFromBaseline()
+  - calculateMouseTravelFromGame(game, sens, dpi)
+  - calculateTrueSens(mouseTravel) = round(cm × 10)
+- SettingsService: baseline, widget, hotkeys, theme
+- OverlayService: optimized registration/injection; coordinates with GEP
+
+## IPC/preload (selected)
+- settings:
+  - getBaselineSettings() → BaselineSettings (with trueSens/eDPI)
+  - setBaselineSettings(mouseTravel, dpi, favoriteGame?, favoriteSensitivity?, eDPI?) → boolean
+  - hasBaselineSettings(), clearBaselineSettings()
+- currentGame: getCurrentGameInfo(), getAllDetectedGames(), onGameChanged()
+- sensitivityConverter:
+  - getSuggestedForCurrentGame(), getAllConversionsFromBaseline()
+  - calculateMouseTravelFromGame(game, sens, dpi)
+  - getCurrentMouseTravel(), getTrueSens()
+
+## UI
+- MyMainWindow: parallel data load; real-time updates; suggestions
+- Widget: compact; listens for baseline changes
+- SettingsFlow (3 steps: game, sens, dpi)
+  - Onboarding: normal Next/Back
+  - Preferences: Back on step 1 closes flow; Back on steps 2–3 navigates back
+- UserPreferencesContent: shows canonical settings; opens SettingsFlow (context="preferences")
+
+## Game detection
+- Primary: GEP (O(1) Set) with auto-features
+- Secondary: overlay injection; both normalize to classId strings
+
+## Performance
+- Debounce game updates; minimal settings sync
+- O(1) ID lookups; Promise.all for parallel loads
+
+## Conventions
+- TypeScript throughout; shared types in src/types
+- No inline styles; use CSS
+- Do not recompute conversions in UI; use services via IPC
+
+## Maintenance notes
+- Unify BaselineSettings type usage: import from src/types/app.ts in backend
+- Consider PreferencesContext and ConversionContext in renderer to centralize access and reduce duplication
+
+## Commit messages
+- ≤50 chars, e.g.: "add eDPI to baseline", "fix prefs back behavior"
+
+
+This ensures the rules remain accurate and helpful for future development.
+- **Demo-related IPC handlers**: Cleaned up demo-specific IPC communication
+
+This ensures the rules remain accurate and helpful for future development.
