@@ -59,19 +59,26 @@ export class AimTrainerEngine {
   }
 
   private initEnvironment(): void {
-    // 5. Environment - Simple Room
-    const geometry = new THREE.BoxGeometry(this.ROOM_SIZE, this.ROOM_SIZE, this.ROOM_SIZE);
-    // Invert geometry to see inside
-    geometry.scale(-1, 1, 1);
+    // 5. Environment - Normalized Scale
+    const halfSize = this.ROOM_SIZE / 2;
 
-    // Grid texture or wireframe approach for "fake depth"
-    const material = new THREE.MeshBasicMaterial({
-      color: 0x333333,
-      wireframe: true, // Cheap "grid" look
-    });
+    // Floor Grid (Primary Green/Dark Green)
+    const floorGrid = new THREE.GridHelper(this.ROOM_SIZE, 20, 0x00ff88, 0x225544);
+    floorGrid.position.y = 0;
+    this.scene.add(floorGrid);
 
-    const room = new THREE.Mesh(geometry, material);
-    this.scene.add(room);
+    // Floor Plane (Solid dark base)
+    const floorGeometry = new THREE.PlaneGeometry(this.ROOM_SIZE, this.ROOM_SIZE);
+    const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x0a0a0a, side: THREE.DoubleSide });
+    const floorPlane = new THREE.Mesh(floorGeometry, floorMaterial);
+    floorPlane.rotation.x = -Math.PI / 2;
+    floorPlane.position.y = -0.01; // Just below grid
+    this.scene.add(floorPlane);
+
+    // Ceiling Grid (Darker/Subtle)
+    const ceilingGrid = new THREE.GridHelper(this.ROOM_SIZE, 20, 0x225544, 0x112222);
+    ceilingGrid.position.y = 15; // 15 meters high
+    this.scene.add(ceilingGrid);
   }
 
   private initTargets(): void {
@@ -80,8 +87,8 @@ export class AimTrainerEngine {
     // Low poly geometry: IcosahedronGeometry(radius, 1)
     const geometry = new THREE.IcosahedronGeometry(this.TARGET_RADIUS, 1);
 
-    // Fake 3D depth by using a distinct flat color (red/orange)
-    const material = new THREE.MeshBasicMaterial({ color: 0xff4444 });
+    // Use Primary Theme Color (0x00ff88)
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
 
     for (let i = 0; i < this.TARGET_POOL_SIZE; i++) {
       const mesh = new THREE.Mesh(geometry, material);
@@ -209,7 +216,7 @@ export class AimTrainerEngine {
 
     this._vector.set(
       (Math.random() - 0.5) * range * 2,
-      (Math.random() - 0.5) * range/2 + 1.6, // Height variation around eye level
+      1 + Math.random() * 6, // Height: 1m to 7m (Floor is 0)
       (Math.random() - 0.5) * range * 2
     );
 
