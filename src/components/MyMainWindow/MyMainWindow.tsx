@@ -15,6 +15,7 @@ import { GameInfo } from './GameInfo';
 import { useMainWindowData } from './useMainWindowData';
 import { formatSensitivity } from '../../utils/format';
 import { applyTheme } from '../../utils/theme';
+import { AimTrainer } from '../AimTrainer/AimTrainer';
 
 
 export const MyMainWindow: React.FC = () => {
@@ -23,7 +24,7 @@ export const MyMainWindow: React.FC = () => {
   const [dpi, setDpi] = useState<string>('800');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'main' | 'settings'>('main');
+  const [activeTab, setActiveTab] = useState<'main' | 'settings' | 'aim-trainer'>('main');
   const [currentGameIndex, setCurrentGameIndex] = useState<number>(0);
   const [trueSens, setTrueSens] = useState<number | null>(null);
 
@@ -598,6 +599,12 @@ export const MyMainWindow: React.FC = () => {
               >
                 Settings
               </button>
+              <button
+                className={`tab-button ${activeTab === 'aim-trainer' ? 'active' : ''}`}
+                onClick={() => setActiveTab('aim-trainer')}
+              >
+                Trainer
+              </button>
               <button className="tab-button btn-icon discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>Discord</button>
             </nav>
           )}
@@ -743,6 +750,10 @@ export const MyMainWindow: React.FC = () => {
           </div>
         </section>
       </main>
+
+      {activeTab === 'aim-trainer' && (
+        <AimTrainer onExit={() => setActiveTab('main')} />
+      )}
 
     </div >
   );
