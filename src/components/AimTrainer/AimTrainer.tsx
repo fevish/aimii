@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AimTrainerEngine } from '../../browser/services/aim-trainer/AimTrainerEngine';
 import { FpsService } from '../../browser/services/aim-trainer/FpsService';
 import { InputService } from '../../browser/services/aim-trainer/InputService';
+import { EnvironmentService } from '../../browser/services/aim-trainer/EnvironmentService';
 import { FpsCounter } from './FpsCounter/FpsCounter';
 import './AimTrainer.css';
 
@@ -14,6 +15,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
   const fpsRef = useRef<HTMLDivElement>(null);
   const fpsService = useRef(new FpsService());
   const inputService = useRef(new InputService());
+  const envService = useRef(new EnvironmentService());
   const engineRef = useRef<AimTrainerEngine | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [score, setScore] = useState(0);
@@ -23,7 +25,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
 
     // Initialize Engine
     fpsService.current.setElement(fpsRef.current);
-    const engine = new AimTrainerEngine(canvasRef.current, fpsService.current, inputService.current);
+    const engine = new AimTrainerEngine(canvasRef.current, fpsService.current, inputService.current, envService.current);
     engineRef.current = engine;
 
     // Pointer Lock Listener

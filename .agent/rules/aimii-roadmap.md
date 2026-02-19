@@ -19,8 +19,9 @@ trigger: always_on
 - [x] FPS Counter
 
 ### Phase 2: modular-refactor (Immediate)
-- [ ] **Componentization:** Break `AimTrainer.tsx` and `Engine` into smaller pieces (e.g., `FpsCounter`, `Crosshair`, `ScoreBoard`).
-- [ ] **Input Service:** Decouple input handling from the rendering engine.
+- [x] **Componentization:** Break `AimTrainer.tsx` and `Engine` into smaller pieces (e.g., `FpsCounter`, `Crosshair`, `ScoreBoard`).
+- [x] **Input Service:** Decouple input handling from the rendering engine.
+- [x] **Environment Service:** Decouple scene setup.
 
 ### Phase 3: Advanced Mechanics
 - [ ] **Weapon System:**

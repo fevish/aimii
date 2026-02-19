@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { FpsService } from './FpsService';
 import { InputService } from './InputService';
+import { EnvironmentService } from './EnvironmentService';
 
 export class AimTrainerEngine {
   private renderer: THREE.WebGLRenderer;
@@ -15,6 +16,7 @@ export class AimTrainerEngine {
   private canvas: HTMLCanvasElement;
   private fpsService: FpsService | null;
   private inputService: InputService | null;
+  private environmentService: EnvironmentService | null;
 
   // Pre-allocated objects to avoid GC
   private _euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -29,13 +31,14 @@ export class AimTrainerEngine {
 
   // Game config
   private readonly TARGET_POOL_SIZE = 20;
-  private readonly ROOM_SIZE = 50;
   private readonly TARGET_RADIUS = 1;
+  private ROOM_SIZE = 50;
 
-  constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null, inputService: InputService | null = null) {
+  constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null, inputService: InputService | null = null, environmentService: EnvironmentService | null = null) {
     this.canvas = canvas;
     this.fpsService = fpsService;
     this.inputService = inputService;
+    this.environmentService = environmentService;
 
     // 1. Engine & Renderer Initialization
     // { antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true }
@@ -54,7 +57,7 @@ export class AimTrainerEngine {
 
     // 2. Zero Lighting Policy - Scene Setup
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x111111); // Dark background
+    // Background set by EnvironmentService
 
     this.camera = new THREE.PerspectiveCamera(
       75,
@@ -66,54 +69,14 @@ export class AimTrainerEngine {
 
     this.raycaster = new THREE.Raycaster();
 
-    this.initEnvironment();
+    if (this.environmentService) {
+      this.environmentService.init(this.scene);
+      this.ROOM_SIZE = this.environmentService.getRoomSize();
+    }
     this.initTargets();
   }
 
-  private initEnvironment(): void {
-    // 5. Environment - Normalized Scale (1 unit = 1 meter)
-    // Floor at Y=0, Camera at Y=1.6
 
-    // 1. Checkerboard Floor Plane (4 Quadrants for Orientation)
-    const quadSize = this.ROOM_SIZE / 2;
-    const planeGeo = new THREE.PlaneGeometry(quadSize, quadSize);
-    planeGeo.rotateX(-Math.PI / 2);
-
-    // Colors: A = Dark, B = Slightly Lighter (Subtle contrast)
-    const matA = new THREE.MeshBasicMaterial({ color: 0x0a0a0a, side: THREE.DoubleSide });
-    const matB = new THREE.MeshBasicMaterial({ color: 0x141414, side: THREE.DoubleSide });
-
-    // Q1 (+X, +Z) -> Mat A
-    const q1 = new THREE.Mesh(planeGeo, matA);
-    q1.position.set(quadSize / 2, -0.01, quadSize / 2);
-    this.scene.add(q1);
-
-    // Q2 (-X, +Z) -> Mat B
-    const q2 = new THREE.Mesh(planeGeo, matB);
-    q2.position.set(-quadSize / 2, -0.01, quadSize / 2);
-    this.scene.add(q2);
-
-    // Q3 (-X, -Z) -> Mat A
-    const q3 = new THREE.Mesh(planeGeo, matA);
-    q3.position.set(-quadSize / 2, -0.01, -quadSize / 2);
-    this.scene.add(q3);
-
-    // Q4 (+X, -Z) -> Mat B
-    const q4 = new THREE.Mesh(planeGeo, matB);
-    q4.position.set(quadSize / 2, -0.01, -quadSize / 2);
-    this.scene.add(q4);
-
-    // 2. Floor Grid (Primary Green/Dark Green)
-    // Positioned slightly above floor planes to avoid z-fighting
-    const floorGrid = new THREE.GridHelper(this.ROOM_SIZE, 20, 0x00ff88, 0x225544);
-    floorGrid.position.y = 0;
-    this.scene.add(floorGrid);
-
-    // 3. Ceiling Grid (Darker/Subtle)
-    const ceilingGrid = new THREE.GridHelper(this.ROOM_SIZE, 20, 0x225544, 0x112222);
-    ceilingGrid.position.y = 15; // 15 meters high
-    this.scene.add(ceilingGrid);
-  }
 
   private initTargets(): void {
     // 3. Object Pooling (The Targets)

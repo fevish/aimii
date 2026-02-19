@@ -10,6 +10,7 @@ trigger: always_on
 **Architecture Rule:** Keep features modular. Break down the trainer into sub-components (e.g., `FpsCounter`, `WeaponSystem`) and distinct services.
 **High-Frequency UI Rule:** For HUD elements updating >10Hz (FPS, Ammo, Timer), use a **Service** to update the DOM directly (`element.innerText`). Do NOT use React State for the game loop to avoid re-renders.
 **Input Isolation Rule:** All DOM event listeners (Keyboard, Mouse) must be handled by `InputService.ts` to keep the Engine focused on rendering and logic.
+**Environment Isolation Rule:** All static scene composition (Floor, Grid, Lighting) must be managed by `EnvironmentService.ts`. The Engine should only call `.init(scene)`.
 **Integration Rule:** The trainer must respect global Aimii settings (Sensitivity, FOV, Resolution).
 
 ## 1. Engine & Renderer Initialization
