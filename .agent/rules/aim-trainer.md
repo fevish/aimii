@@ -6,6 +6,9 @@ trigger: always_on
 
 **Goal:** A lightweight, standalone 3D aim trainer integrated into the Aimii Electron app.
 **Absolute Constraint:** The application MUST run at a flawless 60fps on low-end integrated graphics (potato PCs).
+**Modes:** Support "Potato" (Max Performance, Low Poly) and "Normal" (Standard Visuals) graphics modes.
+**Architecture Rule:** Keep features modular. Break down the trainer into sub-components (e.g., `FpsCounter`, `WeaponSystem`) and distinct services.
+**Integration Rule:** The trainer must respect global Aimii settings (Sensitivity, FOV, Resolution).
 
 ## 1. Engine & Renderer Initialization
 *   **Dependency Version:** MUST use `three@0.160.0` and `@types/three@0.160.0` to avoid TypeScript breaking changes in newer versions.
