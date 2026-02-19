@@ -11,6 +11,9 @@ export class AimTrainerEngine {
   private lastTime = 0;
   private animationFrameId: number | null = null;
   private canvas: HTMLCanvasElement;
+  private fpsElement: HTMLDivElement | null;
+  private fpsFrames = 0;
+  private fpsTime = 0;
 
   // Pre-allocated objects to avoid GC
   private _euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -33,8 +36,9 @@ export class AimTrainerEngine {
   private readonly ROOM_SIZE = 50;
   private readonly TARGET_RADIUS = 1;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, fpsElement: HTMLDivElement | null = null) {
     this.canvas = canvas;
+    this.fpsElement = fpsElement;
 
     // 1. Engine & Renderer Initialization
     // { antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true }
@@ -182,6 +186,18 @@ export class AimTrainerEngine {
     const time = performance.now();
     const delta = Math.min((time - this.lastTime) / 1000, 0.1);
     this.lastTime = time;
+
+    // --- FPS Counter ---
+    if (this.fpsElement) {
+        this.fpsFrames++;
+        this.fpsTime += delta;
+        if (this.fpsTime >= 0.5) {
+            const fps = Math.round(this.fpsFrames / this.fpsTime);
+            this.fpsElement.innerText = `${fps}`;
+            this.fpsFrames = 0;
+            this.fpsTime = 0;
+        }
+    }
 
     // --- Physics Step ---
     const SPEED = 50.0;

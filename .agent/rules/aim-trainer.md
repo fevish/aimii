@@ -50,6 +50,7 @@ trigger: always_on
     *   Component: `src/components/AimTrainer/AimTrainer.tsx`.
     *   Entry: 'Trainer' tab in `MyMainWindow`.
     *   Overlay: HTML/CSS UI overlay (Start/Exit buttons, Score) displayed when pointer is unlocked.
+    *   **FPS Counter:** Top-right, high-contrast green. Updates every 500ms via direct DOM manipulation (no React state) for performance.
 
 ## 6. Implementation Reference
 *   **Core Engine:** `src/browser/services/aim-trainer/AimTrainerEngine.ts`

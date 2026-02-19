@@ -8,6 +8,7 @@ interface AimTrainerProps {
 
 export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fpsRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<AimTrainerEngine | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [score, setScore] = useState(0);
@@ -16,7 +17,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
     if (!canvasRef.current) return;
 
     // Initialize Engine
-    const engine = new AimTrainerEngine(canvasRef.current);
+    const engine = new AimTrainerEngine(canvasRef.current, fpsRef.current);
     engineRef.current = engine;
 
     // Pointer Lock Listener
@@ -83,6 +84,9 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
         onMouseMove={handleMouseMove}
         onClick={handleClick}
       />
+
+      {/* FPS Counter */}
+      <div ref={fpsRef} className="aim-fps-counter">60</div>
 
       {/* Permanent Center Crosshair */}
       <div className="aim-crosshair" />
