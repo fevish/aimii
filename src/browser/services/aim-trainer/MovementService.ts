@@ -6,10 +6,11 @@ export class MovementService {
   private readonly RUN_SPEED = 5.4;
   private readonly WALK_SPEED = 2.8;
   private readonly JUMP_IMPULSE = 7.1; // ~1.25m height with 20g
-  private readonly GRAVITY = 20.0;
+  private readonly GRAVITY = 25.0;
   private readonly FRICTION = 10.0; // Sharp stopping
   private readonly ACCELERATION = 50.0; // Snappy movement
-  private readonly AIR_ACCELERATION = 10.0; // Air strafing control
+  private readonly AIR_ACCELERATION = 8.0; // CS2 style air accelerate (usually 12-100 depending on tick, 14 feels good here)
+  private readonly AIR_SPEED_CAP = 0.8; // ~30 units/s equivalent. Allows strafing to add speed.
   private readonly AIR_STOP_SPEED = 2.0; // Base speed for air friction calculations (simplified)
 
   public velocity = new THREE.Vector3();
@@ -20,14 +21,14 @@ export class MovementService {
   private _wishDir = new THREE.Vector3();
 
   public update(delta: number, moveState: MoveState, cameraQuaternion: THREE.Quaternion, cameraPosition: THREE.Vector3, roomSize: number): void {
-    // 1. Friction check
-    this.applyFriction(delta); // Only applies if onGround
-
-    // 2. Queue Jump
+    // 1. Queue Jump (Before Friction to enable Bhop)
     if (moveState.jump && this.onGround) {
         this.velocity.y = this.JUMP_IMPULSE;
         this.onGround = false;
     }
+
+    // 2. Friction check (Only if we didn't just jump)
+    this.applyFriction(delta); // Only applies if onGround
 
     // 3. Gravity
     this.velocity.y -= this.GRAVITY * delta;
@@ -92,7 +93,10 @@ export class MovementService {
       this._wishDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y);
 
       // 2. Determine Max Speed
-      const currentSpeedLimit = moveState.walk ? this.WALK_SPEED : this.RUN_SPEED;
+      // 2. Determine Max Speed
+      const currentSpeedLimit = this.onGround
+          ? (moveState.walk ? this.WALK_SPEED : this.RUN_SPEED)
+          : this.AIR_SPEED_CAP;
 
       // 3. Acceleration (Ground vs Air)
       const accel = this.onGround ? this.ACCELERATION : this.AIR_ACCELERATION;
@@ -109,10 +113,12 @@ export class MovementService {
 
       if (addSpeed > 0) {
           // Identify actual acceleration amount to add
-          let accelSpeed = accel * delta * currentSpeedLimit; // Source scales accel by maxspeed?
-          // Actually Source uses: accelspeed = accel * delta * wishSpeed
-          // Let's stick to simple first:
-          accelSpeed = accel * delta;
+          let accelSpeed = accel * delta;
+
+          // If we are in air, allow higher acceleration to facilitate strafing (Source-style)
+          if (!this.onGround) {
+               accelSpeed = accel * delta * 5.0;
+          }
 
           if (accelSpeed > addSpeed) {
               accelSpeed = addSpeed;
