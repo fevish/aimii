@@ -38,6 +38,7 @@ Different FPS games use unique formulas and scaling ratios for mouse sensitivity
 3. **Onboarding Flow**: Initial setup for new users to configure baseline settings
 4. **Calculator Modal**: Manual sensitivity conversion between games
 5. **Settings/Preferences**: User configuration management
+6. **Aim Trainer**: Integrated 3D aim training mode (fps-optimized)
 
 ### Key Data Models
 
@@ -124,6 +125,7 @@ interface SensitivityConversion {
 - **SettingsService**: User preferences and configuration management
 - **GameDetectionService**: Unified game detection (GEP + custom)
 - **CMPService**: GDPR compliance and privacy management for EU users
+- **AimTrainer Services**: Collection of modular services (`InputService`, `EnvironmentService`, `TargetService`, `MovementService`) managing the 3D trainer engine.
 
 ### Shared Components (Target Architecture)
 - **SensitivityDisplay**: Unified sensitivity information display
@@ -303,6 +305,7 @@ class CMPService {
 - `.eslintrc.json`: ESLint configuration
 ### Important Source Files
 - `src/browser/`: Electron main process logic and services
+- `src/browser/services/aim-trainer/`: Core logic for Aim Trainer engine
 - `src/components/`: React application components
 - `src/types/`: TypeScript type definitions
 - `src/data/games.data.ts`: Game database with scaling factors

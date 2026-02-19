@@ -10,6 +10,7 @@ trigger: always_on
 **Architecture Rule:** Keep features modular. Break down the trainer into sub-components (e.g., `FpsCounter`, `WeaponSystem`) and distinct services.
 **High-Frequency UI Rule:** For HUD elements updating >10Hz (FPS, Ammo, Timer), use a **Service** to update the DOM directly (`element.innerText`). Do NOT use React State for the game loop to avoid re-renders.
 **Input Isolation Rule:** All DOM event listeners (Keyboard, Mouse) must be handled by `InputService.ts` to keep the Engine focused on rendering and logic.
+**Physics Isolation Rule:** All movement physics (Velocity, Gravity, Friction) must be handled by `MovementService.ts`. The Engine delegates updates via `.update()`.
 **Environment Isolation Rule:** All static scene composition (Floor, Grid, Lighting) must be managed by `EnvironmentService.ts`. The Engine should only call `.init(scene)`.
 **Integration Rule:** The trainer must respect global Aimii settings (Sensitivity, FOV, Resolution).
 
@@ -47,6 +48,7 @@ trigger: always_on
     *   Pitch clamped to avoid flipping.
 *   **Keyboard Control:**
     *   **Movement:** WASD for horizontal movement relative to camera yaw.
+    *   **Walk:** Shift to walk (slower, ~52% speed).
     *   **Jump:** Spacebar for vertical impulse (only when `onGround`).
     *   **Physics:** Implement simple gravity, friction/damping, and floor collision (Y < 1.6).
 *   **Hit Detection:** Raycaster from center screen `(0, 0)`.

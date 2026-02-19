@@ -22,6 +22,8 @@ trigger: always_on
 - [x] **Componentization:** Break `AimTrainer.tsx` and `Engine` into smaller pieces (e.g., `FpsCounter`, `Crosshair`, `ScoreBoard`).
 - [x] **Input Service:** Decouple input handling from the rendering engine.
 - [x] **Environment Service:** Decouple scene setup.
+- [x] **Target Service:** Manage spawning and hit detection.
+- [x] **Movement Service:** Handle physics (Gravity, Velocity, Friction) and Input state.
 
 ### Phase 3: Advanced Mechanics
 - [ ] **Weapon System:**
