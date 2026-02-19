@@ -17,7 +17,7 @@ trigger: always_on
 *   **Strict Rule:** Do not add `DirectionalLight`, `PointLight`, `AmbientLight`, or shadows. Use **only** `THREE.MeshBasicMaterial`.
 *   **Colors (Theme Integration):**
     *   **Targets:** Primary Green (`0x00ff88`).
-    *   **Floor Grid:** Green/Dark Green (`0x00ff88`, `0x225544`).
+    *   **Floor:** Checkerboard (Dark/Light Gray) + Green Grid Overlay.
     *   **Ceiling Grid:** Dark Teal (`0x225544`, `0x112222`).
     *   **Background/Void:** Dark Gray/Black (`0x111111`, `0x0a0a0a`).
 
@@ -39,6 +39,10 @@ trigger: always_on
 *   **Mouse Control:** Native `Pointer Lock API`.
     *   Raw `movementX`/`movementY` mapped to camera Euler rotation (YXZ order).
     *   Pitch clamped to avoid flipping.
+*   **Keyboard Control:**
+    *   **Movement:** WASD for horizontal movement relative to camera yaw.
+    *   **Jump:** Spacebar for vertical impulse (only when `onGround`).
+    *   **Physics:** Implement simple gravity, friction/damping, and floor collision (Y < 1.6).
 *   **Hit Detection:** Raycaster from center screen `(0, 0)`.
     *   **Optimization:** Intersect **only** against visible targets. Never intersect the scene graph.
     *   **Return:** `handleClick()` returns `boolean` (true = hit) to update React state (score).

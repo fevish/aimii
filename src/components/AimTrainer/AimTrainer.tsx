@@ -30,7 +30,12 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
       }
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => engine.handleKeyDown(e.code);
+    const handleKeyUp = (e: KeyboardEvent) => engine.handleKeyUp(e.code);
+
     document.addEventListener('pointerlockchange', handleLockChange);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
 
     // Initial resize handling
     const handleResize = () => engine.handleResize();
@@ -38,6 +43,8 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
 
     return () => {
       document.removeEventListener('pointerlockchange', handleLockChange);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('resize', handleResize);
       engine.dispose();
 

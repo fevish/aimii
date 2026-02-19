@@ -17,6 +17,17 @@ export class AimTrainerEngine {
   private _vector = new THREE.Vector3();
   private _center = new THREE.Vector2(0, 0);
 
+  // Physics & Movement
+  private velocity = new THREE.Vector3();
+  private direction = new THREE.Vector3();
+  private onGround = false;
+  private moveState = {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+  };
+
   // Game config
   private readonly TARGET_POOL_SIZE = 20;
   private readonly ROOM_SIZE = 50;
@@ -59,23 +70,45 @@ export class AimTrainerEngine {
   }
 
   private initEnvironment(): void {
-    // 5. Environment - Normalized Scale
-    const halfSize = this.ROOM_SIZE / 2;
+    // 5. Environment - Normalized Scale (1 unit = 1 meter)
+    // Floor at Y=0, Camera at Y=1.6
 
-    // Floor Grid (Primary Green/Dark Green)
+    // 1. Checkerboard Floor Plane (4 Quadrants for Orientation)
+    const quadSize = this.ROOM_SIZE / 2;
+    const planeGeo = new THREE.PlaneGeometry(quadSize, quadSize);
+    planeGeo.rotateX(-Math.PI / 2);
+
+    // Colors: A = Dark, B = Slightly Lighter (Subtle contrast)
+    const matA = new THREE.MeshBasicMaterial({ color: 0x0a0a0a, side: THREE.DoubleSide });
+    const matB = new THREE.MeshBasicMaterial({ color: 0x141414, side: THREE.DoubleSide });
+
+    // Q1 (+X, +Z) -> Mat A
+    const q1 = new THREE.Mesh(planeGeo, matA);
+    q1.position.set(quadSize / 2, -0.01, quadSize / 2);
+    this.scene.add(q1);
+
+    // Q2 (-X, +Z) -> Mat B
+    const q2 = new THREE.Mesh(planeGeo, matB);
+    q2.position.set(-quadSize / 2, -0.01, quadSize / 2);
+    this.scene.add(q2);
+
+    // Q3 (-X, -Z) -> Mat A
+    const q3 = new THREE.Mesh(planeGeo, matA);
+    q3.position.set(-quadSize / 2, -0.01, -quadSize / 2);
+    this.scene.add(q3);
+
+    // Q4 (+X, -Z) -> Mat B
+    const q4 = new THREE.Mesh(planeGeo, matB);
+    q4.position.set(quadSize / 2, -0.01, -quadSize / 2);
+    this.scene.add(q4);
+
+    // 2. Floor Grid (Primary Green/Dark Green)
+    // Positioned slightly above floor planes to avoid z-fighting
     const floorGrid = new THREE.GridHelper(this.ROOM_SIZE, 20, 0x00ff88, 0x225544);
     floorGrid.position.y = 0;
     this.scene.add(floorGrid);
 
-    // Floor Plane (Solid dark base)
-    const floorGeometry = new THREE.PlaneGeometry(this.ROOM_SIZE, this.ROOM_SIZE);
-    const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x0a0a0a, side: THREE.DoubleSide });
-    const floorPlane = new THREE.Mesh(floorGeometry, floorMaterial);
-    floorPlane.rotation.x = -Math.PI / 2;
-    floorPlane.position.y = -0.01; // Just below grid
-    this.scene.add(floorPlane);
-
-    // Ceiling Grid (Darker/Subtle)
+    // 3. Ceiling Grid (Darker/Subtle)
     const ceilingGrid = new THREE.GridHelper(this.ROOM_SIZE, 20, 0x225544, 0x112222);
     ceilingGrid.position.y = 15; // 15 meters high
     this.scene.add(ceilingGrid);
@@ -117,17 +150,92 @@ export class AimTrainerEngine {
     }
   }
 
+  public handleKeyDown(code: string): void {
+    switch (code) {
+      case 'KeyW': this.moveState.forward = true; break;
+      case 'KeyS': this.moveState.backward = true; break;
+      case 'KeyA': this.moveState.left = true; break;
+      case 'KeyD': this.moveState.right = true; break;
+      case 'Space':
+        if (this.onGround) {
+          this.velocity.y = 15.0; // Jump force
+          this.onGround = false;
+        }
+        break;
+    }
+  }
+
+  public handleKeyUp(code: string): void {
+    switch (code) {
+      case 'KeyW': this.moveState.forward = false; break;
+      case 'KeyS': this.moveState.backward = false; break;
+      case 'KeyA': this.moveState.left = false; break;
+      case 'KeyD': this.moveState.right = false; break;
+    }
+  }
+
   private loop = (): void => {
     if (!this.isRunning) return;
 
     this.animationFrameId = requestAnimationFrame(this.loop);
 
     const time = performance.now();
-    const delta = (time - this.lastTime) / 1000;
+    const delta = Math.min((time - this.lastTime) / 1000, 0.1);
     this.lastTime = time;
 
-    // Game Logic (if needed, e.g moving targets)
-    // For now, static targets until hit
+    // --- Physics Step ---
+    const SPEED = 50.0;
+    const FRICTION = 10.0;
+    const GRAVITY = 30.0;
+
+    // 1. Friction (Damping)
+    this.velocity.x -= this.velocity.x * FRICTION * delta;
+    this.velocity.z -= this.velocity.z * FRICTION * delta;
+
+    // 2. Gravity
+    this.velocity.y -= GRAVITY * delta;
+
+    // 3. Input Acceleration (Relative to Camera Yaw)
+    if (this.moveState.forward || this.moveState.backward || this.moveState.left || this.moveState.right) {
+        // Get camera Y rotation (Yaw)
+        const yRotation = this._euler.setFromQuaternion(this.camera.quaternion).y;
+
+        // Construct movement vector in locally oriented space
+        // Forward (W) = -Z (Standard Three.js forward)
+        // Backward (S) = +Z
+        // Left (A) = -X
+        // Right (D) = +X
+
+        // Input strength
+        const inputX = Number(this.moveState.right) - Number(this.moveState.left);
+        const inputZ = Number(this.moveState.backward) - Number(this.moveState.forward);
+
+        // Normalize input vector (avoid faster diagonal movement)
+        this.direction.set(inputX, 0, inputZ);
+        this.direction.normalize();
+
+        // Rotate local direction by Camera Yaw to get Global Direction
+        this.direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), yRotation);
+
+        // Apply Acceleration to Velocity
+        this.velocity.x += this.direction.x * SPEED * delta;
+        this.velocity.z += this.direction.z * SPEED * delta;
+    }
+
+    // 4. Integrate Position
+    this.camera.position.addScaledVector(this.velocity, delta);
+
+    // 5. Floor Collision
+    if (this.camera.position.y < 1.6) {
+        this.velocity.y = 0;
+        this.camera.position.y = 1.6;
+        this.onGround = true;
+    }
+
+    // 6. Room Boundaries
+    const LIMIT = this.ROOM_SIZE / 2 - 1;
+    this.camera.position.x = Math.max(-LIMIT, Math.min(LIMIT, this.camera.position.x));
+    this.camera.position.z = Math.max(-LIMIT, Math.min(LIMIT, this.camera.position.z));
 
     this.renderer.render(this.scene, this.camera);
   };
