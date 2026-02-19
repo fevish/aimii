@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AimTrainerEngine } from '../../browser/services/aim-trainer/AimTrainerEngine';
 import { FpsService } from '../../browser/services/aim-trainer/FpsService';
+import { InputService } from '../../browser/services/aim-trainer/InputService';
 import { FpsCounter } from './FpsCounter/FpsCounter';
 import './AimTrainer.css';
 
@@ -12,6 +13,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fpsRef = useRef<HTMLDivElement>(null);
   const fpsService = useRef(new FpsService());
+  const inputService = useRef(new InputService());
   const engineRef = useRef<AimTrainerEngine | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [score, setScore] = useState(0);
@@ -21,7 +23,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
 
     // Initialize Engine
     fpsService.current.setElement(fpsRef.current);
-    const engine = new AimTrainerEngine(canvasRef.current, fpsService.current);
+    const engine = new AimTrainerEngine(canvasRef.current, fpsService.current, inputService.current);
     engineRef.current = engine;
 
     // Pointer Lock Listener
@@ -35,8 +37,8 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
       }
     };
 
-    const handleKeyDown = (e: KeyboardEvent) => engine.handleKeyDown(e.code);
-    const handleKeyUp = (e: KeyboardEvent) => engine.handleKeyUp(e.code);
+    const handleKeyDown = (e: KeyboardEvent) => inputService.current.handleKeyDown(e.code);
+    const handleKeyUp = (e: KeyboardEvent) => inputService.current.handleKeyUp(e.code);
 
     document.addEventListener('pointerlockchange', handleLockChange);
     document.addEventListener('keydown', handleKeyDown);
@@ -52,6 +54,8 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
       document.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('resize', handleResize);
       engine.dispose();
+      inputService.current.reset();
+
 
       if (document.pointerLockElement === canvasRef.current) {
         document.exitPointerLock();
@@ -67,7 +71,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isLocked && engineRef.current) {
-      engineRef.current.handleMouseMove(e.movementX, e.movementY);
+      inputService.current.handleMouseMove(e.movementX, e.movementY);
     }
   };
 

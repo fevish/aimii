@@ -9,6 +9,7 @@ trigger: always_on
 **Modes:** Support "Potato" (Max Performance, Low Poly) and "Normal" (Standard Visuals) graphics modes.
 **Architecture Rule:** Keep features modular. Break down the trainer into sub-components (e.g., `FpsCounter`, `WeaponSystem`) and distinct services.
 **High-Frequency UI Rule:** For HUD elements updating >10Hz (FPS, Ammo, Timer), use a **Service** to update the DOM directly (`element.innerText`). Do NOT use React State for the game loop to avoid re-renders.
+**Input Isolation Rule:** All DOM event listeners (Keyboard, Mouse) must be handled by `InputService.ts` to keep the Engine focused on rendering and logic.
 **Integration Rule:** The trainer must respect global Aimii settings (Sensitivity, FOV, Resolution).
 
 ## 1. Engine & Renderer Initialization

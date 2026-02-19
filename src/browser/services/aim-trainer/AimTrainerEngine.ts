@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { FpsService } from './FpsService';
+import { InputService } from './InputService';
 
 export class AimTrainerEngine {
   private renderer: THREE.WebGLRenderer;
@@ -12,8 +13,8 @@ export class AimTrainerEngine {
   private lastTime = 0;
   private animationFrameId: number | null = null;
   private canvas: HTMLCanvasElement;
-
   private fpsService: FpsService | null;
+  private inputService: InputService | null;
 
   // Pre-allocated objects to avoid GC
   private _euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -24,21 +25,17 @@ export class AimTrainerEngine {
   private velocity = new THREE.Vector3();
   private direction = new THREE.Vector3();
   private onGround = false;
-  private moveState = {
-    forward: false,
-    backward: false,
-    left: false,
-    right: false,
-  };
+
 
   // Game config
   private readonly TARGET_POOL_SIZE = 20;
   private readonly ROOM_SIZE = 50;
   private readonly TARGET_RADIUS = 1;
 
-  constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null) {
+  constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null, inputService: InputService | null = null) {
     this.canvas = canvas;
     this.fpsService = fpsService;
+    this.inputService = inputService;
 
     // 1. Engine & Renderer Initialization
     // { antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true }
@@ -154,29 +151,7 @@ export class AimTrainerEngine {
     }
   }
 
-  public handleKeyDown(code: string): void {
-    switch (code) {
-      case 'KeyW': this.moveState.forward = true; break;
-      case 'KeyS': this.moveState.backward = true; break;
-      case 'KeyA': this.moveState.left = true; break;
-      case 'KeyD': this.moveState.right = true; break;
-      case 'Space':
-        if (this.onGround) {
-          this.velocity.y = 15.0; // Jump force
-          this.onGround = false;
-        }
-        break;
-    }
-  }
 
-  public handleKeyUp(code: string): void {
-    switch (code) {
-      case 'KeyW': this.moveState.forward = false; break;
-      case 'KeyS': this.moveState.backward = false; break;
-      case 'KeyA': this.moveState.left = false; break;
-      case 'KeyD': this.moveState.right = false; break;
-    }
-  }
 
   private loop = (): void => {
     if (!this.isRunning) return;
@@ -205,31 +180,48 @@ export class AimTrainerEngine {
     // 2. Gravity
     this.velocity.y -= GRAVITY * delta;
 
-    // 3. Input Acceleration (Relative to Camera Yaw)
-    if (this.moveState.forward || this.moveState.backward || this.moveState.left || this.moveState.right) {
-        // Get camera Y rotation (Yaw)
-        const yRotation = this._euler.setFromQuaternion(this.camera.quaternion).y;
+    // 3. Input Handling
+    if (this.inputService) {
+        // A. Look
+        const lookDelta = this.inputService.consumeLookDelta();
+        if (lookDelta.x !== 0 || lookDelta.y !== 0) {
+            const SENSITIVITY = 0.002;
+            this._euler.setFromQuaternion(this.camera.quaternion);
+            this._euler.y -= lookDelta.x * SENSITIVITY;
+            this._euler.x -= lookDelta.y * SENSITIVITY;
+            const PITCH_LIMIT = Math.PI / 2 - 0.01;
+            this._euler.x = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this._euler.x));
+            this.camera.quaternion.setFromEuler(this._euler);
+        }
 
-        // Construct movement vector in locally oriented space
-        // Forward (W) = -Z (Standard Three.js forward)
-        // Backward (S) = +Z
-        // Left (A) = -X
-        // Right (D) = +X
+        // B. Movement
+        const moveState = this.inputService.getMoveState();
 
-        // Input strength
-        const inputX = Number(this.moveState.right) - Number(this.moveState.left);
-        const inputZ = Number(this.moveState.backward) - Number(this.moveState.forward);
+        // Jump
+        if (moveState.jump && this.onGround) {
+             this.velocity.y = 15.0;
+             this.onGround = false;
+        }
 
-        // Normalize input vector (avoid faster diagonal movement)
-        this.direction.set(inputX, 0, inputZ);
-        this.direction.normalize();
+        if (moveState.forward || moveState.backward || moveState.left || moveState.right) {
+            // Get camera Y rotation (Yaw)
+            const yRotation = this._euler.setFromQuaternion(this.camera.quaternion).y;
 
-        // Rotate local direction by Camera Yaw to get Global Direction
-        this.direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), yRotation);
+            // Input strength
+            const inputX = Number(moveState.right) - Number(moveState.left);
+            const inputZ = Number(moveState.backward) - Number(moveState.forward);
 
-        // Apply Acceleration to Velocity
-        this.velocity.x += this.direction.x * SPEED * delta;
-        this.velocity.z += this.direction.z * SPEED * delta;
+            // Normalize input vector (avoid faster diagonal movement)
+            this.direction.set(inputX, 0, inputZ);
+            this.direction.normalize();
+
+            // Rotate local direction by Camera Yaw to get Global Direction
+            this.direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), yRotation);
+
+            // Apply Acceleration to Velocity
+            this.velocity.x += this.direction.x * SPEED * delta;
+            this.velocity.z += this.direction.z * SPEED * delta;
+        }
     }
 
     // 4. Integrate Position
@@ -262,23 +254,9 @@ export class AimTrainerEngine {
   }
 
   public handleMouseMove(movementX: number, movementY: number): void {
-    if (!this.isRunning) return;
-
-    // 4. Input - Raw mouse delta mapping
-    // Sensitivity factor (tunable)
-    const SENSITIVITY = 0.002;
-
-    this._euler.setFromQuaternion(this.camera.quaternion);
-
-    this._euler.y -= movementX * SENSITIVITY;
-    this._euler.x -= movementY * SENSITIVITY;
-
-    // Clamp pitch to avoid flipping (-90 to 90 degrees)
-    const PITCH_LIMIT = Math.PI / 2 - 0.01;
-    this._euler.x = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this._euler.x));
-
-    this.camera.quaternion.setFromEuler(this._euler);
+    // Moved to InputService
   }
+
 
   public handleClick(): boolean {
     if (!this.isRunning) return false;
@@ -292,7 +270,7 @@ export class AimTrainerEngine {
     // Raycaster checks against visible objects only if configured, but let's be explicit manually if needed.
     // Three.js Raycaster checks all objects passed, regardless of visibility usually, UNLESS we filter.
 
-    const activeTargets = this.targets.filter(t => t.visible);
+    const activeTargets = this.targets.filter((t: THREE.Mesh) => t.visible);
     if (activeTargets.length === 0) {
         // If no targets (game won?), spawn one just in case
         this.spawnTarget();
@@ -323,7 +301,7 @@ export class AimTrainerEngine {
     if (this.activeTargetCount >= this.TARGET_POOL_SIZE) return;
 
     // Find an inactive mesh
-    const target = this.targets.find(t => !t.visible);
+    const target = this.targets.find((t: THREE.Mesh) => !t.visible);
     if (!target) return;
 
     // Random position within room bounds (minus padding)
@@ -354,7 +332,7 @@ export class AimTrainerEngine {
     // Since we avoid 'dispose' in loop, we do it here
     this.renderer.dispose();
     // Geometries and materials should be disposed too if this component unmounts entirely
-    this.targets.forEach(t => {
+    this.targets.forEach((t: THREE.Mesh) => {
         t.geometry.dispose();
         (t.material as THREE.Material).dispose();
     });
