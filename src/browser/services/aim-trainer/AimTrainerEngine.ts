@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { FpsService } from './FpsService';
 
 export class AimTrainerEngine {
   private renderer: THREE.WebGLRenderer;
@@ -11,9 +12,8 @@ export class AimTrainerEngine {
   private lastTime = 0;
   private animationFrameId: number | null = null;
   private canvas: HTMLCanvasElement;
-  private fpsElement: HTMLDivElement | null;
-  private fpsFrames = 0;
-  private fpsTime = 0;
+
+  private fpsService: FpsService | null;
 
   // Pre-allocated objects to avoid GC
   private _euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -36,9 +36,9 @@ export class AimTrainerEngine {
   private readonly ROOM_SIZE = 50;
   private readonly TARGET_RADIUS = 1;
 
-  constructor(canvas: HTMLCanvasElement, fpsElement: HTMLDivElement | null = null) {
+  constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null) {
     this.canvas = canvas;
-    this.fpsElement = fpsElement;
+    this.fpsService = fpsService;
 
     // 1. Engine & Renderer Initialization
     // { antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true }
@@ -188,15 +188,9 @@ export class AimTrainerEngine {
     this.lastTime = time;
 
     // --- FPS Counter ---
-    if (this.fpsElement) {
-        this.fpsFrames++;
-        this.fpsTime += delta;
-        if (this.fpsTime >= 0.5) {
-            const fps = Math.round(this.fpsFrames / this.fpsTime);
-            this.fpsElement.innerText = `${fps}`;
-            this.fpsFrames = 0;
-            this.fpsTime = 0;
-        }
+    // --- FPS Counter ---
+    if (this.fpsService) {
+        this.fpsService.update(delta);
     }
 
     // --- Physics Step ---

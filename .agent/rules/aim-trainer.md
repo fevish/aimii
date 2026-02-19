@@ -8,6 +8,7 @@ trigger: always_on
 **Absolute Constraint:** The application MUST run at a flawless 60fps on low-end integrated graphics (potato PCs).
 **Modes:** Support "Potato" (Max Performance, Low Poly) and "Normal" (Standard Visuals) graphics modes.
 **Architecture Rule:** Keep features modular. Break down the trainer into sub-components (e.g., `FpsCounter`, `WeaponSystem`) and distinct services.
+**High-Frequency UI Rule:** For HUD elements updating >10Hz (FPS, Ammo, Timer), use a **Service** to update the DOM directly (`element.innerText`). Do NOT use React State for the game loop to avoid re-renders.
 **Integration Rule:** The trainer must respect global Aimii settings (Sensitivity, FOV, Resolution).
 
 ## 1. Engine & Renderer Initialization

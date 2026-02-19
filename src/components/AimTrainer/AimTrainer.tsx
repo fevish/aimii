@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AimTrainerEngine } from '../../browser/services/aim-trainer/AimTrainerEngine';
+import { FpsService } from '../../browser/services/aim-trainer/FpsService';
+import { FpsCounter } from './FpsCounter/FpsCounter';
 import './AimTrainer.css';
 
 interface AimTrainerProps {
@@ -9,6 +11,7 @@ interface AimTrainerProps {
 export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fpsRef = useRef<HTMLDivElement>(null);
+  const fpsService = useRef(new FpsService());
   const engineRef = useRef<AimTrainerEngine | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [score, setScore] = useState(0);
@@ -17,7 +20,8 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
     if (!canvasRef.current) return;
 
     // Initialize Engine
-    const engine = new AimTrainerEngine(canvasRef.current, fpsRef.current);
+    fpsService.current.setElement(fpsRef.current);
+    const engine = new AimTrainerEngine(canvasRef.current, fpsService.current);
     engineRef.current = engine;
 
     // Pointer Lock Listener
@@ -86,7 +90,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
       />
 
       {/* FPS Counter */}
-      <div ref={fpsRef} className="aim-fps-counter">60</div>
+      <FpsCounter ref={fpsRef} />
 
       {/* Permanent Center Crosshair */}
       <div className="aim-crosshair" />
