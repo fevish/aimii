@@ -2,14 +2,14 @@ import * as THREE from 'three';
 import { FpsService } from './FpsService';
 import { InputService } from './InputService';
 import { EnvironmentService } from './EnvironmentService';
+import { TargetService } from './TargetService';
 
 export class AimTrainerEngine {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private raycaster: THREE.Raycaster;
-  private targets: THREE.Mesh[] = [];
-  private activeTargetCount = 0;
+
   private isRunning = false;
   private lastTime = 0;
   private animationFrameId: number | null = null;
@@ -17,6 +17,7 @@ export class AimTrainerEngine {
   private fpsService: FpsService | null;
   private inputService: InputService | null;
   private environmentService: EnvironmentService | null;
+  private targetService: TargetService | null;
 
   // Pre-allocated objects to avoid GC
   private _euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -30,15 +31,14 @@ export class AimTrainerEngine {
 
 
   // Game config
-  private readonly TARGET_POOL_SIZE = 20;
-  private readonly TARGET_RADIUS = 1;
   private ROOM_SIZE = 50;
 
-  constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null, inputService: InputService | null = null, environmentService: EnvironmentService | null = null) {
+  constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null, inputService: InputService | null = null, environmentService: EnvironmentService | null = null, targetService: TargetService | null = null) {
     this.canvas = canvas;
     this.fpsService = fpsService;
     this.inputService = inputService;
     this.environmentService = environmentService;
+    this.targetService = targetService;
 
     // 1. Engine & Renderer Initialization
     // { antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true }
@@ -73,27 +73,14 @@ export class AimTrainerEngine {
       this.environmentService.init(this.scene);
       this.ROOM_SIZE = this.environmentService.getRoomSize();
     }
-    this.initTargets();
-  }
-
-
-
-  private initTargets(): void {
-    // 3. Object Pooling (The Targets)
-    // Pre-allocate 20 target meshes
-    // Low poly geometry: IcosahedronGeometry(radius, 1)
-    const geometry = new THREE.IcosahedronGeometry(this.TARGET_RADIUS, 1);
-
-    // Use Primary Theme Color (0x00ff88)
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
-
-    for (let i = 0; i < this.TARGET_POOL_SIZE; i++) {
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.visible = false; // Start inactive
-      this.scene.add(mesh);
-      this.targets.push(mesh);
+    if (this.targetService) {
+      this.targetService.init(this.scene, this.ROOM_SIZE);
     }
   }
+
+
+
+
 
   public start(): void {
     if (this.isRunning) return;
@@ -101,7 +88,9 @@ export class AimTrainerEngine {
     this.lastTime = performance.now();
 
     // Initial spawn
-    this.spawnTarget();
+    if (this.targetService) {
+        this.targetService.spawnTarget();
+    }
 
     this.loop();
   }
@@ -227,67 +216,13 @@ export class AimTrainerEngine {
     // 4. Raycasting from center screen (0, 0)
     this.raycaster.setFromCamera(this._center, this.camera);
 
-    // 4. Intersection Optimization: Only check active targets
-    // Filter active targets first to minimize checks?
-    // Or just check all and rely on frustum culling/visible check internal to Three.js?
-    // Raycaster checks against visible objects only if configured, but let's be explicit manually if needed.
-    // Three.js Raycaster checks all objects passed, regardless of visibility usually, UNLESS we filter.
-
-    const activeTargets = this.targets.filter((t: THREE.Mesh) => t.visible);
-    if (activeTargets.length === 0) {
-        // If no targets (game won?), spawn one just in case
-        this.spawnTarget();
-        return false;
-    }
-
-    const intersects = this.raycaster.intersectObjects(activeTargets, false);
-
-    if (intersects.length > 0) {
-      // Hit!
-      const hitObject = intersects[0].object as THREE.Mesh;
-      this.onTargetHit(hitObject);
-      return true;
+    if (this.targetService) {
+        return this.targetService.checkHit(this.raycaster);
     }
     return false;
   }
 
-  private onTargetHit(target: THREE.Mesh): void {
-    // 3. Spawning/Despawning: Toggle visibility only
-    target.visible = false;
-    this.activeTargetCount--;
 
-    // Spawn new one immediately
-    this.spawnTarget();
-  }
-
-  private spawnTarget(): void {
-    if (this.activeTargetCount >= this.TARGET_POOL_SIZE) return;
-
-    // Find an inactive mesh
-    const target = this.targets.find((t: THREE.Mesh) => !t.visible);
-    if (!target) return;
-
-    // Random position within room bounds (minus padding)
-    const range = this.ROOM_SIZE / 2 - 2;
-    // Keep it somewhat in front of the player initially or all around?
-    // Let's do forward-biased 180 degrees for now, or full 360?
-    // Full 360 logic:
-
-    this._vector.set(
-      (Math.random() - 0.5) * range * 2,
-      1 + Math.random() * 6, // Height: 1m to 7m (Floor is 0)
-      (Math.random() - 0.5) * range * 2
-    );
-
-    // Ensure it's not too close to camera
-    if (this._vector.length() < 5) {
-        this._vector.setZ(this._vector.z - 10);
-    }
-
-    target.position.copy(this._vector);
-    target.visible = true;
-    this.activeTargetCount++;
-  }
 
   public dispose(): void {
     this.stop();
@@ -295,9 +230,8 @@ export class AimTrainerEngine {
     // Since we avoid 'dispose' in loop, we do it here
     this.renderer.dispose();
     // Geometries and materials should be disposed too if this component unmounts entirely
-    this.targets.forEach((t: THREE.Mesh) => {
-        t.geometry.dispose();
-        (t.material as THREE.Material).dispose();
-    });
+    if (this.targetService) {
+        this.targetService.dispose();
+    }
   }
 }
