@@ -3,6 +3,7 @@ import { FpsService } from './FpsService';
 import { InputService } from './InputService';
 import { EnvironmentService } from './EnvironmentService';
 import { TargetService } from './TargetService';
+import { MovementService } from './MovementService';
 
 export class AimTrainerEngine {
   private renderer: THREE.WebGLRenderer;
@@ -18,27 +19,24 @@ export class AimTrainerEngine {
   private inputService: InputService | null;
   private environmentService: EnvironmentService | null;
   private targetService: TargetService | null;
+  private movementService: MovementService | null;
 
   // Pre-allocated objects to avoid GC
   private _euler = new THREE.Euler(0, 0, 0, 'YXZ');
   private _vector = new THREE.Vector3();
   private _center = new THREE.Vector2(0, 0);
 
-  // Physics & Movement
-  private velocity = new THREE.Vector3();
-  private direction = new THREE.Vector3();
-  private onGround = false;
-
 
   // Game config
   private ROOM_SIZE = 50;
 
-  constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null, inputService: InputService | null = null, environmentService: EnvironmentService | null = null, targetService: TargetService | null = null) {
+  constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null, inputService: InputService | null = null, environmentService: EnvironmentService | null = null, targetService: TargetService | null = null, movementService: MovementService | null = null) {
     this.canvas = canvas;
     this.fpsService = fpsService;
     this.inputService = inputService;
     this.environmentService = environmentService;
     this.targetService = targetService;
+    this.movementService = movementService;
 
     // 1. Engine & Renderer Initialization
     // { antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true }
@@ -126,11 +124,10 @@ export class AimTrainerEngine {
     const GRAVITY = 30.0;
 
     // 1. Friction (Damping)
-    this.velocity.x -= this.velocity.x * FRICTION * delta;
-    this.velocity.z -= this.velocity.z * FRICTION * delta;
+
 
     // 2. Gravity
-    this.velocity.y -= GRAVITY * delta;
+
 
     // 3. Input Handling
     if (this.inputService) {
@@ -147,49 +144,27 @@ export class AimTrainerEngine {
         }
 
         // B. Movement
-        const moveState = this.inputService.getMoveState();
+        if (this.movementService) {
+            const moveState = this.inputService.getMoveState();
+            this.movementService.update(
+                delta,
+                moveState,
+                this.camera.quaternion,
+                this.camera.position,
+                this.ROOM_SIZE
+            );
+        }
 
         // Jump
-        if (moveState.jump && this.onGround) {
-             this.velocity.y = 15.0;
-             this.onGround = false;
-        }
 
-        if (moveState.forward || moveState.backward || moveState.left || moveState.right) {
-            // Get camera Y rotation (Yaw)
-            const yRotation = this._euler.setFromQuaternion(this.camera.quaternion).y;
 
-            // Input strength
-            const inputX = Number(moveState.right) - Number(moveState.left);
-            const inputZ = Number(moveState.backward) - Number(moveState.forward);
 
-            // Normalize input vector (avoid faster diagonal movement)
-            this.direction.set(inputX, 0, inputZ);
-            this.direction.normalize();
-
-            // Rotate local direction by Camera Yaw to get Global Direction
-            this.direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), yRotation);
-
-            // Apply Acceleration to Velocity
-            this.velocity.x += this.direction.x * SPEED * delta;
-            this.velocity.z += this.direction.z * SPEED * delta;
-        }
     }
 
     // 4. Integrate Position
-    this.camera.position.addScaledVector(this.velocity, delta);
 
-    // 5. Floor Collision
-    if (this.camera.position.y < 1.6) {
-        this.velocity.y = 0;
-        this.camera.position.y = 1.6;
-        this.onGround = true;
-    }
 
-    // 6. Room Boundaries
-    const LIMIT = this.ROOM_SIZE / 2 - 1;
-    this.camera.position.x = Math.max(-LIMIT, Math.min(LIMIT, this.camera.position.x));
-    this.camera.position.z = Math.max(-LIMIT, Math.min(LIMIT, this.camera.position.z));
+
 
     this.renderer.render(this.scene, this.camera);
   };

@@ -1,10 +1,20 @@
+export interface MoveState {
+  forward: boolean;
+  backward: boolean;
+  left: boolean;
+  right: boolean;
+  jump: boolean;
+  walk: boolean;
+}
+
 export class InputService {
-  private moveState = {
+  private moveState: MoveState = {
     forward: false,
     backward: false,
     left: false,
     right: false,
     jump: false,
+    walk: false,
   };
 
   private lookDelta = { x: 0, y: 0 };
@@ -16,6 +26,10 @@ export class InputService {
       case 'KeyA': this.moveState.left = true; break;
       case 'KeyD': this.moveState.right = true; break;
       case 'Space': this.moveState.jump = true; break;
+      case 'ShiftLeft':
+      case 'ShiftRight':
+        this.moveState.walk = true;
+        break;
     }
   }
 
@@ -25,7 +39,11 @@ export class InputService {
       case 'KeyS': this.moveState.backward = false; break;
       case 'KeyA': this.moveState.left = false; break;
       case 'KeyD': this.moveState.right = false; break;
-      case 'Space': this.moveState.jump = false; break; // Typically jump is a trigger, but keeping state is fine
+      case 'Space': this.moveState.jump = false; break;
+      case 'ShiftLeft':
+      case 'ShiftRight':
+        this.moveState.walk = false;
+        break;
     }
   }
 
@@ -34,7 +52,7 @@ export class InputService {
     this.lookDelta.y += movementY;
   }
 
-  public getMoveState() {
+  public getMoveState(): MoveState {
     return this.moveState;
   }
 
@@ -52,6 +70,7 @@ export class InputService {
       left: false,
       right: false,
       jump: false,
+      walk: false,
     };
     this.lookDelta = { x: 0, y: 0 };
   }
