@@ -44,5 +44,10 @@ trigger: always_on
 - [ ] **Ads:** Display Overwolf ads within the trainer (non-intrusive).
 
 ## feature: Aimii Core App Improvements
+- [ ] **App Refactor & Scaling:** Clean up god components (`MyMainWindow.tsx`), implement consistent routing/state.
+- [ ] **Game Detection Resiliency:** Ensure CS2 and others are detected even when GEP fails (Custom Fallback fix).
 - [ ] **Resolution Awareness:** Include screen resolution in sensitivity/mouse travel calculations.
 - [ ] **FOV Settings:** Global FOV setting that applies to calculations and the trainer.
+- [ ] **Profiles:** Allow users to save and swap between multiple profiles (different mouse travel, DPIs, specific game mains).
+- [ ] **Aim Trainer Sens Adjust:** Allow users to dynamically adjust sensitivity/mouse travel inside the 3D Aim Trainer.
+- [ ] **Math & Data Optimization:** Design a cleaner game sensitivity calculation structure and better data storage logic.
