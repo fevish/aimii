@@ -3,6 +3,7 @@ import { formatSensitivity } from '../../utils/format';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import type { BaselineSettings } from '../../types/app';
 import type { AimTrainerConfig } from '../../types/aim-trainer';
+import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import './AimTrainerCardContent.css';
 
 const COMMON_RESOLUTIONS = [
@@ -126,17 +127,16 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
 
           <div className="aim-trainer-field">
             <label htmlFor="aim-trainer-emulate">Emulate game</label>
-            <select
+            <SearchableSelect
               id="aim-trainer-emulate"
               value={emulateGame}
-              onChange={e => setEmulateGame(e.target.value)}
-            >
-              {conversions.map(c => (
-                <option key={c.gameName} value={c.gameName}>
-                  {c.gameName} ({formatSensitivity(c.suggestedSensitivity)})
-                </option>
-              ))}
-            </select>
+              options={conversions.map(c => ({
+                value: c.gameName,
+                label: `${c.gameName} (${formatSensitivity(c.suggestedSensitivity)})`
+              }))}
+              placeholder="Select a game"
+              onChange={setEmulateGame}
+            />
           </div>
         </>
       )}
