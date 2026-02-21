@@ -59,12 +59,10 @@ export class EnvironmentService {
 
   private starsData: { geometry: THREE.BufferGeometry; blinkIndices: number[]; baseColors: Float32Array; phases: number[] } | null = null;
 
-  /** Randomized star field high above, extending past the mountains. ~1% blink (glow in/out). */
+  /** Star field on a dome behind layer 4, horizon to zenith. ~1% blink (glow in/out). */
   private addStars(scene: THREE.Scene): void {
-    const count = 500;
-    const yMin = 120;
-    const yMax = 280;
-    const xzHalf = 420;
+    const count = 600;
+    const radius = 1550;
     const rng = seeded(999);
     const blinkFraction = 0.01;
     const numBlink = Math.max(1, Math.floor(count * blinkFraction));
@@ -85,11 +83,15 @@ export class EnvironmentService {
     }
 
     for (let i = 0; i < count; i++) {
-      positions[i * 3 + 0] = (rng() - 0.5) * 2 * xzHalf;
-      positions[i * 3 + 1] = yMin + rng() * (yMax - yMin);
-      positions[i * 3 + 2] = (rng() - 0.5) * 2 * xzHalf;
+      const theta = rng() * Math.PI * 2;
+      const t = Math.pow(rng(), 0.6);
+      const phi = t * (Math.PI / 2 - 0.01);
+      positions[i * 3 + 0] = radius * Math.cos(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = radius * Math.sin(phi);
+      positions[i * 3 + 2] = radius * Math.cos(phi) * Math.sin(theta);
       const brightness = 0.6 + rng() * 0.5;
-      c.setRGB(brightness, brightness * 1.05, brightness * 1.15);
+      const horizonFade = 0.88 + 0.12 * t;
+      c.setRGB(brightness * horizonFade, brightness * 1.05 * horizonFade, brightness * 1.15 * horizonFade);
       colors[i * 3 + 0] = c.r;
       colors[i * 3 + 1] = c.g;
       colors[i * 3 + 2] = c.b;
@@ -146,10 +148,11 @@ export class EnvironmentService {
     const scale = new THREE.Vector3(1, 1, 1);
     const quat = new THREE.Quaternion();
 
-    const layers: { radius: number; count: number; color: number; sizeRand: [number, number] }[] = [
-      { radius: 140, count: 45, color: 0x1a2e22, sizeRand: [0.8, 1.6] },
-      { radius: 220, count: 55, color: 0x152419, sizeRand: [0.6, 1.3] },
-      { radius: 340, count: 65, color: 0x0f1812, sizeRand: [0.5, 1.1] },
+    const layers: { radius: number; radiusJitter: number; count: number; color: number; sizeRand: [number, number]; widthScale: number }[] = [
+      { radius: 130, radiusJitter: 25, count: 50, color: 0x161a18, sizeRand: [0.5, 1.0], widthScale: 2.8 },
+      { radius: 270, radiusJitter: 18, count: 65, color: 0x141816, sizeRand: [1.0, 2.0], widthScale: 5 },
+      { radius: 520, radiusJitter: 15, count: 60, color: 0x121414, sizeRand: [2.5, 4.5], widthScale: 14 },
+      { radius: 1150, radiusJitter: 20, count: 70, color: 0x141414, sizeRand: [7, 10], widthScale: 45 },
     ];
 
     for (const layer of layers) {
@@ -159,14 +162,15 @@ export class EnvironmentService {
 
       for (let i = 0; i < layer.count; i++) {
         const angle = rng() * Math.PI * 2;
-        const r = layer.radius + (rng() - 0.5) * 60;
+        const r = layer.radius + (rng() - 0.5) * 2 * layer.radiusJitter;
         const [sMin, sMax] = layer.sizeRand;
         const s = sMin + rng() * (sMax - sMin);
         const hScale = 0.7 + rng() * 0.8;
         const rotY = rng() * Math.PI * 2;
+        const w = layer.widthScale * (0.8 + rng() * 0.5);
 
         position.set(r * Math.cos(angle), baseHeight * 0.5 * hScale * s, r * Math.sin(angle));
-        scale.set(0.7 + rng() * 0.6, hScale * s, 0.7 + rng() * 0.6);
+        scale.set(w, hScale * s, w);
         quat.setFromEuler(new THREE.Euler(0, rotY, 0));
 
         matrix.compose(position, quat, scale);

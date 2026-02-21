@@ -64,7 +64,7 @@ export class AimTrainerEngine {
       75,
       initW / initH,
       0.1,
-      1000
+      2000
     );
     this.camera.position.set(0, 1.6, 0); // Eye level
 
