@@ -168,8 +168,9 @@ export class AimTrainerEngine {
 
     // 4. Integrate Position
 
-
-
+    if (this.environmentService) {
+      this.environmentService.updateStars(time / 1000);
+    }
 
     this.renderer.render(this.scene, this.camera);
   };

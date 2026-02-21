@@ -47,16 +47,88 @@ export class EnvironmentService {
     floorGrid.position.y = 0;
     scene.add(floorGrid);
 
-    // 3. Ceiling Grid (Darker/Subtle)
-    const ceilingGrid = new THREE.GridHelper(this.ROOM_SIZE, 20, 0x225544, 0x112222);
-    ceilingGrid.position.y = 15; // 15 meters high
-    scene.add(ceilingGrid);
+    // 3. Randomized stars (sky/ceiling – no grid)
+    this.addStars(scene);
 
     // 4. 3D polygon mountains: instanced pyramid peaks (one draw call, reads as mountains)
     this.addMountainPeaks(scene);
 
     // 5. Background
     scene.background = new THREE.Color(0x111111);
+  }
+
+  private starsData: { geometry: THREE.BufferGeometry; blinkIndices: number[]; baseColors: Float32Array; phases: number[] } | null = null;
+
+  /** Randomized star field high above, extending past the mountains. ~1% blink (glow in/out). */
+  private addStars(scene: THREE.Scene): void {
+    const count = 500;
+    const yMin = 120;
+    const yMax = 280;
+    const xzHalf = 420;
+    const rng = seeded(999);
+    const blinkFraction = 0.01;
+    const numBlink = Math.max(1, Math.floor(count * blinkFraction));
+
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const baseColors = new Float32Array(count * 3);
+    const blinkIndices: number[] = [];
+    const phases: number[] = [];
+    const c = new THREE.Color();
+
+    while (blinkIndices.length < numBlink) {
+      const i = Math.floor(rng() * count);
+      if (!blinkIndices.includes(i)) {
+        blinkIndices.push(i);
+        phases.push(rng() * Math.PI * 2);
+      }
+    }
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3 + 0] = (rng() - 0.5) * 2 * xzHalf;
+      positions[i * 3 + 1] = yMin + rng() * (yMax - yMin);
+      positions[i * 3 + 2] = (rng() - 0.5) * 2 * xzHalf;
+      const brightness = 0.6 + rng() * 0.5;
+      c.setRGB(brightness, brightness * 1.05, brightness * 1.15);
+      colors[i * 3 + 0] = c.r;
+      colors[i * 3 + 1] = c.g;
+      colors[i * 3 + 2] = c.b;
+      baseColors[i * 3 + 0] = c.r;
+      baseColors[i * 3 + 1] = c.g;
+      baseColors[i * 3 + 2] = c.b;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const material = new THREE.PointsMaterial({
+      size: 0.28,
+      sizeAttenuation: true,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.95,
+    });
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
+
+    this.starsData = { geometry, blinkIndices, baseColors, phases };
+  }
+
+  /** Call each frame to animate star blink. Time in seconds. */
+  public updateStars(timeSeconds: number): void {
+    const data = this.starsData;
+    if (!data) return;
+    const colorAttr = data.geometry.getAttribute('color') as THREE.BufferAttribute;
+    if (!colorAttr) return;
+    const colors = colorAttr.array as Float32Array;
+    for (let k = 0; k < data.blinkIndices.length; k++) {
+      const i = data.blinkIndices[k];
+      const glow = 1.0 + 0.4 * (0.5 + 0.5 * Math.sin(timeSeconds * 1.2 + data.phases[k]));
+      colors[i * 3 + 0] = data.baseColors[i * 3 + 0] * glow;
+      colors[i * 3 + 1] = data.baseColors[i * 3 + 1] * glow;
+      colors[i * 3 + 2] = data.baseColors[i * 3 + 2] * glow;
+    }
+    colorAttr.needsUpdate = true;
   }
 
   /**
