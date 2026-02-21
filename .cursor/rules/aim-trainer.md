@@ -1,6 +1,7 @@
 ---
+description: 3D aim trainer, Three.js, aim trainer engine, performance optimization, potato mode, MeshBasicMaterial
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Project: Aimii Aim Trainer (Feature)

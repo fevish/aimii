@@ -1,6 +1,7 @@
 ---
+description: Aimii app overview, sensitivity converter, architecture, core features, project structure
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Aimii App Development Context

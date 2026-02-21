@@ -1,6 +1,7 @@
 ---
+description: Aimii roadmap, feature planning, aim trainer phases, future features, priorities
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Aimii Project Roadmap

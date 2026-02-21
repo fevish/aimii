@@ -1,5 +1,5 @@
 ---
-description: Optimized reference rules for Aimii development (Architecture, Aim Trainer, Ads, GDPR).
+description: Core Aimii directives, architecture, agent constraints, game identification, sensitivity math
 globs:
 alwaysApply: true
 ---

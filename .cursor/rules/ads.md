@@ -1,6 +1,7 @@
 ---
+description: Overwolf ad detection, AdService, ad-started/ad-completed events, UI feedback when ads run
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 # Requirements Document
 

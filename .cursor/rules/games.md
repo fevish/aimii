@@ -1,6 +1,7 @@
 ---
+description: Game detection, games.data.ts, GEP, Custom Game Detector, processName, owGameId, scalingFactor
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Game Detection & Data Configuration

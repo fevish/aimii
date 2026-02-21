@@ -1,6 +1,7 @@
 ---
+description: Sensitivity conversion formulas, cm/360, scalingFactor, specialConversion, conversionParams
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Sensitivity Conversion Architecture
