@@ -7,171 +7,171 @@
   display: flex;
   flex-flow: column;
   color: var(--light);
-}
 
-.settings-progress {
-  position: absolute;
-  right: 2rem;
-  top: calc(-1.5 * var(--spacing) - 1px);
-  display: flex;
-  gap: calc(2 * var(--spacing));
-}
+  .settings-progress {
+    position: absolute;
+    right: 2rem;
+    top: calc(-1.5 * var(--spacing) - 1px);
+    display: flex;
+    gap: calc(2 * var(--spacing));
+  }
 
-.progress-step {
-  height: calc(3 * var(--spacing));
-  width: auto;
-  aspect-ratio: 1/1;
-  border-radius: var(--radius);
-  background: var(--dark);
-  color: currentColor;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  border: 2px solid currentColor;
-  transition: all 0.3s ease;
-}
-
-.progress-step.active {
-  background: var(--primary);
-  color: var(--dark);
-}
-
-.settings-step {
-  display: flex;
-  flex-flow: column;
-  height: 100%;
-}
-
-.settings-flow h2 {
-  margin-bottom: calc(2 * var(--spacing));
-  color: currentColor;
-  font-size: 1.25rem;
-}
-
-.settings-flow p {
-  margin-bottom: calc(2 * var(--spacing));
-  color: currentColor;
-  font-size: 1rem;
-}
-
-.choice-buttons {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: calc(1 * var(--spacing));
-  margin-top: calc(2 * var(--spacing));
-  height: 100%;
-
-  .btn {
-    height: 150px;
-    padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
-    border-radius: calc(3.5 * var(--radius));
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-height: 60px;
+  .progress-step {
+    height: calc(3 * var(--spacing));
+    width: auto;
+    aspect-ratio: 1/1;
+    border-radius: var(--radius);
+    background: var(--dark);
+    color: currentColor;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
+    font-weight: bold;
+    border: 2px solid currentColor;
+    transition: all 0.3s ease;
   }
-}
 
-.form-group {
-  text-align: left;
-  margin: calc(2 * var(--spacing)) 0;
-}
+  .progress-step.active {
+    background: var(--primary);
+    color: var(--dark);
+  }
 
-.form-group label {
-  display: block;
-  margin-bottom: var(--spacing);
-  color: currentColor;
-  font-weight: 500;
-}
+  .settings-step {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+  }
 
-.form-group input,
-.form-group select {
-  width: 100%;
-  height: 4rem;
-  padding: var(--spacing) calc(2 * var(--spacing));
-  padding-right: calc(5.5 * var(--spacing));
-  border: 1px solid currentColor;
-  background: var(--dark);
-  color: currentColor;
-  font-size: 1.55rem;
-}
+  .settings-flow h2 {
+    margin-bottom: calc(2 * var(--spacing));
+    color: currentColor;
+    font-size: 1.25rem;
+  }
 
-.form-group #onboarding-game-select {
-  font-size: 1.25rem
-}
+  .settings-flow p {
+    margin-bottom: calc(2 * var(--spacing));
+    color: currentColor;
+    font-size: 1rem;
+  }
 
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: currentColor;
-}
+  .choice-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: calc(1 * var(--spacing));
+    margin-top: calc(2 * var(--spacing));
+    height: 100%;
 
-.form-group small {
-  display: block;
-  margin-top: calc(0.5 * var(--spacing));
-  color: currentColor;
-  opacity: 0.6;
-  font-size: 0.875rem;
-}
+    .btn {
+      height: 150px;
+      padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
+      border-radius: calc(3.5 * var(--radius));
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+  }
 
-.select-wrapper {
-  position: relative;
-}
+  .form-group {
+    text-align: left;
+    margin: calc(2 * var(--spacing)) 0;
+  }
 
-.settings-navigation {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--spacing);
-  padding-top: calc(2 * var(--spacing));
-  margin-top: auto;
-}
+  .form-group label {
+    display: block;
+    margin-bottom: var(--spacing);
+    color: currentColor;
+    font-weight: 500;
+  }
 
-.settings-btn {
-  padding: var(--spacing) calc(2 * var(--spacing));
-  border: 1px solid currentColor;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 100px;
-}
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    height: 4rem;
+    padding: var(--spacing) calc(2 * var(--spacing));
+    padding-right: calc(5.5 * var(--spacing));
+    border: 1px solid currentColor;
+    background: var(--dark);
+    color: currentColor;
+    font-size: 1.55rem;
+  }
 
-.settings-btn-next {
-  background-color: var(--primary);
-  color: var(--dark);
-  margin-left: auto;
-}
+  .form-group #onboarding-game-select {
+    font-size: 1.25rem
+  }
 
-.settings-btn-next:hover:not(:disabled) {
-  opacity: 0.7;
-}
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: currentColor;
+  }
 
-.settings-btn:disabled {
-  opacity: 0.25;
-  color: currentColor;
-  border: 1px solid var(--primary);
-}
+  .form-group small {
+    display: block;
+    margin-top: calc(0.5 * var(--spacing));
+    color: currentColor;
+    opacity: 0.6;
+    font-size: 0.875rem;
+  }
 
-.message {
-  margin-top: calc(2 * var(--spacing));
-  padding: var(--spacing);
-}
+  .select-wrapper {
+    position: relative;
+  }
 
-.message.success {
-  background: rgba(76, 175, 80, 0.1);
-  color: #4caf50;
-  border: 1px solid #4caf50;
-}
+  .settings-navigation {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing);
+    padding-top: calc(2 * var(--spacing));
+    margin-top: auto;
+  }
 
-.message.error {
-  background: rgba(244, 67, 54, 0.1);
-  color: #f44336;
-  border: 1px solid #f44336;
+  .settings-btn {
+    padding: var(--spacing) calc(2 * var(--spacing));
+    border: 1px solid currentColor;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+  }
+
+  .settings-btn-next {
+    background-color: var(--primary);
+    color: var(--dark);
+    margin-left: auto;
+  }
+
+  .settings-btn-next:hover:not(:disabled) {
+    opacity: 0.7;
+  }
+
+  .settings-btn:disabled {
+    opacity: 0.25;
+    color: currentColor;
+    border: 1px solid var(--primary);
+  }
+
+  .message {
+    margin-top: calc(2 * var(--spacing));
+    padding: var(--spacing);
+  }
+
+  .message.success {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    border: 1px solid #4caf50;
+  }
+
+  .message.error {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid #f44336;
+  }
 }

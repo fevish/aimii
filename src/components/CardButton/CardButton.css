@@ -49,6 +49,7 @@
       z-index: 1;
       padding: var(--spacing);
       padding-left: calc(1.5 * var(--spacing));
+      overflow: auto;
 
       .card-header {
         margin-bottom: calc(2 * var(--spacing));

@@ -93,8 +93,8 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
   const hasSettings = mouseTravel != null && canonicalSettings != null;
 
   return (
-    <div className="aim-trainer-card-content">
-      <div className="aim-trainer-field">
+    <form className="form" onSubmit={e => e.preventDefault()}>
+      <div className="form-group">
         <label htmlFor="aim-trainer-resolution">Resolution</label>
         <select
           id="aim-trainer-resolution"
@@ -109,7 +109,7 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
         </select>
       </div>
 
-      <div className="aim-trainer-field">
+      <div className="form-group">
         <label htmlFor="aim-trainer-profile">Profile</label>
         <select id="aim-trainer-profile" disabled>
           <option>Default (Coming soon)</option>
@@ -118,14 +118,12 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
 
       {hasSettings && (
         <>
-          <div className="aim-trainer-field aim-trainer-readonly">
-            <label>Your sensitivity</label>
-            <span className="aim-trainer-value">
-              {formatSensitivity(mouseTravel!)} cm/360°
-            </span>
+          <div className="setting-row">
+            <span className="setting-label">Your sensitivity</span>
+            <span className="setting-value">{formatSensitivity(mouseTravel!)} cm/360°</span>
           </div>
 
-          <div className="aim-trainer-field">
+          <div className="form-group">
             <label htmlFor="aim-trainer-emulate">Emulate game</label>
             <SearchableSelect
               id="aim-trainer-emulate"
@@ -142,27 +140,27 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
       )}
 
       {!hasSettings && (
-        <p className="aim-trainer-hint">
+        <p className="text-muted">
           Set your Mouse Travel in preferences to choose a game sensitivity.
         </p>
       )}
 
-      <div className="aim-trainer-field aim-trainer-checkbox">
+      <div className="form-group">
         <label>
           <input
             type="checkbox"
             checked={fullscreen}
             onChange={e => setFullscreen(e.target.checked)}
           />
-          Fullscreen
+          {' '}Fullscreen
         </label>
       </div>
 
-      <div className="aim-trainer-actions">
-        <button className="aim-trainer-btn primary" onClick={handleBegin}>
+      <div className="settings-navigation">
+        <button type="button" className="settings-btn settings-btn-next" onClick={handleBegin}>
           Begin
         </button>
       </div>
-    </div>
+    </form>
   );
 };

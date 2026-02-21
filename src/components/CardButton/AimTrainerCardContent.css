@@ -1,104 +1,18 @@
-.aim-trainer-card-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing);
-  padding-top: calc(0.5 * var(--spacing));
-}
-
-.aim-trainer-field {
-  display: flex;
-  flex-direction: column;
-  gap: calc(0.25 * var(--spacing));
-}
-
-.aim-trainer-field label {
-  font-size: 0.85rem;
-  color: var(--secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.aim-trainer-field select {
-  padding: calc(0.5 * var(--spacing)) var(--spacing);
-  background: var(--dark);
-  border: 1px solid var(--secondary);
-  border-radius: var(--radius);
-  color: var(--light);
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.aim-trainer-field select:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.aim-trainer-field select:hover:not(:disabled),
-.aim-trainer-field select:focus {
-  border-color: var(--primary);
-  outline: none;
-}
-
-.aim-trainer-readonly .aim-trainer-value {
-  padding: calc(0.5 * var(--spacing)) var(--spacing);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--secondary);
-  border-radius: var(--radius);
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.aim-trainer-checkbox label {
+/* Reuse .form, .form-group, .setting-row, .setting-label, .setting-value, .settings-btn from global/MainWindow/SettingsFlow */
+/* Checkbox label: inline with checkbox, not uppercase */
+.form-group:has(input[type="checkbox"]) label {
   display: flex;
   align-items: center;
   gap: var(--spacing);
-  cursor: pointer;
   text-transform: none;
-  color: var(--light);
-  font-size: 0.95rem;
+  cursor: pointer;
 }
 
-.aim-trainer-checkbox input {
-  width: 1rem;
-  height: 1rem;
+.form-group:has(input[type="checkbox"]) input {
+  width: auto;
   accent-color: var(--primary);
-  cursor: pointer;
 }
 
-.aim-trainer-hint {
-  color: var(--secondary);
-  font-size: 0.85rem;
-  margin: 0;
-  padding: calc(0.5 * var(--spacing));
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--radius);
-}
-
-.aim-trainer-actions {
+.form .settings-navigation {
   margin-top: var(--spacing);
-}
-
-.aim-trainer-btn {
-  padding: calc(0.75 * var(--spacing)) var(--spacing);
-  font-size: 1rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  width: 100%;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.aim-trainer-btn.primary {
-  background: var(--primary);
-  color: var(--dark);
-  border: 2px solid var(--primary);
-}
-
-.aim-trainer-btn.primary:hover {
-  background: var(--light);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
 }
