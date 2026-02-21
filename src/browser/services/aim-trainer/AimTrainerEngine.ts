@@ -29,6 +29,8 @@ export class AimTrainerEngine {
 
   // Game config
   private ROOM_SIZE = 50;
+  private forcedWidth: number | null = null;
+  private forcedHeight: number | null = null;
 
   constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null, inputService: InputService | null = null, environmentService: EnvironmentService | null = null, targetService: TargetService | null = null, movementService: MovementService | null = null) {
     this.canvas = canvas;
@@ -51,15 +53,16 @@ export class AimTrainerEngine {
 
     // Cap pixel ratio to 1.5 max for performance
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 
     // 2. Zero Lighting Policy - Scene Setup
     this.scene = new THREE.Scene();
     // Background set by EnvironmentService
 
+    const initW = canvas.clientWidth || 800;
+    const initH = canvas.clientHeight || 600;
     this.camera = new THREE.PerspectiveCamera(
       75,
-      canvas.clientWidth / canvas.clientHeight,
+      initW / initH,
       0.1,
       1000
     );
@@ -74,6 +77,8 @@ export class AimTrainerEngine {
     if (this.targetService) {
       this.targetService.init(this.scene, this.ROOM_SIZE);
     }
+
+    this.renderer.setSize(initW, initH, false);
   }
 
 
@@ -169,11 +174,22 @@ export class AimTrainerEngine {
     this.renderer.render(this.scene, this.camera);
   };
 
+  public setResolution(width: number, height: number): void {
+    this.forcedWidth = width;
+    this.forcedHeight = height;
+    this.applySize();
+  }
+
   public handleResize(): void {
     if (!this.canvas) return;
+    this.applySize();
+  }
 
-    const width = this.canvas.clientWidth;
-    const height = this.canvas.clientHeight;
+  private applySize(): void {
+    if (!this.canvas) return;
+
+    const width = this.forcedWidth ?? this.canvas.clientWidth;
+    const height = this.forcedHeight ?? this.canvas.clientHeight;
 
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();

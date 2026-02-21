@@ -1,0 +1,172 @@
+.aim-trainer-launch-config {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--dark);
+  z-index: 9999;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.aim-launch-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing);
+}
+
+.aim-launch-title {
+  color: var(--light);
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0 0 calc(0.25 * var(--spacing)) 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.aim-launch-subtitle {
+  color: var(--secondary);
+  font-size: 1rem;
+  margin: 0 0 calc(2 * var(--spacing)) 0;
+}
+
+.aim-launch-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  min-width: 360px;
+  max-width: 400px;
+}
+
+.aim-launch-field {
+  display: flex;
+  flex-direction: column;
+  gap: calc(0.25 * var(--spacing));
+}
+
+.aim-launch-field label {
+  font-size: 0.85rem;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.aim-launch-field select {
+  padding: calc(0.75 * var(--spacing)) var(--spacing);
+  background: var(--dark);
+  border: 1px solid var(--secondary);
+  border-radius: var(--radius);
+  color: var(--light);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.aim-launch-field select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.aim-launch-field select:hover:not(:disabled),
+.aim-launch-field select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.aim-launch-readonly .aim-launch-value {
+  padding: calc(0.75 * var(--spacing)) var(--spacing);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--secondary);
+  border-radius: var(--radius);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.aim-launch-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing);
+  cursor: pointer;
+  text-transform: none;
+  color: var(--light);
+}
+
+.aim-launch-checkbox input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.aim-launch-hint {
+  color: var(--secondary);
+  font-size: 0.9rem;
+  margin: 0;
+  padding: var(--spacing);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius);
+}
+
+.aim-launch-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  margin-top: var(--spacing);
+}
+
+.aim-launch-actions .aim-button {
+  padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  justify-content: center;
+}
+
+.aim-launch-actions .aim-button.primary {
+  background: var(--primary);
+  color: var(--dark);
+  border: 2px solid var(--primary);
+}
+
+.aim-launch-actions .aim-button.primary:hover {
+  background: var(--light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+}
+
+.aim-launch-actions .aim-button.secondary {
+  background: transparent;
+  color: var(--secondary);
+  border: 2px solid var(--secondary);
+}
+
+.aim-launch-actions .aim-button.secondary:hover {
+  color: var(--light);
+  border-color: var(--light);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.aim-trainer-ad-corner {
+  position: absolute;
+  bottom: var(--spacing);
+  right: var(--spacing);
+  width: 300px;
+  height: 250px;
+  z-index: 10;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.aim-trainer-ad-corner owadview {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

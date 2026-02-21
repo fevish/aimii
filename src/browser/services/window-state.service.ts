@@ -19,6 +19,13 @@ export const WINDOW_CONFIG = {
     transparent: true,
     frame: false
   },
+  aimTrainer: {
+    minWidth: 800,
+    minHeight: 600,
+    frame: true,
+    resizable: true,
+    title: 'aimii Aim Trainer'
+  },
   devTools: {
     mode: 'detach',
     autoOpen: false

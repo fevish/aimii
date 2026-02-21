@@ -4,6 +4,7 @@ import { Application } from './application';
 import { OverlayService } from './services/overlay.service';
 import { GameEventsService } from './services/gep.service';
 import { MainWindowController } from './controllers/main-window.controller';
+import { AimTrainerWindowController } from './controllers/aim-trainer-window.controller';
 
 import { WidgetWindowController } from './controllers/widget-window.controller';
 
@@ -111,6 +112,9 @@ const bootstrap = (): Application => {
     const controller = new WidgetWindowController(overlayService, settingsService, currentGameService, hotkeyService);
     return controller;
   };
+
+  const aimTrainerWindowController = new AimTrainerWindowController();
+  aimTrainerWindowController.registerIpc();
 
   const mainWindowController = new MainWindowController(
     gepService,

@@ -17,7 +17,7 @@ import { HomeView } from './views/HomeView';
 import { Header } from './views/Header';
 import { formatSensitivity } from '../../utils/format';
 import { applyTheme } from '../../utils/theme';
-import { AimTrainer } from '../AimTrainer/AimTrainer';
+import { AimTrainerLaunchConfig } from '../AimTrainer/AimTrainerLaunchConfig';
 
 export const MainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
@@ -377,7 +377,7 @@ export const MainWindow: React.FC = () => {
           <Settings handleRestartOnboarding={handleRestartOnboarding} />
         )}
 
-        <section className="ad-section" hidden={showOnboarding}>
+        <section className="ad-section" hidden={showOnboarding || activeTab === 'aim-trainer'}>
           <owadview />
           <div className="terminal-container">
             <Terminal />
@@ -386,7 +386,11 @@ export const MainWindow: React.FC = () => {
       </main>
 
       {activeTab === 'aim-trainer' && (
-        <AimTrainer onExit={() => setActiveTab('main')} />
+        <AimTrainerLaunchConfig
+          mouseTravel={canonicalSettings?.mouseTravel ?? mouseTravel ?? null}
+          canonicalSettings={canonicalSettings}
+          onBack={() => setActiveTab('main')}
+        />
       )}
 
     </div >

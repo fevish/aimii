@@ -6,13 +6,16 @@ import { EnvironmentService } from '../../browser/services/aim-trainer/Environme
 import { TargetService } from '../../browser/services/aim-trainer/TargetService';
 import { MovementService } from '../../browser/services/aim-trainer/MovementService';
 import { FpsCounter } from './FpsCounter/FpsCounter';
+import type { AimTrainerConfig } from './AimTrainerLaunchConfig';
 import './AimTrainer.css';
 
 interface AimTrainerProps {
+  config?: AimTrainerConfig | null;
   onExit: () => void;
 }
 
-export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
+export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fpsRef = useRef<HTMLDivElement>(null);
   const fpsService = useRef(new FpsService());
@@ -31,6 +34,10 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
     fpsService.current.setElement(fpsRef.current);
     const engine = new AimTrainerEngine(canvasRef.current, fpsService.current, inputService.current, envService.current, targetService.current, movementService.current);
     engineRef.current = engine;
+
+    if (config?.resolution) {
+      engine.setResolution(config.resolution.width, config.resolution.height);
+    }
 
     // Pointer Lock Listener
     const handleLockChange = () => {
@@ -71,6 +78,12 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (engineRef.current && config?.resolution) {
+      engineRef.current.setResolution(config.resolution.width, config.resolution.height);
+    }
+  }, [config?.resolution?.width, config?.resolution?.height]);
+
   const handleStart = () => {
     if (canvasRef.current) {
       canvasRef.current.requestPointerLock();
@@ -93,7 +106,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
   };
 
   return (
-    <div className="aim-trainer-container">
+    <div ref={containerRef} className="aim-trainer-container">
       <canvas
         ref={canvasRef}
         className="aim-trainer-canvas"
@@ -106,6 +119,11 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
 
       {/* Permanent Center Crosshair */}
       <div className="aim-crosshair" />
+
+      {/* Ad in bottom right corner */}
+      <div className="aim-trainer-ad-corner">
+        <owadview />
+      </div>
 
       {/* UI Overlay when unlocked */}
       {!isLocked && (
@@ -121,7 +139,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ onExit }) => {
                 Start Training
               </button>
               <button className="aim-button secondary" onClick={onExit}>
-                Exit to Main Menu
+                Close
               </button>
             </div>
 
