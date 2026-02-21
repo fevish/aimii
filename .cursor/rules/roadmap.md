@@ -1,5 +1,6 @@
 ---
-trigger: always_on
+globs:
+alwaysApply: true
 ---
 
 # Aimii Project Roadmap

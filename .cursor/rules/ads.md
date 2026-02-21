@@ -1,3 +1,7 @@
+---
+globs:
+alwaysApply: true
+---
 # Requirements Document
 
 ## Introduction

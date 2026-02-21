@@ -1,5 +1,6 @@
 ---
-trigger: always_on
+globs:
+alwaysApply: true
 ---
 
 # Project: Aimii Aim Trainer (Feature)

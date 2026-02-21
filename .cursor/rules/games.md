@@ -1,5 +1,6 @@
 ---
-trigger: always_on
+globs:
+alwaysApply: true
 ---
 
 # Game Detection & Data Configuration
