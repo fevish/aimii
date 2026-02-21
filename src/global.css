@@ -195,13 +195,14 @@ select option {
   opacity: 0.8;
 }
 
+
 /* Buttons */
 button, button:hover, button:focus, button:focus-visible {
   outline: none;
 }
 
 button {
-  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
+  padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
   background: var(--dark);
   color: currentColor;
   border: 1px solid currentColor;
@@ -216,6 +217,9 @@ button {
     height: calc(1.5 * var(--spacing));
     width: auto;
   }
+}
+.btn-sm {
+  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
 }
 
 button:hover {

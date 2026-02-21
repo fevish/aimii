@@ -11,10 +11,6 @@
     margin-bottom: calc(0.5 * var(--spacing));
   }
 
-  button {
-    padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
-  }
-
   button.hotkey-btn {
     &:disabled {
       opacity: 1;

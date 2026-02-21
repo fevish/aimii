@@ -64,7 +64,7 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
             <div className="setting-row">
               <p>// MOUSE TRAVEL cm/360°
                 <button
-                  className="btn btn-secondary btn-outline pref-btn"
+                  className="btn btn-secondary btn-outline btn-sm pref-btn"
                   onClick={onShowForm}
                 >
                   Change
