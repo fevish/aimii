@@ -9,16 +9,16 @@ const rendererConfig = { ...config };
 rendererConfig.target = 'electron-renderer';
 rendererConfig.entry = {
   'preload': './src/preload/preload.ts',
-  'my-main': './src/my-main.tsx',
+  'main': './src/main.tsx',
   'widget': './src/widget.tsx'
 };
 
 
 
 rendererConfig.plugins.push(new HtmlWebpackPlugin({
-  template: './public/my-main.html',
-  filename: 'my-main.html',
-  chunks: ['my-main'],
+  template: './public/main.html',
+  filename: 'main.html',
+  chunks: ['main'],
   inject: true
 }));
 

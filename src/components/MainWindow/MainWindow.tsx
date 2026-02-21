@@ -7,7 +7,7 @@ import { CardButton } from '../CardButton/CardButton';
 import { UserPreferencesContent } from '../CardButton/UserPreferencesContent';
 import { SecondaryCardContent } from '../CardButton/SecondaryCardContent';
 import { Terminal } from '../Terminal/Terminal';
-import './MyMainWindow.css';
+import './MainWindow.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import { GameData, BaselineSettings, HotkeyInfo } from '../../types/app';
@@ -19,8 +19,7 @@ import { formatSensitivity } from '../../utils/format';
 import { applyTheme } from '../../utils/theme';
 import { AimTrainer } from '../AimTrainer/AimTrainer';
 
-
-export const MyMainWindow: React.FC = () => {
+export const MainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
   const [sensitivity, setSensitivity] = useState<string>('');
   const [dpi, setDpi] = useState<string>('800');
@@ -328,7 +327,7 @@ export const MyMainWindow: React.FC = () => {
   };
 
   return (
-    <div className={`my-main-window ${showOnboarding ? 'onboarding' : ''}`}>
+    <div className={`main-window ${showOnboarding ? 'onboarding' : ''}`}>
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}

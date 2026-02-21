@@ -1,7 +1,7 @@
 /* Main Window Styles - Minimalistic Typewriter Theme */
 
 /* Layout */
-.my-main-window {
+.main-window {
   background: var(--dark);
   display: flex;
   flex-flow: column;
