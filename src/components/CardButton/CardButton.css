@@ -13,8 +13,8 @@
 /* Cards Section */
 .cards-section {
   display: grid;
-  grid-template-columns: 50% 50%;
-  max-width: 400px;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 600px;
   gap: var(--spacing);
   margin-top: calc(2 * var(--spacing));
 

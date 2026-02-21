@@ -2,7 +2,7 @@ import './global.css';
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AimTrainer } from './components/AimTrainer/AimTrainer';
-import type { AimTrainerConfig } from './components/AimTrainer/AimTrainerLaunchConfig';
+import type { AimTrainerConfig } from './types/aim-trainer';
 import './components/AimTrainer/AimTrainer.css';
 
 const mountElement = document.getElementById('app-root');

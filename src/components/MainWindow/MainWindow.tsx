@@ -17,7 +17,6 @@ import { HomeView } from './views/HomeView';
 import { Header } from './views/Header';
 import { formatSensitivity } from '../../utils/format';
 import { applyTheme } from '../../utils/theme';
-import { AimTrainerLaunchConfig } from '../AimTrainer/AimTrainerLaunchConfig';
 
 export const MainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
@@ -25,7 +24,7 @@ export const MainWindow: React.FC = () => {
   const [dpi, setDpi] = useState<string>('800');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'main' | 'settings' | 'aim-trainer'>('main');
+  const [activeTab, setActiveTab] = useState<'main' | 'settings'>('main');
   const [currentGameIndex, setCurrentGameIndex] = useState<number>(0);
   const [trueSens, setTrueSens] = useState<number | null>(null);
 
@@ -377,21 +376,13 @@ export const MainWindow: React.FC = () => {
           <Settings handleRestartOnboarding={handleRestartOnboarding} />
         )}
 
-        <section className="ad-section" hidden={showOnboarding || activeTab === 'aim-trainer'}>
+        <section className="ad-section" hidden={showOnboarding}>
           <owadview />
           <div className="terminal-container">
             <Terminal />
           </div>
         </section>
       </main>
-
-      {activeTab === 'aim-trainer' && (
-        <AimTrainerLaunchConfig
-          mouseTravel={canonicalSettings?.mouseTravel ?? mouseTravel ?? null}
-          canonicalSettings={canonicalSettings}
-          onBack={() => setActiveTab('main')}
-        />
-      )}
 
     </div >
   );

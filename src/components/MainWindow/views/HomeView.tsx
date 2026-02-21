@@ -3,6 +3,7 @@ import { GameInfo } from '../GameInfo';
 import { CardButton } from '../../CardButton/CardButton';
 import { UserPreferencesContent } from '../../CardButton/UserPreferencesContent';
 import { SecondaryCardContent } from '../../CardButton/SecondaryCardContent';
+import { AimTrainerCardContent } from '../../CardButton/AimTrainerCardContent';
 import { formatSensitivity } from '../../../utils/format';
 import { GameData, BaselineSettings } from '../../../types/app';
 import { CurrentGameInfo } from '../../../browser/services/current-game.service';
@@ -44,6 +45,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   // Card states
   const [isUserPreferencesCardOpen, setIsUserPreferencesCardOpen] = useState<boolean>(false);
   const [isSecondaryCardOpen, setIsSecondaryCardOpen] = useState<boolean>(false);
+  const [isAimTrainerCardOpen, setIsAimTrainerCardOpen] = useState<boolean>(false);
   const [showUserPreferencesForm, setShowUserPreferencesForm] = useState<boolean>(false);
 
   const [userPreferencesSettingsData, setUserPreferencesSettingsData] = useState({
@@ -78,6 +80,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   const handleOpenSecondaryCard = () => setIsSecondaryCardOpen(true);
   const handleCloseSecondaryCard = () => setIsSecondaryCardOpen(false);
+  const handleOpenAimTrainerCard = () => setIsAimTrainerCardOpen(true);
+  const handleCloseAimTrainerCard = () => setIsAimTrainerCardOpen(false);
 
   const handleShowUserPreferencesForm = () => {
     setShowUserPreferencesForm(true);
@@ -261,6 +265,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <SecondaryCardContent
             calculatorState={calculatorState}
             onCalculatorStateChange={setCalculatorState}
+          />
+        </CardButton>
+
+        <CardButton
+          title="Aim Trainer"
+          value="3D practice"
+          iconName="arrow-north-east"
+          isOpen={isAimTrainerCardOpen}
+          onToggle={handleOpenAimTrainerCard}
+          onClose={handleCloseAimTrainerCard}
+          className="card-secondary"
+          contentTitle="Aim Trainer"
+        >
+          <AimTrainerCardContent
+            mouseTravel={canonicalSettings?.mouseTravel ?? mouseTravel ?? null}
+            canonicalSettings={canonicalSettings}
           />
         </CardButton>
       </div>

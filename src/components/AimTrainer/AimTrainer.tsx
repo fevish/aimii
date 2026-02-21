@@ -6,7 +6,7 @@ import { EnvironmentService } from '../../browser/services/aim-trainer/Environme
 import { TargetService } from '../../browser/services/aim-trainer/TargetService';
 import { MovementService } from '../../browser/services/aim-trainer/MovementService';
 import { FpsCounter } from './FpsCounter/FpsCounter';
-import type { AimTrainerConfig } from './AimTrainerLaunchConfig';
+import type { AimTrainerConfig } from '../../types/aim-trainer';
 import './AimTrainer.css';
 
 interface AimTrainerProps {

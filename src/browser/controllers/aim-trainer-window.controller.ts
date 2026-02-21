@@ -1,13 +1,7 @@
 import { ipcMain, BrowserWindow, nativeImage } from 'electron';
 import path from 'path';
 import { WINDOW_CONFIG } from '../services/window-state.service';
-
-export interface AimTrainerConfig {
-  resolution: { width: number; height: number };
-  fullscreen: boolean;
-  emulateGame: string;
-  emulateSensitivity: number;
-}
+import type { AimTrainerConfig } from '../../types/aim-trainer';
 
 export class AimTrainerWindowController {
   private window: BrowserWindow | null = null;

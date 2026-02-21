@@ -2,20 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { formatSensitivity } from '../../utils/format';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import type { BaselineSettings } from '../../types/app';
-import './AimTrainerLaunchConfig.css';
-
-export interface AimTrainerConfig {
-  resolution: { width: number; height: number };
-  fullscreen: boolean;
-  emulateGame: string;
-  emulateSensitivity: number;
-}
-
-interface AimTrainerLaunchConfigProps {
-  mouseTravel: number | null;
-  canonicalSettings: BaselineSettings | null;
-  onBack: () => void;
-}
+import type { AimTrainerConfig } from '../../types/aim-trainer';
+import './AimTrainerCardContent.css';
 
 const COMMON_RESOLUTIONS = [
   { width: 1920, height: 1080, label: '1920 × 1080 (Full HD)' },
@@ -33,10 +21,14 @@ function getFilteredResolutions(): { width: number; height: number; label: strin
   return COMMON_RESOLUTIONS.filter(r => r.width <= maxW && r.height <= maxH);
 }
 
-export const AimTrainerLaunchConfig: React.FC<AimTrainerLaunchConfigProps> = ({
+interface AimTrainerCardContentProps {
+  mouseTravel: number | null;
+  canonicalSettings: BaselineSettings | null;
+}
+
+export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
   mouseTravel,
-  canonicalSettings,
-  onBack
+  canonicalSettings
 }) => {
   const [conversions, setConversions] = useState<SensitivityConversion[]>([]);
   const [resolution, setResolution] = useState<string>('');
@@ -100,90 +92,76 @@ export const AimTrainerLaunchConfig: React.FC<AimTrainerLaunchConfigProps> = ({
   const hasSettings = mouseTravel != null && canonicalSettings != null;
 
   return (
-    <div className="aim-trainer-launch-config">
-      <div className="aim-launch-content">
-        <h1 className="aim-launch-title">Aim Trainer</h1>
-        <p className="aim-launch-subtitle">Configure and launch</p>
+    <div className="aim-trainer-card-content">
+      <div className="aim-trainer-field">
+        <label htmlFor="aim-trainer-resolution">Resolution</label>
+        <select
+          id="aim-trainer-resolution"
+          value={resolution}
+          onChange={e => setResolution(e.target.value)}
+        >
+          {resolutions.map(r => (
+            <option key={`${r.width}x${r.height}`} value={`${r.width}x${r.height}`}>
+              {r.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        <div className="aim-launch-form">
-          <div className="aim-launch-field">
-            <label htmlFor="resolution">Resolution</label>
+      <div className="aim-trainer-field">
+        <label htmlFor="aim-trainer-profile">Profile</label>
+        <select id="aim-trainer-profile" disabled>
+          <option>Default (Coming soon)</option>
+        </select>
+      </div>
+
+      {hasSettings && (
+        <>
+          <div className="aim-trainer-field aim-trainer-readonly">
+            <label>Your sensitivity</label>
+            <span className="aim-trainer-value">
+              {formatSensitivity(mouseTravel!)} cm/360°
+            </span>
+          </div>
+
+          <div className="aim-trainer-field">
+            <label htmlFor="aim-trainer-emulate">Emulate game</label>
             <select
-              id="resolution"
-              value={resolution}
-              onChange={e => setResolution(e.target.value)}
+              id="aim-trainer-emulate"
+              value={emulateGame}
+              onChange={e => setEmulateGame(e.target.value)}
             >
-              {resolutions.map(r => (
-                <option key={`${r.width}x${r.height}`} value={`${r.width}x${r.height}`}>
-                  {r.label}
+              {conversions.map(c => (
+                <option key={c.gameName} value={c.gameName}>
+                  {c.gameName} ({formatSensitivity(c.suggestedSensitivity)})
                 </option>
               ))}
             </select>
           </div>
+        </>
+      )}
 
-          <div className="aim-launch-field">
-            <label htmlFor="profile">Profile</label>
-            <select id="profile" disabled>
-              <option>Default (Coming soon)</option>
-            </select>
-          </div>
+      {!hasSettings && (
+        <p className="aim-trainer-hint">
+          Set your Mouse Travel in preferences to choose a game sensitivity.
+        </p>
+      )}
 
-          {hasSettings && (
-            <>
-              <div className="aim-launch-field aim-launch-readonly">
-                <label>Your sensitivity</label>
-                <span className="aim-launch-value">
-                  {formatSensitivity(mouseTravel!)} cm/360°
-                </span>
-              </div>
-
-              <div className="aim-launch-field">
-                <label htmlFor="emulate">Emulate game</label>
-                <select
-                  id="emulate"
-                  value={emulateGame}
-                  onChange={e => setEmulateGame(e.target.value)}
-                >
-                  {conversions.map(c => (
-                    <option key={c.gameName} value={c.gameName}>
-                      {c.gameName} ({formatSensitivity(c.suggestedSensitivity)})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </>
-          )}
-
-          {!hasSettings && (
-            <p className="aim-launch-hint">
-              Set your Mouse Travel in preferences to choose a game sensitivity.
-            </p>
-          )}
-
-          <div className="aim-launch-field aim-launch-checkbox">
-            <label>
-              <input
-                type="checkbox"
-                checked={fullscreen}
-                onChange={e => setFullscreen(e.target.checked)}
-              />
-              Fullscreen
-            </label>
-          </div>
-
-          <div className="aim-launch-actions">
-            <button className="aim-button primary" onClick={handleBegin}>
-              Begin
-            </button>
-            <button className="aim-button secondary" onClick={onBack}>
-              Back
-            </button>
-          </div>
-        </div>
+      <div className="aim-trainer-field aim-trainer-checkbox">
+        <label>
+          <input
+            type="checkbox"
+            checked={fullscreen}
+            onChange={e => setFullscreen(e.target.checked)}
+          />
+          Fullscreen
+        </label>
       </div>
 
-      <div className="aim-trainer-ad-corner">
-        <owadview />
+      <div className="aim-trainer-actions">
+        <button className="aim-trainer-btn primary" onClick={handleBegin}>
+          Begin
+        </button>
       </div>
     </div>
   );

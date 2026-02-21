@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface HeaderProps {
-  activeTab: 'main' | 'settings' | 'aim-trainer';
-  setActiveTab: (tab: 'main' | 'settings' | 'aim-trainer') => void;
+  activeTab: 'main' | 'settings';
+  setActiveTab: (tab: 'main' | 'settings') => void;
   showOnboarding: boolean;
   onMinimize: () => void;
   onClose: () => void;
@@ -35,12 +35,6 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setActiveTab('settings')}
             >
               Settings
-            </button>
-            <button
-              className={`tab-button ${activeTab === 'aim-trainer' ? 'active' : ''}`}
-              onClick={() => setActiveTab('aim-trainer')}
-            >
-              Trainer
             </button>
             <button className="tab-button btn-icon discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>Discord</button>
           </nav>
