@@ -289,3 +289,8 @@
   padding: 4px 8px;
   border-radius: 4px;
 }
+
+/* When container is full viewport (training), offset FPS below header (~40px) */
+.aim-trainer-window.training-active .aim-fps-counter {
+  top: calc(40px + 1rem);
+}
