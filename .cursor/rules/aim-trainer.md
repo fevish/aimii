@@ -65,7 +65,11 @@ alwaysApply: false
     *   Overlay: HTML/CSS UI overlay (Start/Exit buttons, Score) displayed when pointer is unlocked.
     *   **FPS Counter:** Top-right, high-contrast green. Updates every 500ms via direct DOM manipulation (no React state) for performance.
 
-## 6. Implementation Reference
+## 6. Window & config
+*   **Aim trainer window:** Frameless, non-resizable (so pointer lock confines cursor on Windows). Window height = resolution height + `AIM_TRAINER_HEADER_HEIGHT_PX` (40 px) so canvas area matches selected resolution. See `window-state.service.ts`, `aim-trainer-window.controller.ts`.
+*   **Windowed vs fullscreen:** On Windows, windowed mode adds ~1–2 frames of latency (DWM compositor). Fullscreen bypasses DWM. Recommend fullscreen for best feel.
+
+## 7. Implementation Reference
 *   **Core Engine:** `src/browser/services/aim-trainer/AimTrainerEngine.ts`
 *   **UI Wrapper:** `src/components/AimTrainer/AimTrainer.tsx`
 *   **Styles:** `src/components/AimTrainer/AimTrainer.css`

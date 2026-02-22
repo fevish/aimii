@@ -42,6 +42,7 @@ export class AimTrainerWindowController {
         contextIsolation: true,
         devTools: true,
         preload: path.join(__dirname, '../preload/preload.js'),
+        backgroundThrottling: false,
       },
     });
 
