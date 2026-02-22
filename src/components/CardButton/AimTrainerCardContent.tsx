@@ -19,7 +19,9 @@ const COMMON_RESOLUTIONS = [
 function getFilteredResolutions(): { width: number; height: number; label: string }[] {
   const maxW = typeof screen !== 'undefined' ? screen.width : 1920;
   const maxH = typeof screen !== 'undefined' ? screen.height : 1080;
-  return COMMON_RESOLUTIONS.filter(r => r.width <= maxW && r.height <= maxH);
+  return COMMON_RESOLUTIONS.filter(
+    r => r.width <= maxW && r.height <= maxH || (r.width === 3840 && r.height === 2160)
+  );
 }
 
 interface AimTrainerCardContentProps {
@@ -71,7 +73,9 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
       resolution: { width: w, height: h },
       fullscreen,
       emulateGame: emulateGame || conv?.gameName || '',
-      emulateSensitivity: conv?.suggestedSensitivity ?? 1
+      emulateSensitivity: conv?.suggestedSensitivity ?? 1,
+      mouseTravel: canonicalSettings?.mouseTravel,
+      dpi: canonicalSettings?.dpi,
     };
   };
 

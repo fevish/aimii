@@ -5,6 +5,13 @@ import { EnvironmentService } from './EnvironmentService';
 import { TargetService } from './TargetService';
 import { MovementService } from './MovementService';
 
+/**
+ * Aim trainer look baseline: CS2/Source m_yaw (degrees per mouse count at sens 1.0).
+ * Used when user has no mouseTravel/DPI. Horizontal and vertical use the same multiplier (1:1);
+ * CS2 and Valorant both use 1:1 H/V, so this baseline matches both as reference games.
+ */
+const BASELINE_YAW_DEG_CS2 = 0.02199999511;
+
 export class AimTrainerEngine {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
@@ -32,6 +39,9 @@ export class AimTrainerEngine {
   private playAreaBounds: { xMin: number; xMax: number; zMin: number; zMax: number } = { xMin: -24, xMax: 24, zMin: -24, zMax: 24 };
   private forcedWidth: number | null = null;
   private forcedHeight: number | null = null;
+
+  /** Radians per movementX/movementY (same for horizontal and vertical; 1:1 like CS2/Valorant). */
+  private lookSensitivityRadPerPixel = (BASELINE_YAW_DEG_CS2 * Math.PI) / 180;
 
   constructor(canvas: HTMLCanvasElement, fpsService: FpsService | null = null, inputService: InputService | null = null, environmentService: EnvironmentService | null = null, targetService: TargetService | null = null, movementService: MovementService | null = null) {
     this.canvas = canvas;
@@ -83,9 +93,34 @@ export class AimTrainerEngine {
     this.renderer.setSize(initW, initH, false);
   }
 
+  /**
+   * Apply raw mouse delta immediately (no batching). Use this from a native mousemove listener for raw input.
+   * Call this on every pointer move when locked; do not also consume look delta in the game loop.
+   */
+  public applyLookDelta(movementX: number, movementY: number): void {
+    if (movementX === 0 && movementY === 0) return;
+    this._euler.setFromQuaternion(this.camera.quaternion);
+    this._euler.y -= movementX * this.lookSensitivityRadPerPixel;
+    this._euler.x -= movementY * this.lookSensitivityRadPerPixel;
+    const PITCH_LIMIT = Math.PI / 2 - 0.01;
+    this._euler.x = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this._euler.x));
+    this.camera.quaternion.setFromEuler(this._euler);
+  }
 
-
-
+  /**
+   * Set look sensitivity from user's cm/360° and DPI so that physical mouse movement matches their preference.
+   * Uses same physical mapping as games: 360° = mouseTravel cm → counts = mouseTravel * (dpi/2.54); rad per count = 2π / counts.
+   * When mouseTravel or dpi is invalid, falls back to baseline (CS2 sens 1.0).
+   */
+  public setLookSensitivity(mouseTravel: number, dpi: number): void {
+    if (mouseTravel > 0 && dpi > 0) {
+      const CM_PER_INCH = 2.54;
+      const countsPer360 = (mouseTravel * dpi) / CM_PER_INCH;
+      this.lookSensitivityRadPerPixel = (2 * Math.PI) / countsPer360;
+    } else {
+      this.lookSensitivityRadPerPixel = (BASELINE_YAW_DEG_CS2 * Math.PI) / 180;
+    }
+  }
 
   public start(): void {
     if (this.isRunning) return;
@@ -136,21 +171,9 @@ export class AimTrainerEngine {
     // 2. Gravity
 
 
-    // 3. Input Handling
+    // 3. Input Handling (look is applied in native mousemove via applyLookDelta for raw input)
     if (this.inputService) {
-        // A. Look
-        const lookDelta = this.inputService.consumeLookDelta();
-        if (lookDelta.x !== 0 || lookDelta.y !== 0) {
-            const SENSITIVITY = 0.002;
-            this._euler.setFromQuaternion(this.camera.quaternion);
-            this._euler.y -= lookDelta.x * SENSITIVITY;
-            this._euler.x -= lookDelta.y * SENSITIVITY;
-            const PITCH_LIMIT = Math.PI / 2 - 0.01;
-            this._euler.x = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this._euler.x));
-            this.camera.quaternion.setFromEuler(this._euler);
-        }
-
-        // B. Movement
+        // Movement
         if (this.movementService) {
             const moveState = this.inputService.getMoveState();
             this.movementService.update(

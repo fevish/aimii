@@ -47,7 +47,8 @@ alwaysApply: false
 
 ## 5. Input & Integration
 *   **Mouse Control:** Native `Pointer Lock API`.
-    *   Raw `movementX`/`movementY` mapped to camera Euler rotation (YXZ order).
+    *   Raw `movementX`/`movementY` mapped to camera Euler rotation (YXZ order). **Look sensitivity** uses **CS2 and Valorant as baseline**: horizontal and vertical use the same multiplier (1:1 ratio; both games use 1:1). Default = CS2 sens 1.0 (Source m_yaw = 0.02199999511° per count). When `AimTrainerConfig` includes `mouseTravel` (cm/360°) and `dpi`, the engine converts from that (`radPerCount = 2π / (mouseTravel * dpi / 2.54)`). Fallback when no settings = CS2 baseline.
+    *   **Raw input / low latency:** Look is applied in a **native** canvas `mousemove` listener (not React), per event via `applyLookDelta()`—no rAF batching. Rotation is **frame-independent** (no deltaTime on mouse). `requestPointerLock({ unadjustedMovement: true })` requested. Main process uses `disable-gpu-vsync` to reduce compositor latency. If using very high polling mice (2k/4k/8k Hz), suggest 1000Hz to avoid Chromium event choking.
     *   Pitch clamped to avoid flipping.
 *   **Keyboard Control:**
     *   **Movement:** WASD for horizontal movement relative to camera yaw.

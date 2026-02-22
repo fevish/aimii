@@ -1,6 +1,9 @@
 import 'reflect-metadata';
-import {app as ElectronApp, BrowserWindow } from 'electron';
+import { app as ElectronApp, BrowserWindow } from 'electron';
 import { Application } from './application';
+
+// Lower compositor latency for aim trainer (closer to raw game feel). Remove if you see tearing.
+ElectronApp.commandLine.appendSwitch('disable-gpu-vsync');
 import { OverlayService } from './services/overlay.service';
 import { GameEventsService } from './services/gep.service';
 import { MainWindowController } from './controllers/main-window.controller';

@@ -38,6 +38,9 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
     if (config?.resolution) {
       engine.setResolution(config.resolution.width, config.resolution.height);
     }
+    if (config?.mouseTravel != null && config?.dpi != null) {
+      engine.setLookSensitivity(config.mouseTravel, config.dpi);
+    }
 
     // Pointer Lock Listener
     const handleLockChange = () => {
@@ -84,16 +87,38 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
     }
   }, [config?.resolution?.width, config?.resolution?.height]);
 
+  useEffect(() => {
+    if (engineRef.current && config?.mouseTravel != null && config?.dpi != null) {
+      engineRef.current.setLookSensitivity(config.mouseTravel, config.dpi);
+    }
+  }, [config?.mouseTravel, config?.dpi]);
+
+  // Raw input: native mousemove on canvas when locked (bypasses React, applies look immediately per event)
+  useEffect(() => {
+    if (!isLocked || !canvasRef.current || !engineRef.current) return;
+    const canvas = canvasRef.current;
+    const engine = engineRef.current;
+    const onRawMouseMove = (e: MouseEvent) => engine.applyLookDelta(e.movementX, e.movementY);
+    canvas.addEventListener('mousemove', onRawMouseMove);
+    return () => canvas.removeEventListener('mousemove', onRawMouseMove);
+  }, [isLocked]);
+
   const handleStart = () => {
-    if (canvasRef.current) {
-      canvasRef.current.requestPointerLock();
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    try {
+      const lock = canvas.requestPointerLock as (options?: { unadjustedMovement?: boolean }) => void | Promise<void>;
+      const p = lock.call(canvas, { unadjustedMovement: true }) as Promise<void> | undefined;
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => canvas.requestPointerLock());
+      }
+    } catch {
+      canvas.requestPointerLock();
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isLocked && engineRef.current) {
-      inputService.current.handleMouseMove(e.movementX, e.movementY);
-    }
+  const handleMouseMove = () => {
+    // Look is handled by native mousemove listener when locked (raw input)
   };
 
   const handleClick = () => {
