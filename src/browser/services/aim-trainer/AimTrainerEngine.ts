@@ -77,7 +77,7 @@ export class AimTrainerEngine {
     const b = this.playAreaBounds;
     this.camera.position.set((b.xMin + b.xMax) / 2, 1.65, (b.zMin + b.zMax) / 2);
     if (this.targetService) {
-      this.targetService.init(this.scene, this.playAreaBounds);
+      this.targetService.init(this.scene, this.playAreaBounds, this.ROOM_SIZE);
     }
 
     this.renderer.setSize(initW, initH, false);

@@ -5,13 +5,27 @@ export class TargetService {
   private activeTargetCount = 0;
   private readonly TARGET_POOL_SIZE = 20;
   private readonly TARGET_RADIUS = 0.15;
-  private bounds: { xMin: number; xMax: number; zMin: number; zMax: number } = { xMin: -12, xMax: 12, zMin: -12, zMax: 12 };
+  /** Spawn targets at player head/eye height (m). */
+  private readonly SPAWN_HEIGHT = 1.65;
+  /** Min distance (m) from player's wall to target spawn. */
+  private readonly MIN_DISTANCE_FROM_WALL = 10;
+  /** Spawn bounds: other side of wall only, at least MIN_DISTANCE_FROM_WALL from wall. */
+  private spawnBounds: { xMin: number; xMax: number; zMin: number; zMax: number } = { xMin: -24, xMax: 24, zMin: -24, zMax: 24 };
 
-  // Reusable objects
   private _vector = new THREE.Vector3();
 
-  public init(scene: THREE.Scene, bounds: { xMin: number; xMax: number; zMin: number; zMax: number }): void {
-    this.bounds = bounds;
+  public init(
+    scene: THREE.Scene,
+    playAreaBounds: { xMin: number; xMax: number; zMin: number; zMax: number },
+    roomSize: number
+  ): void {
+    const wallZ = playAreaBounds.zMin;
+    this.spawnBounds = {
+      xMin: playAreaBounds.xMin,
+      xMax: playAreaBounds.xMax,
+      zMin: -roomSize / 2,
+      zMax: wallZ - this.MIN_DISTANCE_FROM_WALL,
+    };
 
     // 3. Object Pooling (The Targets)
     // Pre-allocate 20 target meshes
@@ -42,9 +56,15 @@ export class TargetService {
     if (!target) return;
 
     const pad = 2;
-    const x = this.bounds.xMin + pad + Math.random() * (this.bounds.xMax - this.bounds.xMin - pad * 2);
-    const z = this.bounds.zMin + pad + Math.random() * (this.bounds.zMax - this.bounds.zMin - pad * 2);
-    this._vector.set(x, 1 + Math.random() * 2, z);
+    const x =
+      this.spawnBounds.xMin +
+      pad +
+      Math.random() * (this.spawnBounds.xMax - this.spawnBounds.xMin - pad * 2);
+    const z =
+      this.spawnBounds.zMin +
+      pad +
+      Math.random() * (this.spawnBounds.zMax - this.spawnBounds.zMin - pad * 2);
+    this._vector.set(x, this.SPAWN_HEIGHT, z);
 
     target.position.copy(this._vector);
     target.visible = true;
