@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow, nativeImage } from 'electron';
 import path from 'path';
-import { WINDOW_CONFIG } from '../services/window-state.service';
+import { WINDOW_CONFIG, AIM_TRAINER_HEADER_HEIGHT_PX } from '../services/window-state.service';
 import type { AimTrainerConfig } from '../../types/aim-trainer';
 
 export class AimTrainerWindowController {
@@ -25,10 +25,11 @@ export class AimTrainerWindowController {
 
     this.config = config;
     const { width, height } = config.resolution;
+    const windowHeight = height + AIM_TRAINER_HEADER_HEIGHT_PX;
 
     this.window = new BrowserWindow({
       width,
-      height,
+      height: windowHeight,
       minWidth: WINDOW_CONFIG.aimTrainer.minWidth,
       minHeight: WINDOW_CONFIG.aimTrainer.minHeight,
       frame: WINDOW_CONFIG.aimTrainer.frame,
@@ -65,7 +66,8 @@ export class AimTrainerWindowController {
     if (this.window && !this.window.isDestroyed()) {
       this.window.webContents.send('aim-trainer-config-updated', config);
       if (config.resolution) {
-        this.window.setSize(config.resolution.width, config.resolution.height);
+        const { width, height } = config.resolution;
+        this.window.setSize(width, height + AIM_TRAINER_HEADER_HEIGHT_PX);
       }
     }
   }

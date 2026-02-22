@@ -29,6 +29,18 @@
   justify-content: space-between;
   align-items: center;
   -webkit-app-region: drag;
+  transition: height 0.2s ease, padding 0.2s ease, opacity 0.2s ease;
+}
+
+/* In fullscreen while training: hide header until Escape (paused) */
+.aim-trainer-window.header-hidden .app-header {
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .aim-trainer-window .app-header .app-logo {

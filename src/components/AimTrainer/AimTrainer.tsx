@@ -134,8 +134,10 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
   const handleMinimize = () => window.windowControls?.minimize?.();
   const handleClose = () => window.windowControls?.close?.();
 
+  const hideHeader = Boolean(config?.fullscreen && isLocked);
+
   return (
-    <div className="aim-trainer-window">
+    <div className={`aim-trainer-window${hideHeader ? ' header-hidden' : ''}`}>
       <header className="app-header">
         <div className="app-logo">
           <h1>aimii.app aim trainer</h1>

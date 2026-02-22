@@ -32,6 +32,9 @@ export const WINDOW_CONFIG = {
   }
 } as const;
 
+/** Aim trainer header height (px). Window height = resolution height + this so canvas area matches selected resolution. */
+export const AIM_TRAINER_HEADER_HEIGHT_PX = 40;
+
 interface WindowState {
   x: number;
   y: number;
