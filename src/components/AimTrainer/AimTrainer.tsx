@@ -145,10 +145,11 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
       {/* Permanent Center Crosshair */}
       <div className="aim-crosshair" />
 
-      {/* Ad in bottom right corner */}
-      <div className="aim-trainer-ad-corner">
+      {/* Ad in bottom right (same owadview as main window; cid required for multi-container policy) */}
+
+      <section className="ad-section">
         <owadview />
-      </div>
+      </section>
 
       {/* UI Overlay when unlocked */}
       {!isLocked && (
