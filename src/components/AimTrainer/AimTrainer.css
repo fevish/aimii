@@ -32,6 +32,23 @@
   transition: height 0.2s ease, padding 0.2s ease, opacity 0.2s ease;
 }
 
+/* When training (pointer locked): header must not capture clicks or pointer lock is lost */
+.aim-trainer-window.training-active .app-header {
+  pointer-events: none;
+  -webkit-app-region: no-drag;
+  z-index: 1;
+}
+
+/* Container fills viewport behind header so canvas receives clicks when aiming up */
+.aim-trainer-window.training-active .aim-trainer-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
 /* In fullscreen while training: hide header until Escape (paused) */
 .aim-trainer-window.header-hidden .app-header {
   height: 0;
