@@ -8,19 +8,37 @@ function seeded(seed: number): () => number {
   };
 }
 
+export interface PlayAreaBounds {
+  xMin: number;
+  xMax: number;
+  zMin: number;
+  zMax: number;
+}
+
+/** 1 world unit = 1 m for movement/physics. Floor tiles are 5×5 m so player (1.65 m) reads human-sized. */
+export const GRID_CELL_SIZE = 5;
+
 export class EnvironmentService {
   private readonly ROOM_SIZE = 50;
+  /** Play area = north strip; south boundary on tile line (z=20), snug to north (z=24.5) */
+  private readonly PLAY_AREA_BOUNDS: PlayAreaBounds = {
+    xMin: -this.ROOM_SIZE / 2 + 0.5,
+    xMax: this.ROOM_SIZE / 2 - 0.5,
+    zMin: 20,
+    zMax: this.ROOM_SIZE / 2 - 0.5,
+  };
 
   public init(scene: THREE.Scene): void {
-    // 1. Checkerboard floor (very faint dark colors)
-    const tileSize = this.ROOM_SIZE / 10;
+    // 1. Checkerboard floor – each tile 5×5 m (10×10 grid), scale reads right vs 1.65 m eye height
+    const tileSize = GRID_CELL_SIZE;
+    const cellsPerSide = this.ROOM_SIZE / tileSize;
     const matA = new THREE.MeshBasicMaterial({ color: 0x0c0c0c, side: THREE.DoubleSide });
     const matB = new THREE.MeshBasicMaterial({ color: 0x101010, side: THREE.DoubleSide });
     const planeGeo = new THREE.PlaneGeometry(tileSize, tileSize);
     planeGeo.rotateX(-Math.PI / 2);
 
-    for (let ix = 0; ix < 10; ix++) {
-      for (let iz = 0; iz < 10; iz++) {
+    for (let ix = 0; ix < cellsPerSide; ix++) {
+      for (let iz = 0; iz < cellsPerSide; iz++) {
         const x = -this.ROOM_SIZE / 2 + tileSize / 2 + ix * tileSize;
         const z = -this.ROOM_SIZE / 2 + tileSize / 2 + iz * tileSize;
         const mat = (ix + iz) % 2 === 0 ? matA : matB;
@@ -30,6 +48,9 @@ export class EnvironmentService {
       }
     }
 
+    // 2. Tiny boundary walls (play area perimeter)
+    this.addBoundaryWalls(scene);
+
     // 3. Randomized stars (sky/ceiling – no grid)
     this.addStars(scene);
 
@@ -38,6 +59,46 @@ export class EnvironmentService {
 
     // 5. Background
     scene.background = new THREE.Color(0x111111);
+  }
+
+  /** Boundary wall: 3 stacked blocks (bottom, middle, top). Same width. Bottom & top solid; middle transparent glass. */
+  private addBoundaryWalls(scene: THREE.Scene): void {
+    const b = this.PLAY_AREA_BOUNDS;
+    const wallHeight = 1.0;
+    const thickness = 0.06;
+    const width = b.xMax - b.xMin + thickness * 2;
+    const centerX = (b.xMin + b.xMax) / 2;
+    const z = b.zMin;
+
+    const blockHeight = 0.02;
+    const bottomHeight = blockHeight;
+    const topHeight = blockHeight;
+    const midHeight = wallHeight - bottomHeight - topHeight;
+
+    const edgeMat = new THREE.MeshBasicMaterial({
+      color: 0x00ff88,
+      transparent: true,
+      opacity: 1,
+      side: THREE.DoubleSide,
+    });
+    const glassMat = new THREE.MeshBasicMaterial({
+      color: 0x00ff88,
+      transparent: true,
+      opacity: 0.05,
+      side: THREE.DoubleSide,
+    });
+
+    const bottom = new THREE.Mesh(new THREE.BoxGeometry(width, bottomHeight, thickness), edgeMat);
+    bottom.position.set(centerX, bottomHeight / 2, z);
+    // scene.add(bottom);
+
+    const mid = new THREE.Mesh(new THREE.BoxGeometry(width, midHeight, thickness), glassMat);
+    mid.position.set(centerX, bottomHeight + midHeight / 2, z);
+    scene.add(mid);
+
+    const top = new THREE.Mesh(new THREE.BoxGeometry(width, topHeight, thickness), edgeMat);
+    top.position.set(centerX, wallHeight - topHeight / 2, z);
+    scene.add(top);
   }
 
   private starsData: { geometry: THREE.BufferGeometry; blinkIndices: number[]; baseColors: Float32Array; phases: number[] } | null = null;
@@ -166,5 +227,9 @@ export class EnvironmentService {
 
   public getRoomSize(): number {
     return this.ROOM_SIZE;
+  }
+
+  public getPlayAreaBounds(): PlayAreaBounds {
+    return this.PLAY_AREA_BOUNDS;
   }
 }

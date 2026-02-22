@@ -4,14 +4,14 @@ export class TargetService {
   private targets: THREE.Mesh[] = [];
   private activeTargetCount = 0;
   private readonly TARGET_POOL_SIZE = 20;
-  private readonly TARGET_RADIUS = 1;
-  private roomSize = 50;
+  private readonly TARGET_RADIUS = 0.15;
+  private bounds: { xMin: number; xMax: number; zMin: number; zMax: number } = { xMin: -12, xMax: 12, zMin: -12, zMax: 12 };
 
   // Reusable objects
   private _vector = new THREE.Vector3();
 
-  public init(scene: THREE.Scene, roomSize: number): void {
-    this.roomSize = roomSize;
+  public init(scene: THREE.Scene, bounds: { xMin: number; xMax: number; zMin: number; zMax: number }): void {
+    this.bounds = bounds;
 
     // 3. Object Pooling (The Targets)
     // Pre-allocate 20 target meshes
@@ -41,19 +41,10 @@ export class TargetService {
     const target = this.targets.find(t => !t.visible);
     if (!target) return;
 
-    // Random position within room bounds (minus padding)
-    const range = this.roomSize / 2 - 2;
-
-    this._vector.set(
-      (Math.random() - 0.5) * range * 2,
-      1 + Math.random() * 6, // Height: 1m to 7m (Floor is 0)
-      (Math.random() - 0.5) * range * 2
-    );
-
-    // Ensure it's not too close to camera (assuming camera at 0,0,0 horizontal)
-    if (this._vector.length() < 5) {
-        this._vector.setZ(this._vector.z - 10);
-    }
+    const pad = 2;
+    const x = this.bounds.xMin + pad + Math.random() * (this.bounds.xMax - this.bounds.xMin - pad * 2);
+    const z = this.bounds.zMin + pad + Math.random() * (this.bounds.zMax - this.bounds.zMin - pad * 2);
+    this._vector.set(x, 1 + Math.random() * 2, z);
 
     target.position.copy(this._vector);
     target.visible = true;

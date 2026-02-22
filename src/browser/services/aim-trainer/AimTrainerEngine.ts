@@ -29,6 +29,7 @@ export class AimTrainerEngine {
 
   // Game config
   private ROOM_SIZE = 50;
+  private playAreaBounds: { xMin: number; xMax: number; zMin: number; zMax: number } = { xMin: -24, xMax: 24, zMin: -24, zMax: 24 };
   private forcedWidth: number | null = null;
   private forcedHeight: number | null = null;
 
@@ -66,16 +67,17 @@ export class AimTrainerEngine {
       0.1,
       2000
     );
-    this.camera.position.set(0, 1.6, 0); // Eye level
-
     this.raycaster = new THREE.Raycaster();
 
     if (this.environmentService) {
       this.environmentService.init(this.scene);
       this.ROOM_SIZE = this.environmentService.getRoomSize();
+      this.playAreaBounds = this.environmentService.getPlayAreaBounds();
     }
+    const b = this.playAreaBounds;
+    this.camera.position.set((b.xMin + b.xMax) / 2, 1.65, (b.zMin + b.zMax) / 2);
     if (this.targetService) {
-      this.targetService.init(this.scene, this.ROOM_SIZE);
+      this.targetService.init(this.scene, this.playAreaBounds);
     }
 
     this.renderer.setSize(initW, initH, false);
@@ -156,7 +158,7 @@ export class AimTrainerEngine {
                 moveState,
                 this.camera.quaternion,
                 this.camera.position,
-                this.ROOM_SIZE
+                this.playAreaBounds
             );
         }
 

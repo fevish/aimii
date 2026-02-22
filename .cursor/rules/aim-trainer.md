@@ -31,11 +31,12 @@ alwaysApply: false
     *   **Background/Void:** Dark Gray/Black (`0x111111`, `0x0a0a0a`).
 
 ## 3. Environment Scale
-*   **Coordinate System:** 1 unit = 1 meter.
-*   **Floor Level:** Y = 0 (GridHelper + Solid Plane).
-*   **Ceiling Level:** Y = 15.
-*   **Camera Height:** Y = 1.6 (approximate eye level).
-*   **Room Size:** 50x50 units.
+*   **Coordinate System:** 1 unit = 1 meter (movement, physics, and floor tiles use this scale).
+*   **Floor Level:** Y = 0. Checkerboard floor (5×5 m tiles, 10×10 grid over 50×50 room).
+*   **Room Size:** 50×50 units.
+*   **Play Area:** North strip only; rectangular bounds (`PlayAreaBounds`: xMin, xMax, zMin, zMax). South boundary on tile line (z = 20), snug to north (z = 24.5). Movement and target spawning respect these bounds.
+*   **Boundary Wall:** Single wall at play-area south edge (z = zMin). Three stacked blocks, same width (full play-area width): **bottom** and **top** = thin solid edges (height 0.02, slightly transparent); **middle** = transparent “glass” (opacity 0.12). Brand green (`0x00ff88`). All built in `EnvironmentService.addBoundaryWalls()`.
+*   **Camera Height:** ~1.65 m (eye level).
 
 ## 4. Object Pooling (The Targets)
 *   **Pre-allocation:** Create an array of 20 `THREE.Mesh` objects on initialization.

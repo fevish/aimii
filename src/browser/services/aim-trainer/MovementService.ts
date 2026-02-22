@@ -20,7 +20,7 @@ export class MovementService {
   private _direction = new THREE.Vector3();
   private _wishDir = new THREE.Vector3();
 
-  public update(delta: number, moveState: MoveState, cameraQuaternion: THREE.Quaternion, cameraPosition: THREE.Vector3, roomSize: number): void {
+  public update(delta: number, moveState: MoveState, cameraQuaternion: THREE.Quaternion, cameraPosition: THREE.Vector3, bounds: { xMin: number; xMax: number; zMin: number; zMax: number }): void {
     // 1. Queue Jump (Before Friction to enable Bhop)
     if (moveState.jump && this.onGround) {
         this.velocity.y = this.JUMP_IMPULSE;
@@ -39,23 +39,33 @@ export class MovementService {
     // 5. Integrate Position
     cameraPosition.addScaledVector(this.velocity, delta);
 
-    // 6. Floor Collision
-    if (cameraPosition.y < 1.6) {
+    // 6. Floor Collision (eye height ~1.65 m)
+    const EYE_HEIGHT = 1.65;
+    if (cameraPosition.y < EYE_HEIGHT) {
         this.velocity.y = 0;
-        cameraPosition.y = 1.6;
+        cameraPosition.y = EYE_HEIGHT;
         this.onGround = true;
     } else {
-        // Simple "in air" check if we jumped or walked off a ledge (no ledges yet though)
-        // For now, if > 1.6 slightly floating, we aren't "grounded" until we hit floor
-        if (cameraPosition.y > 1.601) {
+        if (cameraPosition.y > EYE_HEIGHT + 0.01) {
              this.onGround = false;
         }
     }
 
-    // 7. Room Boundaries
-    const LIMIT = roomSize / 2 - 0.5;
-    cameraPosition.x = Math.max(-LIMIT, Math.min(LIMIT, cameraPosition.x));
-    cameraPosition.z = Math.max(-LIMIT, Math.min(LIMIT, cameraPosition.z));
+    // 7. Play area boundaries (Valorant-style: solid walls, zero velocity on impact)
+    if (cameraPosition.x > bounds.xMax) {
+      cameraPosition.x = bounds.xMax;
+      this.velocity.x = Math.min(0, this.velocity.x);
+    } else if (cameraPosition.x < bounds.xMin) {
+      cameraPosition.x = bounds.xMin;
+      this.velocity.x = Math.max(0, this.velocity.x);
+    }
+    if (cameraPosition.z > bounds.zMax) {
+      cameraPosition.z = bounds.zMax;
+      this.velocity.z = Math.min(0, this.velocity.z);
+    } else if (cameraPosition.z < bounds.zMin) {
+      cameraPosition.z = bounds.zMin;
+      this.velocity.z = Math.max(0, this.velocity.z);
+    }
   }
 
   private applyFriction(delta: number): void {
