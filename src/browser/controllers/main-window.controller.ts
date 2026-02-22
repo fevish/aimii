@@ -502,13 +502,15 @@ export class MainWindowController {
       }
     });
 
-    // Window controls
-    ipcMain.handle('minimize-window', () => {
-      this.browserWindow?.minimize();
+    // Window controls (act on the window that sent the request so aim trainer only affects itself)
+    ipcMain.handle('minimize-window', (event: Electron.IpcMainInvokeEvent) => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      win?.minimize();
     });
 
-    ipcMain.handle('close-window', () => {
-      this.browserWindow?.close();
+    ipcMain.handle('close-window', (event: Electron.IpcMainInvokeEvent) => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      win?.close();
     });
 
     // Widget-specific hotkey info handler

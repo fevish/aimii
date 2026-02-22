@@ -9,22 +9,87 @@
   font-family: 'Roboto Mono', monospace;
 }
 
-.aim-trainer-container {
-  position: absolute;
-  top: 0;
-  left: 0;
+/* Layout: header + content (matches main window structure) */
+.aim-trainer-window {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   background-color: var(--dark);
-  z-index: 9999;
-  overflow: hidden;
   font-family: 'Roboto Mono', monospace;
+}
+
+/* Uniform header (same look as main window; minimize + close only) */
+.aim-trainer-window .app-header {
+  flex-shrink: 0;
+  background: var(--dark);
+  padding: calc(0.25 * var(--spacing)) var(--spacing);
+  margin-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  -webkit-app-region: drag;
+}
+
+.aim-trainer-window .app-header .app-logo {
+  display: flex;
+  align-items: flex-end;
+  gap: calc(0.5 * var(--spacing));
+}
+
+.aim-trainer-window .app-header .app-logo h1 {
+  margin: 0;
+  line-height: 1;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.aim-trainer-window .header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing);
+  -webkit-app-region: no-drag;
+}
+
+.aim-trainer-window .window-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.aim-trainer-window .window-control-btn {
+  background: transparent;
+  border: none;
+  color: var(--secondary);
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--radius);
+}
+
+.aim-trainer-window .window-control-btn:hover {
+  background: var(--secondary);
+  color: var(--dark);
+}
+
+.aim-trainer-window .window-control-btn.close-btn:hover {
+  background: var(--primary);
+  color: var(--dark);
+}
+
+.aim-trainer-container {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  width: 100%;
+  background-color: var(--dark);
+  overflow: hidden;
 }
 
 .aim-trainer-canvas {
   width: 100%;
   height: 100%;
   display: block;
+  outline: none;
 }
 
 .aim-trainer-ui {

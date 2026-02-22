@@ -22,8 +22,8 @@ export const WINDOW_CONFIG = {
   aimTrainer: {
     minWidth: 800,
     minHeight: 600,
-    frame: true,
-    resizable: true,
+    frame: false,
+    resizable: false,
     title: 'aimii Aim Trainer'
   },
   devTools: {

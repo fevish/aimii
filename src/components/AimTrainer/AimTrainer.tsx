@@ -106,6 +106,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
   const handleStart = () => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
+    canvas.focus();
     try {
       const lock = canvas.requestPointerLock as (options?: { unadjustedMovement?: boolean }) => void | Promise<void>;
       const p = lock.call(canvas, { unadjustedMovement: true }) as Promise<void> | undefined;
@@ -130,11 +131,27 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
     }
   };
 
+  const handleMinimize = () => window.windowControls?.minimize?.();
+  const handleClose = () => window.windowControls?.close?.();
+
   return (
-    <div ref={containerRef} className="aim-trainer-container">
+    <div className="aim-trainer-window">
+      <header className="app-header">
+        <div className="app-logo">
+          <h1>aimii.app aim trainer</h1>
+        </div>
+        <div className="header-controls">
+          <div className="window-controls">
+            <button type="button" onClick={handleMinimize} className="window-control-btn minimize-btn" aria-label="Minimize">_</button>
+            <button type="button" onClick={handleClose} className="window-control-btn close-btn" aria-label="Close">✕</button>
+          </div>
+        </div>
+      </header>
+      <div ref={containerRef} className="aim-trainer-container">
       <canvas
         ref={canvasRef}
         className="aim-trainer-canvas"
+        tabIndex={0}
         onMouseMove={handleMouseMove}
         onClick={handleClick}
       />
@@ -182,6 +199,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

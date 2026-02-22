@@ -48,6 +48,7 @@ export class AimTrainerWindowController {
 
     this.window.once('ready-to-show', () => {
       this.window?.show();
+      this.window?.focus();
       if (config.fullscreen) {
         this.window?.setFullScreen(true);
       }
