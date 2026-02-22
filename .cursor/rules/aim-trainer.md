@@ -34,15 +34,16 @@ alwaysApply: false
 *   **Coordinate System:** 1 unit = 1 meter (movement, physics, and floor tiles use this scale).
 *   **Floor Level:** Y = 0. Checkerboard floor (5×5 m tiles, 10×10 grid over 50×50 room).
 *   **Room Size:** 50×50 units.
-*   **Play Area:** North strip only; rectangular bounds (`PlayAreaBounds`: xMin, xMax, zMin, zMax). South boundary on tile line (z = 20), snug to north (z = 24.5). Movement and target spawning respect these bounds.
-*   **Boundary Wall:** Single wall at play-area south edge (z = zMin). Three stacked blocks, same width (full play-area width): **bottom** and **top** = thin solid edges (height 0.02, slightly transparent); **middle** = transparent “glass” (opacity 0.12). Brand green (`0x00ff88`). All built in `EnvironmentService.addBoundaryWalls()`.
+*   **Player zone:** Where the player moves. North strip; bounds `PlayerZoneBounds`. Width 70% of room (Valorant-like). South boundary (wall) at z = 20, north at z = 24.5. Movement clamped to these bounds.
+*   **Target zone:** Where targets spawn. Other side of wall; same width as player zone. Depth 10 m from 5 m past wall (Valorant-like). Targets at head height (1.65 m).
+*   **Boundary Wall:** Between player zone and target zone (z = zMin). Three stacked blocks, same width: **bottom** and **top** = thin solid edges (height 0.02, slightly transparent); **middle** = transparent “glass” (opacity 0.12). Brand green (`0x00ff88`). All built in `EnvironmentService.addBoundaryWalls()`.
 *   **Camera Height:** ~1.65 m (eye level).
 
 ## 4. Object Pooling (The Targets)
 *   **Pre-allocation:** Create an array of 20 `THREE.Mesh` objects on initialization.
 *   **Geometry:** `THREE.IcosahedronGeometry(radius, 1)`.
 *   **Lifecycle:**
-    *   **Spawn:** Select inactive mesh -> Update Position (`1m` to `7m` height) -> Set `.visible = true`.
+    *   **Spawn:** In target zone only, at head height (1.65 m). Select inactive mesh -> Update Position -> Set `.visible = true`.
     *   **Hit:** Set `.visible = false` -> Increment Score -> Trigger Respawn.
 
 ## 5. Input & Integration

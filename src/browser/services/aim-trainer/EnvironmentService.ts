@@ -8,22 +8,28 @@ function seeded(seed: number): () => number {
   };
 }
 
-export interface PlayAreaBounds {
+/** Bounds of the player zone (where the player can move). Target zone is on the other side of the wall. */
+export interface PlayerZoneBounds {
   xMin: number;
   xMax: number;
   zMin: number;
   zMax: number;
 }
 
+/** @deprecated Use PlayerZoneBounds. */
+export type PlayAreaBounds = PlayerZoneBounds;
+
 /** 1 world unit = 1 m for movement/physics. Floor tiles are 5×5 m so player (1.65 m) reads human-sized. */
 export const GRID_CELL_SIZE = 5;
 
 export class EnvironmentService {
   private readonly ROOM_SIZE = 50;
-  /** Play area = north strip; south boundary on tile line (z=20), snug to north (z=24.5) */
-  private readonly PLAY_AREA_BOUNDS: PlayAreaBounds = {
-    xMin: -this.ROOM_SIZE / 2 + 0.5,
-    xMax: this.ROOM_SIZE / 2 - 0.5,
+  /** Width scale: player zone and target zone use 70% of room width (Valorant-like, less wide). */
+  private readonly ZONE_WIDTH_SCALE = 0.7;
+  /** Player zone = north strip; south boundary (wall) on tile line (z=20), snug to north (z=24.5). */
+  private readonly PLAYER_ZONE_BOUNDS: PlayerZoneBounds = {
+    xMin: (-this.ROOM_SIZE / 2 + 0.5) * this.ZONE_WIDTH_SCALE,
+    xMax: (this.ROOM_SIZE / 2 - 0.5) * this.ZONE_WIDTH_SCALE,
     zMin: 20,
     zMax: this.ROOM_SIZE / 2 - 0.5,
   };
@@ -48,7 +54,7 @@ export class EnvironmentService {
       }
     }
 
-    // 2. Tiny boundary walls (play area perimeter)
+    // 2. Boundary wall between player zone and target zone
     this.addBoundaryWalls(scene);
 
     // 3. Randomized stars (sky/ceiling – no grid)
@@ -61,13 +67,13 @@ export class EnvironmentService {
     scene.background = new THREE.Color(0x111111);
   }
 
-  /** Boundary wall: 3 stacked blocks (bottom, middle, top). Same width. Bottom & top solid; middle transparent glass. */
+  /** Boundary wall between player zone and target zone: 3 stacked blocks (bottom, middle, top). Full room width (100%). Bottom & top solid; middle transparent glass. */
   private addBoundaryWalls(scene: THREE.Scene): void {
-    const b = this.PLAY_AREA_BOUNDS;
+    const b = this.PLAYER_ZONE_BOUNDS;
     const wallHeight = 1.0;
     const thickness = 0.06;
-    const width = b.xMax - b.xMin + thickness * 2;
-    const centerX = (b.xMin + b.xMax) / 2;
+    const width = this.ROOM_SIZE + thickness * 2;
+    const centerX = 0;
     const z = b.zMin;
 
     const blockHeight = 0.02;
@@ -229,7 +235,12 @@ export class EnvironmentService {
     return this.ROOM_SIZE;
   }
 
-  public getPlayAreaBounds(): PlayAreaBounds {
-    return this.PLAY_AREA_BOUNDS;
+  public getPlayerZoneBounds(): PlayerZoneBounds {
+    return this.PLAYER_ZONE_BOUNDS;
+  }
+
+  /** @deprecated Use getPlayerZoneBounds(). */
+  public getPlayAreaBounds(): PlayerZoneBounds {
+    return this.getPlayerZoneBounds();
   }
 }

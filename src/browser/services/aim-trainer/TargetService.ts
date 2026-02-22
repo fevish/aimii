@@ -7,24 +7,28 @@ export class TargetService {
   private readonly TARGET_RADIUS = 0.15;
   /** Spawn targets at player head/eye height (m). */
   private readonly SPAWN_HEIGHT = 1.65;
-  /** Min distance (m) from player's wall to target spawn. */
-  private readonly MIN_DISTANCE_FROM_WALL = 10;
-  /** Spawn bounds: other side of wall only, at least MIN_DISTANCE_FROM_WALL from wall. */
+  /** Min distance (m) from wall to target zone (closest spawn). Valorant-like. */
+  private readonly MIN_DISTANCE_FROM_WALL = 5;
+  /** Target zone depth (m): how far behind the wall targets can spawn. Valorant practice range ~5–15 m. */
+  private readonly TARGET_ZONE_DEPTH = 10;
+  /** Target zone spawn bounds: same width as player zone, depth TARGET_ZONE_DEPTH starting MIN_DISTANCE_FROM_WALL beyond wall. */
   private spawnBounds: { xMin: number; xMax: number; zMin: number; zMax: number } = { xMin: -24, xMax: 24, zMin: -24, zMax: 24 };
 
   private _vector = new THREE.Vector3();
 
   public init(
     scene: THREE.Scene,
-    playAreaBounds: { xMin: number; xMax: number; zMin: number; zMax: number },
-    roomSize: number
+    playerZoneBounds: { xMin: number; xMax: number; zMin: number; zMax: number },
+    _roomSize: number
   ): void {
-    const wallZ = playAreaBounds.zMin;
+    const wallZ = playerZoneBounds.zMin;
+    const zMax = wallZ - this.MIN_DISTANCE_FROM_WALL;
+    const zMin = zMax - this.TARGET_ZONE_DEPTH;
     this.spawnBounds = {
-      xMin: playAreaBounds.xMin,
-      xMax: playAreaBounds.xMax,
-      zMin: -roomSize / 2,
-      zMax: wallZ - this.MIN_DISTANCE_FROM_WALL,
+      xMin: playerZoneBounds.xMin,
+      xMax: playerZoneBounds.xMax,
+      zMin,
+      zMax,
     };
 
     // 3. Object Pooling (The Targets)

@@ -127,7 +127,7 @@ interface SensitivityConversion {
 - **SettingsService**: User preferences and configuration management
 - **GameDetectionService**: Unified game detection (GEP + custom)
 - **CMPService**: GDPR compliance and privacy management for EU users
-- **AimTrainer Services**: Collection of modular services (`InputService`, `EnvironmentService`, `TargetService`, `MovementService`) managing the 3D trainer engine. Environment: 1 unit = 1 m, checkerboard floor, play area as north strip (rectangular bounds), boundary wall at south edge (3 blocks: thin transparent edges + glass middle, brand green).
+- **AimTrainer Services**: Collection of modular services (`InputService`, `EnvironmentService`, `TargetService`, `MovementService`) managing the 3D trainer engine. Environment: 1 unit = 1 m, checkerboard floor, **player zone** (north strip, 70% width), **target zone** (other side of wall, 10 m depth, Valorant-like), boundary wall between them (3 blocks: thin transparent edges + glass middle, brand green).
 
 ### Shared Components (Target Architecture)
 - **SensitivityDisplay**: Unified sensitivity information display
