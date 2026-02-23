@@ -14,19 +14,14 @@
     "url": "https://github.com/fevish/aimii"
   },
   "scripts": {
-    "build": "webpack --mode=development && npm run start",
-    "build:prod": "webpack --mode=production",
-    "build:ow-electron": "ow-electron-builder --publish=never",
-    "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build:prod && node -e \"require('fs').mkdirSync('build', { recursive: true }); require('fs').copyFileSync('scripts/installer.nsh', 'build/installer.nsh')\" && ow-electron-builder --publish=never",
-    "build:dev": "webpack --mode=development --config ./webpack.main.config.js && webpack --mode=development --config ./webpack.renderer.config.js",
-    "watch": "npm run build:dev && concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"npm run start\"",
-    "watch-ad": "npm run build:dev && concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"npm run start:test-ad\"",
-    "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
-    "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js",
     "start": "ow-electron .",
-    "start:test-ad": "ow-electron . --test-ad",
-    "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
+    "build": "webpack --mode=development && npm run start",
+    "watch": "npm run build:dev && concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"npm run start\"",
+    "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build:prod && node -e \"require('fs').mkdirSync('build', { recursive: true }); require('fs').copyFileSync('scripts/installer.nsh', 'build/installer.nsh')\" && ow-electron-builder --publish=never",
+    "build:prod": "webpack --mode=production",
+    "build:dev": "webpack --mode=development --config ./webpack.main.config.js && webpack --mode=development --config ./webpack.renderer.config.js",
+    "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
+    "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js"
   },
   "overwolf": {
     "packages": [
@@ -57,6 +52,12 @@
     "removePackageScripts": true,
     "removePackageKeywords": true,
     "win": {
+      "azureSignOptions": {
+        "codeSigningAccountName": "aimii-signer",
+        "certificateProfileName": "aimiiCodeSign",
+        "endpoint": "https://wus2.codesigning.azure.net",
+        "publisherName": "Tuomas Wolkowski"
+      },
       "extraResources": [
         {
           "from": "public/app.manifest",
@@ -120,9 +121,6 @@
     "eslint": "^8.57.1",
     "eslint-config-overwolf-ts": "^0.1.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-config-standard-with-typescript": "^43.0.1",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.6.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",

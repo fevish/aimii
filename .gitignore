@@ -136,3 +136,4 @@ dist
 hotkeys.md
 
 _ignore/
+.env
