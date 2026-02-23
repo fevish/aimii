@@ -21,7 +21,8 @@
     "build:prod": "webpack --mode=production",
     "build:dev": "webpack --mode=development --config ./webpack.main.config.js && webpack --mode=development --config ./webpack.renderer.config.js",
     "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
-    "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js"
+    "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js",
+    "release": "node scripts/release.js"
   },
   "overwolf": {
     "packages": [
@@ -55,7 +56,7 @@
       "azureSignOptions": {
         "codeSigningAccountName": "aimii-signer",
         "certificateProfileName": "aimiiCodeSign",
-        "endpoint": "https://wus2.codesigning.azure.net",
+        "endpoint": "https://wus.codesigning.azure.net",
         "publisherName": "Tuomas Wolkowski"
       },
       "extraResources": [
