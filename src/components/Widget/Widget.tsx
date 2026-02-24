@@ -154,9 +154,12 @@ const Widget: React.FC = () => {
     // Listen for game change events from main process
     ipcRenderer.on('current-game-changed', handleGameChanged);
 
-    // Listen for baseline settings changes
-    const handleBaselineSettingsChanged = (settings: any) => {
-      setCanonicalSettings(settings);
+    // Listen for baseline settings changes (e.g. user changed mouse travel in main window)
+    const handleBaselineSettingsChanged = () => {
+      // Refetch all baseline-derived data so suggested sens and cm/360 stay in sync
+      fetchBaselineSettings();
+      fetchSuggestedSensitivity();
+      fetchMouseTravel();
     };
 
     ipcRenderer.on('baseline-settings-changed', handleBaselineSettingsChanged);
