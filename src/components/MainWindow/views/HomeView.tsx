@@ -263,6 +263,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           className="card-secondary"
         >
           <SecondaryCardContent
+            games={games}
             calculatorState={calculatorState}
             onCalculatorStateChange={setCalculatorState}
           />

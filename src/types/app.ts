@@ -1,11 +1,4 @@
-export interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
+export type { GameData } from '../data/games.data';
 
 export interface BaselineSettings {
   mouseTravel: number; // PRIMARY: cm for 360° turn - the core metric

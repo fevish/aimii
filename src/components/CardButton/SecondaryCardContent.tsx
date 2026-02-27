@@ -1,9 +1,9 @@
 import React from 'react';
 import { SensitivityCalculator } from '../SensitivityCalculator';
-import { gamesData } from '../../data/games.data';
-import { GameData } from '../../data/games.data';
+import type { GameData } from '../../types/app';
 
 interface SecondaryCardContentProps {
+  games: GameData[];
   calculatorState: {
     fromGame: GameData | null;
     toGame: GameData | null;
@@ -18,12 +18,13 @@ interface SecondaryCardContentProps {
 }
 
 export const SecondaryCardContent: React.FC<SecondaryCardContentProps> = ({
+  games,
   calculatorState,
   onCalculatorStateChange
 }) => {
   return (
     <SensitivityCalculator
-      gamesData={gamesData}
+      gamesData={games}
       initialState={calculatorState}
       onStateChange={onCalculatorStateChange}
     />

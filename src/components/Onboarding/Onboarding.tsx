@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SettingsFlow } from '../SettingsFlow/SettingsFlow';
+import type { GameData } from '../../types/app';
 import './Onboarding.css';
-
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
 
 interface OnboardingData {
   selectedGame: string;

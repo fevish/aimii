@@ -2,16 +2,8 @@ import React from 'react';
 import { GameSelectionStep } from './GameSelectionStep';
 import { SensitivityInputStep } from './SensitivityInputStep';
 import { DpiInputStep } from './DpiInputStep';
+import type { GameData } from '../../types/app';
 import './SettingsFlow.css';
-
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
 
 interface SettingsData {
   selectedGame: string;

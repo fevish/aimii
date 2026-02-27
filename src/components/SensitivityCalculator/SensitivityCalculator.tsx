@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { GameData } from '../../data/games.data';
+import type { GameData } from '../../types/app';
+import { calculateCm360, calculateTargetSensitivity } from '../../utils/sensitivity-conversion';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import { formatSensitivity } from '../../utils/format';
 import './SensitivityCalculator.css';
@@ -60,58 +61,9 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
             return;
           }
 
-          // Calculate sensitivity conversion (DPI independent)
-          let convertedSens: number;
-          let cm360From: number;
-
-          // For sensitivity conversion, we need to use a standard DPI to normalize the conversion
-          // This ensures the conversion is consistent regardless of user's DPI input
           const standardDpi = 800;
-
-          // First, calculate cm/360 from the "from" game using standard DPI
-          if (fromGame.specialConversion && fromGame.conversionParams) {
-            const params = fromGame.conversionParams;
-
-            if (params.linearCoefficient && params.offset && params.multiplier) {
-              // Battlefield-style: ((linearCoefficient * sensitivity + offset) * multiplier) * dpi
-              const inches360 = 360 / (((params.linearCoefficient * fromSens + params.offset) * params.multiplier) * standardDpi);
-              cm360From = inches360 * 2.54;
-            } else if (params.constant && params.offset) {
-              // GTA5-style: constant / (dpi * (sensitivity + offset))
-              const inches360 = params.constant / (standardDpi * (fromSens + params.offset));
-              cm360From = inches360 * 2.54;
-            } else {
-              // Fallback to standard calculation
-              const inches360 = 360 / (fromGame.scalingFactor * fromSens * standardDpi);
-              cm360From = inches360 * 2.54;
-            }
-          } else {
-            // Standard calculation
-            const inches360 = 360 / (fromGame.scalingFactor * fromSens * standardDpi);
-            cm360From = inches360 * 2.54;
-          }
-
-          // Now convert from cm/360 to the "to" game sensitivity using standard DPI
-          if (toGame.specialConversion && toGame.conversionParams) {
-            const params = toGame.conversionParams;
-            const inches360 = cm360From / 2.54;
-
-            if (params.linearCoefficient && params.offset && params.multiplier) {
-              // Battlefield-style inverse
-              convertedSens = ((360 / (inches360 * params.multiplier)) - params.offset) / params.linearCoefficient;
-            } else if (params.constant && params.offset) {
-              // GTA5-style inverse
-              convertedSens = (params.constant / (standardDpi * inches360)) - params.offset;
-            } else {
-              // Fallback to standard calculation
-              convertedSens = 360 / (toGame.scalingFactor * standardDpi * inches360);
-            }
-          } else {
-            // Standard calculation
-            const inches360 = cm360From / 2.54;
-            convertedSens = 360 / (toGame.scalingFactor * standardDpi * inches360);
-          }
-
+          const cm360From = calculateCm360(fromGame, fromSens, standardDpi);
+          const convertedSens = calculateTargetSensitivity(toGame, cm360From, standardDpi);
           setConvertedSensitivity(convertedSens);
           console.log('Calculated Sensitivity:', {
             fromGame: fromGame?.game,
@@ -154,26 +106,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
             return;
           }
 
-          // Calculate cm/360 using the user's actual DPI
-          let cm360WithUserDpi: number;
-
-          if (fromGame.specialConversion && fromGame.conversionParams) {
-            const params = fromGame.conversionParams;
-            let inches360: number;
-
-            if (params.linearCoefficient && params.offset && params.multiplier) {
-              inches360 = 360 / (((params.linearCoefficient * fromSens + params.offset) * params.multiplier) * fromDpiNum);
-            } else if (params.constant && params.offset) {
-              inches360 = params.constant / (fromDpiNum * (fromSens + params.offset));
-            } else {
-              inches360 = 360 / (fromGame.scalingFactor * fromSens * fromDpiNum);
-            }
-            cm360WithUserDpi = inches360 * 2.54;
-          } else {
-            const inches360 = 360 / (fromGame.scalingFactor * fromSens * fromDpiNum);
-            cm360WithUserDpi = inches360 * 2.54;
-          }
-
+          const cm360WithUserDpi = calculateCm360(fromGame, fromSens, fromDpiNum);
           setEDpi(convertedSensitivity * fromDpiNum);
           setInches360(cm360WithUserDpi / 2.54);
           setCm360(cm360WithUserDpi);
