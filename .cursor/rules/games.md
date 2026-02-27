@@ -6,10 +6,12 @@ alwaysApply: false
 
 # Game Detection & Data Configuration
 
-This document explains how aimsii handles game detection and data mapping.
+This document explains how aimii handles game detection and data mapping.
 
 ## `games.data.ts`
-The central source of truth for all supported games.
+
+The central source of truth for all supported games. Defines the **GameData** interface and **gamesData** array. **GameData** is re-exported from `src/types/app.ts` so the rest of the app uses one type. Conversion math for these games lives in **`src/utils/sensitivity-conversion.ts`** (used by GamesService and SensitivityCalculator).
+
 Each game entry requires:
 - `game`: Display Name.
 - `scalingFactor`: The raw scalar used to convert `cm/360` to in-game sens (or base scalar for `specialConversion`).

@@ -44,10 +44,10 @@ Different FPS games use unique formulas and scaling ratios for mouse sensitivity
 
 ### Key Data Models
 
-**Note**: There are currently inconsistencies between different GameData interfaces in the codebase that need to be resolved during refactoring.
+**Single source for games and conversion:** `GameData` is defined in `src/data/games.data.ts` and re-exported from `src/types/app.ts`. All conversion math lives in `src/utils/sensitivity-conversion.ts` (used by both main-process `GamesService` and renderer `SensitivityCalculator`).
 
 ```typescript
-// Current GameData interface in src/data/games.data.ts (most complete)
+// GameData – defined in src/data/games.data.ts, re-exported in src/types/app.ts
 interface GameData {
   game: string;                    # Display name
   processName?: string;            # Process name for detection
@@ -60,7 +60,7 @@ interface GameData {
   conversionParams?: ConversionParams; # Parameters for special conversions
 }
 
-// ConversionParams for games with special conversion logic
+// ConversionParams – in games.data.ts
 interface ConversionParams {
   linearCoefficient?: number;     # Linear coefficient
   offset?: number;               # Offset value
@@ -68,16 +68,6 @@ interface ConversionParams {
   baseValue?: number;            # Base value (for exponential)
   scaleFactor?: number;          # Scale factor (for exponential)
   constant?: number;             # Constant value
-}
-
-// Alternative GameData interface in src/types/app.ts (legacy)
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number; # Different property name!
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
 }
 
 interface BaselineSettings {
@@ -121,6 +111,10 @@ interface SensitivityConversion {
 - **Consider Scalability**: Think about how new features will scale and suggest architectural improvements
 - **Enhance Developer Experience**: Look for ways to make the codebase more developer-friendly (better types, clearer interfaces, etc.)
 
+### Key Services (Current)
+- **GamesService** (`src/browser/services/games.service.ts`): Game list from `games.data.ts`, filtering (e.g. `getEnabledGames`), and conversion API. Delegates conversion math to **`src/utils/sensitivity-conversion.ts`** (`calculateCm360`, `calculateTargetSensitivity`).
+- **SensitivityConverterService**: Uses GamesService to convert from baseline (mouse travel) to current game sens and for onboarding (game + sens + DPI → mouse travel). Backend only; renderer uses IPC.
+
 ### Key Services (Target Architecture)
 - **GameService**: All game-related operations and data management
 - **SensitivityService**: Sensitivity calculations and conversions
@@ -144,14 +138,17 @@ interface SensitivityConversion {
 
 ## Sensitivity Calculation Logic
 
-### Core Formula
-The app uses mouse travel distance (cm/360°) as the universal baseline for conversions:
+**Implementation:** All conversion formulas live in **`src/utils/sensitivity-conversion.ts`** (shared, no Electron/browser deps). Used by:
+- **GamesService** (main process) for IPC handlers and SensitivityConverterService
+- **SensitivityCalculator** (renderer) for the in-app calculator card
 
-1. **Calculate mouse travel from source game**: `mouseTravel = (dpi * sensitivity * scalingFactor) / 2.54`
-2. **Calculate target sensitivity**: `targetSens = (mouseTravel * 2.54) / (dpi * targetScalingFactor)`
+### Core Formula
+Mouse travel (cm/360°) is the universal baseline:
+- **To cm/360:** `calculateCm360(game, sensitivity, dpi)` — standard: `360 / (scalingFactor * sensitivity * dpi) * 2.54`; special games use `conversionParams`.
+- **From cm/360:** `calculateTargetSensitivity(game, cm360, targetDPI)` — inverse of the above.
 
 ### Special Conversions
-Some games require custom conversion logic beyond simple scaling factors, handled through `specialConversion` flag and `conversionParams`.
+Games with `specialConversion: true` and `conversionParams` in `games.data.ts` use custom formulas (Battlefield, GTA5, PUBG, Minecraft, STALKER 2, First Descendant, XDefiant, etc.). Same logic in the shared util.
 
 ### Key Metrics
 - **Mouse Travel (cm/360°)**: Distance mouse moves for 360° turn
@@ -192,8 +189,8 @@ The app maintains a database of supported games with their specific scaling fact
 4. **Consider Game Detection**: Ensure changes don't break game detection functionality
 5. **Preserve User Experience**: UI changes should maintain familiar workflows
 6. **Follow Modular Patterns**: Use shared components and services when possible
-7. **Address Type Inconsistencies**: Be aware of GameData interface mismatches between files
-8. **Use Correct Data Structure**: Reference src/data/games.data.ts for the actual GameData structure
+7. **Use correct GameData**: Import from `src/types/app` (re-exports from `src/data/games.data.ts`). Single shape: `scalingFactor`, `specialConversion`, `conversionParams`, etc.
+8. **Conversion math**: Use `src/utils/sensitivity-conversion.ts` (`calculateCm360`, `calculateTargetSensitivity`); do not duplicate formulas in components
 9. **Actively Suggest Improvements**: Don't just implement - look for opportunities to improve modularity, reduce redundancy, and enhance maintainability
 10. **Component Extraction**: If you see repeated UI patterns, suggest extracting them into reusable components
 11. **Service Consolidation**: When touching business logic, consider if it should be moved to a centralized service
@@ -309,8 +306,9 @@ class CMPService {
 - `src/browser/`: Electron main process logic and services
 - `src/browser/services/aim-trainer/`: Core logic for Aim Trainer engine
 - `src/components/`: React application components
-- `src/types/`: TypeScript type definitions
-- `src/data/games.data.ts`: Game database with scaling factors
+- `src/types/`: TypeScript type definitions (GameData re-exported from data)
+- `src/data/games.data.ts`: Game database; single source for GameData shape and game list
+- `src/utils/sensitivity-conversion.ts`: Shared conversion math (cm/360 ↔ in-game sens); used by GamesService and SensitivityCalculator
 - `src/my-main.tsx`: Main window entry point
 - `src/widget.tsx`: Overlay widget entry point
 - `src/preload/preload.ts`: Electron preload script for IPC

@@ -16,6 +16,10 @@ Do **NOT** use a plain `<select>`, custom input, or other component for game sel
 - Large game list handling
 - Consistent UX across onboarding, preferences, calculator, aim trainer, etc.
 
+## Data source
+
+Use the **enabled games** list: from `window.games.getEnabledGames()` (main window) or the `games` prop passed down (e.g. HomeView → SecondaryCardContent → SensitivityCalculator). **GameData** type: import from `src/types/app` (re-exported from `games.data.ts`). Use `game.game` for value/label and `game.enable_for_app` when filtering.
+
 ## Usage
 
 Convert games to the options format before passing to `SearchableSelect`:
