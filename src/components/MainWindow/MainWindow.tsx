@@ -1,21 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import Settings from '../Settings/Settings';
-import { SvgIcon } from '../SvgIcon/SvgIcon';
 import { Onboarding } from '../Onboarding';
-import { CardButton } from '../CardButton/CardButton';
-import { UserPreferencesContent } from '../CardButton/UserPreferencesContent';
-import { SecondaryCardContent } from '../CardButton/SecondaryCardContent';
 import { Terminal } from '../Terminal/Terminal';
 import './MainWindow.css';
-import { CurrentGameInfo } from '../../browser/services/current-game.service';
-import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
-import { GameData, BaselineSettings, HotkeyInfo } from '../../types/app';
 import { useMainWindowData } from './useMainWindowData';
 import { useAdDetection } from './useAdDetection';
 import { HomeView } from './views/HomeView';
 import { Header } from './views/Header';
-import { formatSensitivity } from '../../utils/format';
 import { applyTheme } from '../../utils/theme';
 
 export const MainWindow: React.FC = () => {
@@ -377,10 +369,10 @@ export const MainWindow: React.FC = () => {
         )}
 
         <section className="ad-section" hidden={showOnboarding}>
-          <owadview />
-          <div className="terminal-container">
+          {/* <owadview /> */}
+          {/* <div className="terminal-container">
             <Terminal />
-          </div>
+          </div> */}
         </section>
       </main>
 
