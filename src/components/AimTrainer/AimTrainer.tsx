@@ -38,6 +38,7 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
     if (config?.resolution) {
       engine.setResolution(config.resolution.width, config.resolution.height);
     }
+    engine.setFovHorizontal(config?.fov ?? 90);
     if (config?.mouseTravel != null && config?.dpi != null) {
       engine.setLookSensitivity(config.mouseTravel, config.dpi);
     }
@@ -86,6 +87,12 @@ export const AimTrainer: React.FC<AimTrainerProps> = ({ config, onExit }) => {
       engineRef.current.setResolution(config.resolution.width, config.resolution.height);
     }
   }, [config?.resolution?.width, config?.resolution?.height]);
+
+  useEffect(() => {
+    if (engineRef.current) {
+      engineRef.current.setFovHorizontal(config?.fov ?? 90);
+    }
+  }, [config?.fov]);
 
   useEffect(() => {
     if (engineRef.current && config?.mouseTravel != null && config?.dpi != null) {

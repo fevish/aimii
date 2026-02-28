@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { formatSensitivity } from '../../utils/format';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import type { BaselineSettings } from '../../types/app';
-import type { AimTrainerConfig } from '../../types/aim-trainer';
+import { AIM_TRAINER_DEFAULT_FOV, type AimTrainerConfig } from '../../types/aim-trainer';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import './AimTrainerCardContent.css';
 
@@ -35,6 +35,7 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
 }) => {
   const [conversions, setConversions] = useState<SensitivityConversion[]>([]);
   const [resolution, setResolution] = useState<string>('');
+  const [fov, setFov] = useState<number>(AIM_TRAINER_DEFAULT_FOV);
   const [emulateGame, setEmulateGame] = useState<string>('');
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -74,6 +75,7 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
       fullscreen,
       emulateGame: emulateGame || conv?.gameName || '',
       emulateSensitivity: conv?.suggestedSensitivity ?? 1,
+      fov: Math.max(1, Math.min(179, fov)) || AIM_TRAINER_DEFAULT_FOV,
       mouseTravel: canonicalSettings?.mouseTravel,
       dpi: canonicalSettings?.dpi,
     };
@@ -88,7 +90,7 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
       }
     };
     sync();
-  }, [resolution, emulateGame, fullscreen]);
+  }, [resolution, fov, emulateGame, fullscreen]);
 
   const handleBegin = () => {
     (window as any).aimTrainer?.open?.(buildConfig());
@@ -113,11 +115,42 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="aim-trainer-profile">Profile</label>
-        <select id="aim-trainer-profile" disabled>
-          <option>Default (Coming soon)</option>
-        </select>
+      <div className="form-group aim-trainer-fov-group">
+        <label htmlFor="aim-trainer-fov">FOV (horizontal °)</label>
+        <div className="aim-trainer-fov-controls">
+          <input
+            id="aim-trainer-fov-slider"
+            type="range"
+            min={1}
+            max={179}
+            value={Math.max(1, Math.min(179, fov))}
+            onChange={e => setFov(Number(e.target.value))}
+            aria-label="FOV slider"
+          />
+          <input
+            id="aim-trainer-fov"
+            type="number"
+            min={1}
+            max={179}
+            value={fov}
+            onChange={e => {
+              if (e.target.value === '') {
+                setFov(AIM_TRAINER_DEFAULT_FOV);
+                return;
+              }
+              const n = Number(e.target.value);
+              if (!Number.isNaN(n)) setFov(n);
+            }}
+            onBlur={() => {
+              /* Clamp to valid range when leaving the field so slider and display stay in sync */
+              const clamped = Math.max(1, Math.min(179, Math.round(fov)));
+              if (fov !== clamped) setFov(clamped);
+            }}
+            placeholder="90"
+            aria-label="FOV value"
+          />
+        </div>
+        <span className="text-muted">e.g. 90 (CS2 default)</span>
       </div>
 
       {hasSettings && (

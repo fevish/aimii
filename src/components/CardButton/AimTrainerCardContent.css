@@ -16,3 +16,26 @@
 .form .settings-navigation {
   margin-top: var(--spacing);
 }
+
+.aim-trainer-fov-group .aim-trainer-fov-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing);
+}
+
+.aim-trainer-fov-group #aim-trainer-fov-slider {
+  flex: 1;
+  min-width: 0;
+}
+
+.aim-trainer-fov-group #aim-trainer-fov {
+  width: 4rem;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+/* Hide spinner arrows: user must type or use slider only */
+.aim-trainer-fov-group #aim-trainer-fov::-webkit-inner-spin-button,
+.aim-trainer-fov-group #aim-trainer-fov::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

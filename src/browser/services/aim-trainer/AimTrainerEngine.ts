@@ -39,6 +39,8 @@ export class AimTrainerEngine {
   private playerZoneBounds: { xMin: number; xMax: number; zMin: number; zMax: number } = { xMin: -24, xMax: 24, zMin: -24, zMax: 24 };
   private forcedWidth: number | null = null;
   private forcedHeight: number | null = null;
+  /** Horizontal FOV in degrees (CS2 default 90). Used to derive camera vertical FOV from aspect. */
+  private fovHorizontalDeg = 90;
 
   /** Radians per movementX/movementY (same for horizontal and vertical; 1:1 like CS2/Valorant). */
   private lookSensitivityRadPerPixel = (BASELINE_YAW_DEG_CS2 * Math.PI) / 180;
@@ -71,9 +73,10 @@ export class AimTrainerEngine {
 
     const initW = canvas.clientWidth || 800;
     const initH = canvas.clientHeight || 600;
+    const aspect = initW / initH;
     this.camera = new THREE.PerspectiveCamera(
-      75,
-      initW / initH,
+      this.horizontalFovToVertical(this.fovHorizontalDeg, aspect),
+      aspect,
       0.1,
       2000
     );
@@ -211,13 +214,36 @@ export class AimTrainerEngine {
     this.applySize();
   }
 
+  /**
+   * Convert horizontal FOV (degrees) to vertical FOV (degrees) for Three.js PerspectiveCamera.
+   * vFOV = 2 * atan(tan(hFOV/2) / aspect).
+   */
+  private horizontalFovToVertical(horizontalDeg: number, aspect: number): number {
+    const halfRad = (horizontalDeg * Math.PI) / 360;
+    const vFovRad = 2 * Math.atan(Math.tan(halfRad) / aspect);
+    return (vFovRad * 180) / Math.PI;
+  }
+
+  /**
+   * Set horizontal FOV in degrees (e.g. 90 for CS2 default). Affects camera only; call after setResolution when aspect is set.
+   */
+  public setFovHorizontal(degrees: number): void {
+    this.fovHorizontalDeg = Math.max(1, Math.min(179, degrees));
+    if (this.camera) {
+      this.camera.fov = this.horizontalFovToVertical(this.fovHorizontalDeg, this.camera.aspect);
+      this.camera.updateProjectionMatrix();
+    }
+  }
+
   private applySize(): void {
     if (!this.canvas) return;
 
     const width = this.forcedWidth ?? this.canvas.clientWidth;
     const height = this.forcedHeight ?? this.canvas.clientHeight;
+    const aspect = width / height;
 
-    this.camera.aspect = width / height;
+    this.camera.aspect = aspect;
+    this.camera.fov = this.horizontalFovToVertical(this.fovHorizontalDeg, aspect);
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height, false);
   }
