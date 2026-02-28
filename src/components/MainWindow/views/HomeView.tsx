@@ -3,7 +3,7 @@ import { GameInfo } from '../GameInfo';
 import { CardButton } from '../../CardButton/CardButton';
 import { UserPreferencesContent } from '../../CardButton/UserPreferencesContent';
 import { SecondaryCardContent } from '../../CardButton/SecondaryCardContent';
-import { AimTrainerCardContent } from '../../CardButton/AimTrainerCardContent';
+// import { AimTrainerCardContent } from '../../CardButton/AimTrainerCardContent';
 import { formatSensitivity } from '../../../utils/format';
 import { GameData, BaselineSettings } from '../../../types/app';
 import { CurrentGameInfo } from '../../../browser/services/current-game.service';
@@ -269,7 +269,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           />
         </CardButton>
 
-        <CardButton
+        {/* <CardButton
           title="Aim Trainer"
           value="3D practice"
           iconName="arrow-north-east"
@@ -283,7 +283,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             mouseTravel={canonicalSettings?.mouseTravel ?? mouseTravel ?? null}
             canonicalSettings={canonicalSettings}
           />
-        </CardButton>
+        </CardButton> */}
       </div>
     </section>
   );
