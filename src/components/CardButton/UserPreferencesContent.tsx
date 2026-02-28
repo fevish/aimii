@@ -62,18 +62,18 @@ export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
         <div className="current-settings">
           <div className="main-setting">
             <div className="setting-row">
-              <p>// MOUSE TRAVEL cm/360°
+              <h3 className="heading">// MOUSE TRAVEL cm/360°
                 <button
                   className="btn btn-secondary btn-outline btn-sm pref-btn"
                   onClick={onShowForm}
                 >
                   Change
                 </button>
-              </p>
-              <span className="setting-value">{formatSensitivity(canonicalSettings.mouseTravel)}</span>
+              </h3>
+              <p className="value-large">{formatSensitivity(canonicalSettings.mouseTravel)}</p>
             </div>
           </div>
-          <p>// EQUIVALENT TO</p>
+          <h3 className="heading">// EQUIVALENT TO</h3>
           <div className="settings-grid">
             <div className="setting-row">
               <span className="setting-label">Game</span>

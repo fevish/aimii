@@ -180,13 +180,10 @@ section {
   justify-content: space-between;
   position: relative;
 
-  p {
-    font-size: 1.2em;
-  }
-
-  .cool-text {
-    font-size: 1rem;
-    font-weight: 800;
+  .content {
+    p {
+      font-size: 1.2em;
+    }
   }
 
   .info-section {
@@ -199,12 +196,11 @@ section {
       margin-bottom: calc(2 * var(--spacing));
     }
 
-    h3 {
+    /* h3 {
       font-size: 3em;
-    }
+    } */
 
-    h4 {
-      font-size: 4.5rem;
+    .value-large {
       margin-left: calc(2.1 * var(--spacing));
       margin-bottom: auto;
     }
@@ -220,14 +216,10 @@ section {
     line-height: 80%;
   }
 
-  .setting-value {
+  .value-large {
     font-size: 6rem;
     margin-left: calc(2.1 * var(--spacing));
   }
-}
-
-.setting-value {
-  color: currentColor;
 }
 
 /* Forms */

@@ -64,10 +64,7 @@
         flex-flow: column;
         height: 100%;
 
-        p {
-          color: var(--dark);
-          font-size: 1rem;
-          font-weight: 800;
+        .heading {
           display: flex;
           justify-content: space-between;
         }
@@ -129,16 +126,18 @@
     &.card-secondary {
       background-color: var(--white);
       color: var(--dark);
+
       .btn-icon {
         background: transparent;
         color: var(--dark);
         border: 1px solid var(--dark);
       }
+
       .card-content {
         color: currentColor;
       }
-      &.card-open .card-content {
-      }
+
+      &.card-open .card-content {}
     }
 
     >p {

@@ -100,10 +100,9 @@
   height: 100%;
 }
 
-.game-display p {
+.game-display .heading {
   font-size: 1em;
   margin: 0;
-  color: var(--primary);
 }
 
 .game-name {

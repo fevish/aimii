@@ -242,7 +242,7 @@ const Widget: React.FC = () => {
           : (
             <div className="current-game-info">
               <div className="game-display">
-                <p>// Sens for: <b className="game-name">{currentGame?.name}</b></p>
+                <h3 className="heading">// Sens for: <b className="game-name">{currentGame?.name}</b></h3>
                 {suggestedSensitivity
                   ? (
                     <div className="sensitivity-suggestion">

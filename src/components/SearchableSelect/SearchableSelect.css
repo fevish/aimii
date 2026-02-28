@@ -80,8 +80,7 @@
   border-bottom-left-radius: calc(2 * var(--radius));
   max-height: 160px;
   overflow-y: auto;
-  scrollbar-color: currentColor var(--dark);
-  scrollbar-width: thin;
+  /* scrollbar-color: currentColor var(--dark); */
   z-index: 1000;
 }
 

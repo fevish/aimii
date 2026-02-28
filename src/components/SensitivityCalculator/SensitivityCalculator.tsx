@@ -284,8 +284,8 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
 
         <div className="main-setting">
           <div className="setting-row">
-            <p>// Converted Sens {toGame && `(${toGame.game})`}</p>
-            <span className="setting-value">{convertedSensitivity ? formatSensitivity(convertedSensitivity) : '0' }</span>
+            <h3 className="heading">// Converted Sens {toGame && `for ${toGame.game}`}</h3>
+            <p className="value-large">{convertedSensitivity ? formatSensitivity(convertedSensitivity) : '0' }</p>
           </div>
         </div>
         {/* Results */}
