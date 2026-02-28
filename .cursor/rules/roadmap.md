@@ -45,11 +45,28 @@ alwaysApply: false
 - [ ] **Graphics Quality:** "Potato" (Low Poly/No Textures/No Shadows) vs "Normal" modes.
 - [ ] **Ads:** Display Overwolf ads within the trainer (non-intrusive).
 
+## feature: FOV matching (roadmap / vanity)
+
+**KISS for now:** No implementation. Document options and intended behavior for a future release.
+
+**Summary of options** (user would pick one; it would apply to their saved preferences and all conversions):
+
+| Option | What it does |
+|--------|----------------|
+| **cm/360 (current)** | Match by angular sensitivity only. Same physical mouse distance = same 360° turn in every game. FOV can make it *feel* different (higher FOV = more screen motion per turn). |
+| **0% MDV (monitor distance, center)** | Scale sensitivity by FOV so that movement at screen *center* matches. Same mouse move = same crosshair movement at center. Uses tan(FOV)-style formula. |
+| **75% / 100% MDV** | Same idea, but reference point is 75% or 100% of the way to screen edge. Different “feel” trade-off; no single “correct” choice. |
+| **Viewspeed** | Same family as MDV: scale so perceived “speed” of the world at a reference point matches. Often equivalent to 0% or center-based match. |
+
+**Intended implementation (if we do it):** User selects one “FOV match type” in settings (e.g. “cm/360” vs “0% MDV” vs “Viewspeed”). That choice is stored with their preferences and applied to all sensitivity conversions and suggested values. We’d need FOV per game (and possibly per mode: hipfire vs ADS), plus the chosen formula. No code yet — roadmap only.
+
+---
+
 ## feature: Aimii Core App Improvements
 - [ ] **App Refactor & Scaling:** Clean up god components (`MyMainWindow.tsx`), implement consistent routing/state.
 - [ ] **Game Detection Resiliency:** Ensure CS2 and others are detected even when GEP fails (Custom Fallback fix).
 - [ ] **Resolution Awareness:** Include screen resolution in sensitivity/mouse travel calculations.
-- [ ] **FOV Settings:** Global FOV setting that applies to calculations and the trainer.
+- [ ] **FOV matching:** See “FOV matching (roadmap / vanity)” above — user-chosen match type (cm/360 vs MDV/viewspeed) applied to saved preferences and conversions.
 - [ ] **Profiles:** Allow users to save and swap between multiple profiles (different mouse travel, DPIs, specific game mains).
 - [ ] **Aim Trainer Sens Adjust:** Allow users to dynamically adjust sensitivity/mouse travel inside the 3D Aim Trainer.
 - [ ] **Math & Data Optimization:** Design a cleaner game sensitivity calculation structure and better data storage logic.
