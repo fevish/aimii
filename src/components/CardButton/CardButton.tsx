@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SvgIcon } from '../SvgIcon/SvgIcon';
 import './CardButton.css';
+
+const CARD_TRANSITION_MS = 750;
 
 interface CardButtonProps {
   title: string;
@@ -25,7 +27,14 @@ export const CardButton: React.FC<CardButtonProps> = ({
   className = '',
   contentTitle
 }) => {
-  // Handle click outside to close
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    setIsTransitioning(true);
+    const t = setTimeout(() => setIsTransitioning(false), CARD_TRANSITION_MS);
+    return () => clearTimeout(t);
+  }, [isOpen]);
+
   const handleCardClick = (e: React.MouseEvent) => {
     if (isOpen) {
       onClose();
@@ -45,7 +54,7 @@ export const CardButton: React.FC<CardButtonProps> = ({
       )}
 
       <div
-        className={`card-button ${isOpen ? 'card-open' : ''} ${className}`}
+        className={`card-button ${isOpen ? 'card-open' : ''} ${isTransitioning ? 'is-changing' : ''} ${className}`}
         onClick={handleCardClick}
       >
         <div className="card-header">

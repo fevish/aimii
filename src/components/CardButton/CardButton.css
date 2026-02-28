@@ -91,6 +91,10 @@
       height: calc(100% - var(--spacing));
     }
 
+    &.is-changing .card-content {
+      overflow: hidden;
+    }
+
     .card-header {
       display: flex;
       flex-flow: row;
