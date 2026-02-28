@@ -284,7 +284,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
 
         <div className="main-setting">
           <div className="setting-row">
-            <h3 className="heading">// Converted Sens {toGame && `for ${toGame.game}`}</h3>
+            <h3 className="heading">// Converted Sens {toGame ? `for ${toGame.game}` : 'for.. (Select game)'}</h3>
             <p className="value-large">{convertedSensitivity ? formatSensitivity(convertedSensitivity) : '0' }</p>
           </div>
         </div>
@@ -298,7 +298,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
             </div>
             <div className="setting-row">
               <span className="setting-label">Mouse Travel cm/360°</span>
-              <span className="setting-value">{cm360 ? cm360.toFixed(3) : '-'}</span>
+              <span className="setting-value">{cm360 ? cm360.toFixed(3) : '—'}</span>
             </div>
             {/* <div className="setting-row">
               <button className="reset-button" onClick={handleReset}>

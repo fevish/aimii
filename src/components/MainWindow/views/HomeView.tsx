@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GameInfo } from '../GameInfo';
 import { CardButton } from '../../CardButton/CardButton';
 import { UserPreferencesContent } from '../../CardButton/UserPreferencesContent';
@@ -67,6 +67,29 @@ export const HomeView: React.FC<HomeViewProps> = ({
     inches360: 0,
     cm360: 0
   });
+
+  // Default "convert from" to user's current game, sensitivity, and DPI when calculator is pristine
+  useEffect(() => {
+    const isPristine = !calculatorState.fromGame && !calculatorState.fromSensitivity && !calculatorState.fromDpi;
+    if (!isPristine || (!currentGame && !canonicalSettings)) return;
+
+    const fromGame = currentGame
+      ? games.find(g => g.game === currentGame.name)
+      : canonicalSettings?.favoriteGame
+        ? games.find(g => g.game === canonicalSettings.favoriteGame)
+        : null;
+    const fromSensitivity = (suggestedSensitivity?.suggestedSensitivity ?? canonicalSettings?.favoriteSensitivity)?.toString() ?? '';
+    const fromDpi = canonicalSettings?.dpi?.toString() ?? '800';
+
+    if (fromGame || fromSensitivity || fromDpi) {
+      setCalculatorState(prev => ({
+        ...prev,
+        fromGame: fromGame ?? prev.fromGame,
+        fromSensitivity: fromSensitivity || prev.fromSensitivity,
+        fromDpi: fromDpi || prev.fromDpi
+      }));
+    }
+  }, [currentGame, games, suggestedSensitivity, canonicalSettings]);
 
   const handleOpenUserPreferencesCard = () => {
     setIsUserPreferencesCardOpen(true);
