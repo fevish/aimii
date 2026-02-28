@@ -581,7 +581,7 @@ export const gamesData: GameData[] = [
     owGameId: '21640',
     owConstant: 'Valorant',
     owGameName: 'Valorant',
-    enable_for_app: true
+    enable_for_app: false
   },
   {
     game: 'Warface',
