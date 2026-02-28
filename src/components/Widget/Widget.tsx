@@ -7,12 +7,6 @@ import { SensitivityConversion } from '../../browser/services/sensitivity-conver
 import { BaselineSettings, HotkeyInfo } from '../../types/app';
 import { formatSensitivity } from '../../utils/format';
 
-// Local type for electronAPI
-type ElectronAPI = {
-  openWidgetDevTools: () => void;
-  openExternalUrl: (url: string) => Promise<boolean>;
-};
-
 const Widget: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -186,15 +180,14 @@ const Widget: React.FC = () => {
     ipcRenderer.on('hotkey-changed', handleHotkeyChanged);
     ipcRenderer.on('hotkeys-reset', handleHotkeysReset);
 
-    // Add hotkey listeners for dev tools
+    // Add hotkey listeners for dev tools (Ctrl+Shift+I or Ctrl+Shift+C)
+    // Widget has nodeIntegration, no preload - use ipcRenderer directly
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey) {
         if (event.key === 'I' || event.key === 'C') {
           event.preventDefault();
-          // Send IPC message to open dev tools
-          if ((window as any).electronAPI) {
-            (window as any).electronAPI.openWidgetDevTools();
-          }
+          const { ipcRenderer } = require('electron');
+          ipcRenderer.invoke('openWidgetDevTools');
         }
       }
     };

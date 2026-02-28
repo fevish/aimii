@@ -18,12 +18,15 @@
   color: var(--light);
   display: flex;
   flex-direction: column;
-  -webkit-app-region: drag;
+  * :not(.window-control-btn) {
+    -webkit-app-region: drag;
+  }
 }
 
 .widget-header {
   display: flex;
   flex-flow: row;
+  justify-content: space-between;
   padding: 0.5rem 1rem;
 }
 
@@ -33,6 +36,7 @@
   opacity: 0.8;
   padding: 0.25rem;
   color: var(--secondary);
+  margin-right: 2rem;
   p {
     margin: 0;
   }
@@ -40,6 +44,7 @@
 
 
 .window-control-btn {
+  -webkit-app-region: no-drag;
   background: transparent;
   border: none;
   color: var(--secondary);
@@ -49,7 +54,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: auto;
   z-index: 2;
 }
 

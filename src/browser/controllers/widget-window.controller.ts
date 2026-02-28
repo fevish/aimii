@@ -233,9 +233,11 @@ export class WidgetWindowController {
     if (this.isVisible) {
       this.widgetWindow.window.hide();
       this.isVisible = false;
+      this.settingsService.setWidgetVisible(false);
     } else {
       this.widgetWindow.window.show();
       this.isVisible = true;
+      this.settingsService.setWidgetVisible(true);
     }
   }
 
