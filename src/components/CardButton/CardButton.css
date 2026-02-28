@@ -47,8 +47,7 @@
       transition: all 0.75s cubic-bezier(.19, 1, .22, 1);
       border-radius: calc(6 * var(--radius));
       z-index: 1;
-      padding: var(--spacing);
-      padding-left: calc(1.5 * var(--spacing));
+      padding: calc(1.5 * var(--spacing));
       overflow: auto;
 
       .card-header {
