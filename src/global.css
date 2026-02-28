@@ -45,6 +45,7 @@ html {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--secondary) var(--dark);
+  background: inherit;
 }
 *,
 *:before,
@@ -167,7 +168,6 @@ input {
   padding-right: calc(2.5 * var(--spacing));
   border: 1px solid currentColor;
   border-radius: calc(2 * var(--radius));
-  background-color: var(--dark);
   color: currentColor;
   font-size: 1rem;
   transition: all 0.2s ease;
@@ -185,7 +185,6 @@ select:focus,
 input:focus {
   outline: none;
   border-color: currentColor;
-  background-color: var(--dark);
   box-shadow: inset 0 0 0 1px currentColor;
 }
 

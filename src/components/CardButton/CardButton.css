@@ -74,6 +74,7 @@
 
         .pref-btn {
           border-radius: calc(1 * var(--radius));
+          z-index: 10;
         }
 
         .setting-label {
@@ -89,7 +90,6 @@
 
     /* Expanded card styles */
     &.card-open .card-content {
-      background-color: inherit;
       opacity: 1;
       width: calc(100% - var(--spacing));
       height: calc(100% - var(--spacing));
@@ -127,16 +127,17 @@
     }
 
     &.card-secondary {
-      background: var(--dark);
-      border-color: var(--offwhite);
-      color: var(--white);
+      background-color: var(--white);
+      color: var(--dark);
       .btn-icon {
         background: transparent;
-        color: var(--offwhite);
-        border: 1px solid var(--offwhite);
+        color: var(--dark);
+        border: 1px solid var(--dark);
       }
       .card-content {
-        color: var(--white);
+        color: currentColor;
+      }
+      &.card-open .card-content {
       }
     }
 

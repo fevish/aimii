@@ -20,7 +20,6 @@
   padding-right: calc(2.5 * var(--spacing));
   border: 1px solid currentColor;
   border-radius: calc(2 * var(--radius));
-  background-color: transparent;
   color: currentColor;
   font-size: 1rem;
   transition: all 0.2s ease;
@@ -36,12 +35,10 @@
 .select-input:focus {
   outline: none;
   border-color: currentColor;
-  background-color: var(--dark);
 }
 
 .select-input[readonly] {
   cursor: pointer;
-  background-color: var(--dark);
   color: currentColor;
 }
 
@@ -78,7 +75,6 @@
   top: 100%;
   left: 0;
   right: 0;
-  background-color: var(--dark);
   border: 1px solid currentColor;
   border-top: none;
   border-bottom-left-radius: calc(2 * var(--radius));
