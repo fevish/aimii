@@ -1,4 +1,4 @@
-import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray } from 'electron';
+import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray, screen } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
 import { WINDOW_CONFIG, WindowStateService } from '../services/window-state.service';
@@ -95,6 +95,48 @@ export class MainWindowController {
    */
   public getBrowserWindow(): BrowserWindow | null {
     return this.browserWindow;
+  }
+
+  /**
+   * Move main window to second screen when a supported game is running.
+   * If user has multiple displays, moves to the display that doesn't contain the game.
+   */
+  public moveToSecondScreenWhenGameLaunches(): void {
+    if (!this.browserWindow || this.browserWindow.isDestroyed()) return;
+
+    const displays = screen.getAllDisplays();
+    if (displays.length < 2) return;
+
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const gameDisplay = this.getGameDisplay();
+    const targetDisplay = gameDisplay
+      ? displays.find(d => d.id !== gameDisplay.id)
+      : displays.find(d => d.id !== primaryDisplay.id);
+
+    if (!targetDisplay) return;
+
+    const { workArea } = targetDisplay;
+    const bounds = this.browserWindow.getBounds();
+    const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
+    const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
+
+    this.browserWindow.setBounds({ ...bounds, x, y });
+    this.browserWindow.show();
+    // Windows workaround: toggle always-on-top to force window above others
+    this.browserWindow.setAlwaysOnTop(true);
+    this.browserWindow.setAlwaysOnTop(false);
+    this.browserWindow.focus();
+    this.printLogMessage('Moved main window to second screen');
+  }
+
+  private getGameDisplay(): Electron.Display | null {
+    const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
+    const gameWindowInfo = activeGame?.gameWindowInfo as { bounds?: { x: number; y: number; width: number; height: number }; size?: { width: number; height: number } } | undefined;
+
+    const bounds = gameWindowInfo?.bounds ?? (gameWindowInfo?.size ? { x: 0, y: 0, width: gameWindowInfo.size.width, height: gameWindowInfo.size.height } : null);
+    if (!bounds) return null;
+
+    return screen.getDisplayMatching(bounds);
   }
 
   // ----------------------------------------------------------------------------
