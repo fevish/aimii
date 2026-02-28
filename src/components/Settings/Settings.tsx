@@ -500,7 +500,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
                 <div className="hotkey-actions">
                   <button
                     onClick={() => handleKeyCapture(hotkey)}
-                    className="hotkey-btn"
+                    className="btn btn-outline hotkey-btn"
                     disabled={!hotkey.enabled || editingHotkey === hotkey.id}
                   >
                     {editingHotkey === hotkey.id
@@ -530,7 +530,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
               </div>
             ))}
 
-            <button onClick={handleResetToDefaults} className="reset-btn">
+            <button onClick={handleResetToDefaults} className="btn btn-outline reset-btn">
               Reset to Defaults
             </button>
           </div>
@@ -567,7 +567,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
             </div>
             <button
               onClick={handleRestartOnboarding}
-              className="danger-btn"
+              className="btn btn-danger btn-outline danger-btn"
               title="Restart App and Clear Settings"
             >
               💀 Kill Switch

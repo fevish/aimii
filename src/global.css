@@ -213,7 +213,7 @@ button, button:hover, button:focus, button:focus-visible {
 
 button {
   padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
-  background: var(--dark);
+  background: var(--primary);
   color: currentColor;
   border: 1px solid currentColor;
   border-radius: calc(2 * var(--radius));
