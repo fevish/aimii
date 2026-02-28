@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { GameData } from '../../types/app';
 import { calculateCm360, calculateTargetSensitivity } from '../../utils/sensitivity-conversion';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
@@ -34,6 +34,10 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
   const [eDpi, setEDpi] = useState<number>(initialState?.eDpi || 0);
   const [inches360, setInches360] = useState<number>(initialState?.inches360 || 0);
   const [cm360, setCm360] = useState<number>(initialState?.cm360 || 0);
+  const [displayedValue, setDisplayedValue] = useState<number>(initialState?.convertedSensitivity || 0);
+  const rafRef = useRef<number | null>(null);
+  const lastValueRef = useRef(displayedValue);
+  lastValueRef.current = displayedValue;
 
   // Filter enabled games for selection
   const enabledGames = gamesData.filter(game => game.enable_for_app);
@@ -82,7 +86,30 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
     debouncedCalculateSensitivity(fromGame, toGame, fromSensitivity);
   }, [fromGame, toGame, fromSensitivity, debouncedCalculateSensitivity]);
 
-    // Debounced DPI calculation
+  // Animate displayed value when converted result changes (ease-in-out)
+  useEffect(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    const from = lastValueRef.current;
+    const to = convertedSensitivity;
+    const range = to - from;
+    if (Math.abs(range) < 0.0001) {
+      setDisplayedValue(to);
+      return;
+    }
+    const duration = 1000;
+    const start = performance.now();
+    const easeInOut = (t: number) => t * t * (3 - 2 * t); // smoothstep
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const t = Math.min(elapsed / duration, 1);
+      setDisplayedValue(from + range * easeInOut(t));
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [convertedSensitivity]);
+
+  // Debounced DPI calculation
   const debouncedCalculateDpi = useCallback(
     (() => {
       let timeoutId: NodeJS.Timeout;
@@ -285,7 +312,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
         <div className="main-setting">
           <div className="setting-row">
             <h3 className="heading">// Converted Sens {toGame ? `for ${toGame.game}` : 'for.. (Select game)'}</h3>
-            <p className="value-large">{convertedSensitivity ? formatSensitivity(convertedSensitivity) : '0' }</p>
+            <p className="value-large">{displayedValue ? formatSensitivity(displayedValue) : '0'}</p>
           </div>
         </div>
         {/* Results */}
