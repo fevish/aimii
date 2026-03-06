@@ -36,6 +36,7 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
   const [conversions, setConversions] = useState<SensitivityConversion[]>([]);
   const [resolution, setResolution] = useState<string>('');
   const [fov, setFov] = useState<number>(AIM_TRAINER_DEFAULT_FOV);
+  const [fovInput, setFovInput] = useState<string>(String(AIM_TRAINER_DEFAULT_FOV));
   const [emulateGame, setEmulateGame] = useState<string>('');
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -75,7 +76,7 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
       fullscreen,
       emulateGame: emulateGame || conv?.gameName || '',
       emulateSensitivity: conv?.suggestedSensitivity ?? 1,
-      fov: Math.max(1, Math.min(179, fov)) || AIM_TRAINER_DEFAULT_FOV,
+      fov: Math.max(1, Math.min(180, fov)) || AIM_TRAINER_DEFAULT_FOV,
       mouseTravel: canonicalSettings?.mouseTravel,
       dpi: canonicalSettings?.dpi,
     };
@@ -100,6 +101,29 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
 
   return (
     <form className="form" onSubmit={e => e.preventDefault()}>
+
+      {hasSettings && (
+        <>
+
+          <div className="form-group">
+            <label htmlFor="aim-trainer-emulate">Emulate game</label>
+            <SearchableSelect
+              id="aim-trainer-emulate"
+              value={emulateGame}
+              options={conversions.map(c => ({
+                value: c.gameName,
+                label: `${c.gameName} (${formatSensitivity(c.suggestedSensitivity)})`
+              }))}
+              placeholder="Select a game"
+              onChange={setEmulateGame}
+            />
+          </div>
+          {/* <div className="setting-row">
+            <span className="setting-label">Your sensitivity</span>
+            <span className="setting-value">{formatSensitivity(mouseTravel!)} cm/360°</span>
+          </div> */}
+        </>
+      )}
       <div className="form-group">
         <label htmlFor="aim-trainer-resolution">Resolution</label>
         <select
@@ -115,73 +139,6 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
         </select>
       </div>
 
-      <div className="form-group aim-trainer-fov-group">
-        <label htmlFor="aim-trainer-fov">FOV (horizontal °)</label>
-        <div className="aim-trainer-fov-controls">
-          <input
-            id="aim-trainer-fov-slider"
-            type="range"
-            min={1}
-            max={179}
-            value={Math.max(1, Math.min(179, fov))}
-            onChange={e => setFov(Number(e.target.value))}
-            aria-label="FOV slider"
-          />
-          <input
-            id="aim-trainer-fov"
-            type="number"
-            min={1}
-            max={179}
-            value={fov}
-            onChange={e => {
-              if (e.target.value === '') {
-                setFov(AIM_TRAINER_DEFAULT_FOV);
-                return;
-              }
-              const n = Number(e.target.value);
-              if (!Number.isNaN(n)) setFov(n);
-            }}
-            onBlur={() => {
-              /* Clamp to valid range when leaving the field so slider and display stay in sync */
-              const clamped = Math.max(1, Math.min(179, Math.round(fov)));
-              if (fov !== clamped) setFov(clamped);
-            }}
-            placeholder="90"
-            aria-label="FOV value"
-          />
-        </div>
-        <span className="text-muted">e.g. 90 (CS2 default)</span>
-      </div>
-
-      {hasSettings && (
-        <>
-          <div className="setting-row">
-            <span className="setting-label">Your sensitivity</span>
-            <span className="setting-value">{formatSensitivity(mouseTravel!)} cm/360°</span>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="aim-trainer-emulate">Emulate game</label>
-            <SearchableSelect
-              id="aim-trainer-emulate"
-              value={emulateGame}
-              options={conversions.map(c => ({
-                value: c.gameName,
-                label: `${c.gameName} (${formatSensitivity(c.suggestedSensitivity)})`
-              }))}
-              placeholder="Select a game"
-              onChange={setEmulateGame}
-            />
-          </div>
-        </>
-      )}
-
-      {!hasSettings && (
-        <p className="text-muted">
-          Set your Mouse Travel in preferences to choose a game sensitivity.
-        </p>
-      )}
-
       <div className="form-group">
         <label>
           <input
@@ -193,11 +150,54 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
         </label>
       </div>
 
-      <div className="settings-navigation">
-        <button type="button" className="settings-btn settings-btn-next" onClick={handleBegin}>
-          Begin
-        </button>
+      <div className="form-group aim-trainer-fov-group">
+        <label htmlFor="aim-trainer-fov">FOV</label>
+        <div className="aim-trainer-fov-controls">
+          <input
+            id="aim-trainer-fov"
+            type="number"
+            min={1}
+            max={180}
+            maxLength={3}
+            value={fovInput}
+            onChange={e => {
+              const raw = e.target.value.replace(/\D/g, '').slice(0, 3);
+              setFovInput(raw);
+              const n = Number(raw);
+              if (raw !== '' && !Number.isNaN(n)) setFov(n);
+            }}
+            onBlur={() => {
+              const clamped = Math.max(1, Math.min(180, Math.round(Number(fovInput) || AIM_TRAINER_DEFAULT_FOV)));
+              setFov(clamped);
+              setFovInput(String(clamped));
+            }}
+            placeholder="90"
+            aria-label="FOV value"
+          />
+          <input
+            id="aim-trainer-fov-slider"
+            type="range"
+            min={1}
+            max={180}
+            value={Math.max(1, Math.min(180, fov))}
+            onChange={e => {
+              const n = Number(e.target.value);
+              setFov(n);
+              setFovInput(String(n));
+            }}
+            aria-label="FOV slider"
+          />
+        </div>
       </div>
+
+      {!hasSettings && (
+        <p className="text-muted">
+          Set your Mouse Travel in preferences to choose a game sensitivity.
+        </p>
+      )}
+      <button type="button" className="" onClick={handleBegin}>
+        Begin
+      </button>
     </form>
   );
 };

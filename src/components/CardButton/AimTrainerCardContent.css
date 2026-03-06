@@ -1,5 +1,12 @@
-/* Reuse .form, .form-group, .setting-row, .setting-label, .setting-value, .settings-btn from global/MainWindow/SettingsFlow */
-/* Checkbox label: inline with checkbox, not uppercase */
+.card-aim-trainer {
+  form {
+    height: 100%;
+  }
+  button {
+    margin-top: auto;
+  }
+}
+
 .form-group:has(input[type="checkbox"]) label {
   display: flex;
   align-items: center;
@@ -9,7 +16,8 @@
 }
 
 .form-group:has(input[type="checkbox"]) input {
-  width: auto;
+  width: 1.2rem;
+  height: 1.2rem;
   accent-color: var(--primary);
 }
 
@@ -26,10 +34,13 @@
 .aim-trainer-fov-group #aim-trainer-fov-slider {
   flex: 1;
   min-width: 0;
+  accent-color: var(--primary);
 }
 
 .aim-trainer-fov-group #aim-trainer-fov {
-  width: 4rem;
+  text-align: center;
+  width: fit-content;
+  padding: calc(0.75 * var(--spacing));
   -moz-appearance: textfield;
   appearance: textfield;
 }

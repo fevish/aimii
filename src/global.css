@@ -24,6 +24,7 @@ html:root {
   /* Border Radius - Minimal */
   --radius: 6px;
 }
+
 html.high-contrast:root {
   --primary: #ffffff;
   --secondary: #969696;
@@ -47,6 +48,7 @@ html {
   scrollbar-color: var(--primary) var(--dark);
   background: inherit;
 }
+
 *,
 *:before,
 *:after {
@@ -101,8 +103,8 @@ h4 {
 }
 
 .heading {
-    font-size: 1rem;
-    font-weight: 800;
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 p {
@@ -201,6 +203,13 @@ input:focus {
   box-shadow: inset 0 0 0 1px currentColor;
 }
 
+input[type="range"],
+input[type="range"]:focus {
+  border: none;
+  box-shadow: none;
+  padding: calc(0.75 * var(--spacing)) 0;
+}
+
 select option {
   background-color: var(--dark);
   color: currentColor;
@@ -209,7 +218,10 @@ select option {
 
 
 /* Buttons */
-button, button:hover, button:focus, button:focus-visible {
+button,
+button:hover,
+button:focus,
+button:focus-visible {
   outline: none;
 }
 
@@ -225,11 +237,13 @@ button {
   text-transform: none;
   letter-spacing: normal;
   font-family: inherit;
+
   svg {
     height: calc(1.5 * var(--spacing));
     width: auto;
   }
 }
+
 .btn-sm {
   padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
 }
@@ -276,6 +290,7 @@ button:disabled {
   color: currentColor;
   border: 1px solid currentColor;
 }
+
 .btn-outline:hover {
   box-shadow: inset 0 0 0 1px currentColor;
 }
@@ -331,6 +346,7 @@ button:disabled {
   border: none;
   padding: 0;
   text-decoration: underline;
+
   &:hover {
     background-color: initial;
     color: currentColor;

@@ -3,7 +3,7 @@ import { GameInfo } from '../GameInfo';
 import { CardButton } from '../../CardButton/CardButton';
 import { UserPreferencesContent } from '../../CardButton/UserPreferencesContent';
 import { SecondaryCardContent } from '../../CardButton/SecondaryCardContent';
-// import { AimTrainerCardContent } from '../../CardButton/AimTrainerCardContent';
+import { AimTrainerCardContent } from '../../CardButton/AimTrainerCardContent';
 import { formatSensitivity } from '../../../utils/format';
 import { GameData, BaselineSettings } from '../../../types/app';
 import { CurrentGameInfo } from '../../../browser/services/current-game.service';
@@ -292,21 +292,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
           />
         </CardButton>
 
-        {/* <CardButton
+        <CardButton
           title="Aim Trainer"
-          value="3D practice"
+          value=""
           iconName="arrow-north-east"
           isOpen={isAimTrainerCardOpen}
           onToggle={handleOpenAimTrainerCard}
           onClose={handleCloseAimTrainerCard}
-          className="card-secondary"
+          className="card-secondary card-aim-trainer"
           contentTitle="Aim Trainer"
         >
           <AimTrainerCardContent
             mouseTravel={canonicalSettings?.mouseTravel ?? mouseTravel ?? null}
             canonicalSettings={canonicalSettings}
           />
-        </CardButton> */}
+        </CardButton>
       </div>
     </section>
   );
