@@ -52,8 +52,8 @@ export const GameInfo: React.FC<GameInfoProps> = ({
       {/* Only show current sensitivity if we have suggested sensitivity (meaning we're in a different game) */}
       {suggestedSensitivity && (
         <>
-          <p className="cool-text">// Suggested Sensitivity for {gameName}</p>
-          <h4>{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</h4>
+          <h3 className="heading">// Suggested Sensitivity for {gameName}</h3>
+          <p className="value-large">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
         </>
       )}
 

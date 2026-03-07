@@ -52,7 +52,7 @@ export class SettingsService {
     return {
       widget: {
         position: { x: 100, y: 100 },
-        visible: false
+        visible: true
       },
       baseline: null,
       hotkeys: [],

@@ -193,6 +193,23 @@ contextBridge.exposeInMainWorld('cmp', {
   }
 });
 
+contextBridge.exposeInMainWorld('aimTrainerWindow', {
+  getInitialConfig: () => ipcRenderer.invoke('aim-trainer-get-config'),
+  onConfigUpdated: (callback: (event: any, config: any) => void) => {
+    ipcRenderer.on('aim-trainer-config-updated', callback);
+  },
+  removeConfigListener: () => {
+    ipcRenderer.removeAllListeners('aim-trainer-config-updated');
+  },
+  close: () => ipcRenderer.invoke('aim-trainer-close'),
+});
+
+contextBridge.exposeInMainWorld('aimTrainer', {
+  open: (config: any) => ipcRenderer.invoke('aim-trainer-open', config),
+  updateConfig: (config: any) => ipcRenderer.invoke('aim-trainer-update-config', config),
+  isOpen: () => ipcRenderer.invoke('aim-trainer-is-open'),
+});
+
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on: (channel: string, func: (...args: any[]) => void) => {
     ipcRenderer.on(channel, (event: any, ...args: any[]) => func(...args));

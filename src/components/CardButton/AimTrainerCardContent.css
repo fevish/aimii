@@ -1,0 +1,66 @@
+.card-aim-trainer {
+  form {
+    height: 100%;
+  }
+  button {
+    margin-top: auto;
+  }
+}
+
+.form-group:has(input[type="checkbox"]) label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing);
+  text-transform: none;
+  cursor: pointer;
+}
+
+.form-group:has(input[type="checkbox"]) input {
+  width: 1.2rem;
+  height: 1.2rem;
+  accent-color: var(--primary);
+}
+
+.form .settings-navigation {
+  margin-top: var(--spacing);
+}
+
+.aim-trainer-fov-group .aim-trainer-fov-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing);
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--primary);
+}
+
+.aim-trainer-fov-group #aim-trainer-fov-slider {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--primary);
+}
+
+.aim-trainer-fov-group #aim-trainer-fov {
+  text-align: center;
+  width: fit-content;
+  padding: calc(0.75 * var(--spacing));
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+/* Hide spinner arrows: user must type or use slider only */
+.aim-trainer-fov-group #aim-trainer-fov::-webkit-inner-spin-button,
+.aim-trainer-fov-group #aim-trainer-fov::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

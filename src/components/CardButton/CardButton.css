@@ -13,8 +13,8 @@
 /* Cards Section */
 .cards-section {
   display: grid;
-  grid-template-columns: 50% 50%;
-  max-width: 400px;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 600px;
   gap: var(--spacing);
   margin-top: calc(2 * var(--spacing));
 
@@ -33,9 +33,10 @@
       background: #fff;
     }
 
-    .card-content {
+    .card-wrapper {
       cursor: default;
       position: absolute;
+      overflow: hidden;
       display: flex;
       flex-flow: column;
       left: calc(var(--spacing) - 2px);
@@ -43,16 +44,21 @@
       width: 0;
       height: 0;
       opacity: 0;
-      overflow: hidden;
       transition: all 0.75s cubic-bezier(.19, 1, .22, 1);
       border-radius: calc(6 * var(--radius));
       z-index: 1;
-      padding: var(--spacing);
-      padding-left: calc(1.5 * var(--spacing));
+      padding: calc(1.5 * var(--spacing));
+
+      p {
+        color: currentColor;
+      }
 
       .card-header {
-        margin-bottom: calc(2 * var(--spacing));
+        margin-bottom: calc(1.25 * var(--spacing));
 
+        .card-header-content {
+          margin-right: calc(1.5 * var(--spacing));
+        }
         h4 {
           font-size: 1.5em;
         }
@@ -63,16 +69,9 @@
         flex-flow: column;
         height: 100%;
 
-        p {
-          color: var(--dark);
-          font-size: 1rem;
-          font-weight: 800;
+        .heading {
           display: flex;
           justify-content: space-between;
-        }
-
-        .pref-btn {
-          border-radius: calc(1 * var(--radius));
         }
 
         .setting-label {
@@ -81,31 +80,71 @@
 
         .setting-value {
           color: var(--dark);
-          line-height: 75%;
         }
       }
     }
 
     /* Expanded card styles */
-    &.card-open .card-content {
-      background-color: inherit;
+    &.card-open .card-wrapper {
       opacity: 1;
       width: calc(100% - var(--spacing));
       height: calc(100% - var(--spacing));
+    }
+
+    &.card-open-no-transition .card-wrapper {
+      transition: none;
+    }
+
+    .card-content {
+      overflow: auto;
+      padding-right: calc(1.5 * var(--spacing));
+      display: flex;
+      flex-flow: column;
+      flex: 1;
+    }
+
+    &.is-changing .card-content,
+    &.is-changing .value-large {
+      overflow: hidden;
     }
 
     .card-header {
       display: flex;
       flex-flow: row;
       justify-content: space-between;
-      gap: calc(1.5 * var(--spacing));
+      gap: calc(1 * var(--spacing));
 
       h4 {
-        margin-top: calc(0.5 * var(--spacing));
         text-transform: none;
       }
 
+      p {
+        margin-top: calc(0.5 * var(--spacing));
+        margin-bottom: 0;
+      }
+
+      .link-button {
+        background: none;
+        border: none;
+        padding: 0;
+        font: inherit;
+        color: inherit;
+        text-decoration: underline;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 400;
+      }
+
+      .link-button:hover {
+        text-underline-offset: 0.25em;
+        text-decoration-thickness: 2px;
+      }
+
       .btn-icon {
+        height: calc(3.5 * var(--spacing));
+        width: auto;
+        aspect-ratio: 1/1;
+        flex-shrink: 0;
         border-radius: 100%;
         padding: calc(1 * var(--spacing));
         display: flex;
@@ -123,20 +162,29 @@
           }
         }
       }
+
+      .btn-pref {
+        border: 1px solid var(--dark);
+        background: transparent;
+        color: currentColor;
+      }
     }
 
     &.card-secondary {
-      background: var(--dark);
-      border-color: var(--offwhite);
-      color: var(--white);
+      background-color: var(--white);
+      color: var(--dark);
+
       .btn-icon {
         background: transparent;
-        color: var(--offwhite);
-        border: 1px solid var(--offwhite);
+        color: var(--dark);
+        border: 1px solid var(--dark);
       }
-      .card-content {
-        color: var(--white);
+
+      .card-wrapper {
+        color: currentColor;
       }
+
+      &.card-open .card-wrapper {}
     }
 
     >p {

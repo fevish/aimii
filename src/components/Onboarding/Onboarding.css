@@ -1,6 +1,6 @@
 /* Onboarding Wrapper Styles */
 
-.my-main-window.onboarding .app-content {
+.main-window.onboarding .app-content {
   grid-template-columns: 1fr;
 }
 

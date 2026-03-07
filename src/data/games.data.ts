@@ -50,6 +50,12 @@ export const gamesData: GameData[] = [
     enable_for_app: false
   },
   {
+    game: 'ARC Raiders',
+    scalingFactor: 0.0013610,
+    owGameId: '27168',
+    enable_for_app: true
+  },
+  {
     game: 'Back 4 Blood',
     scalingFactor: 0.00136097503,
     owGameId: '0',

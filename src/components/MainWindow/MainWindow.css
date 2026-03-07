@@ -1,7 +1,7 @@
 /* Main Window Styles - Minimalistic Typewriter Theme */
 
 /* Layout */
-.my-main-window {
+.main-window {
   background: var(--dark);
   display: flex;
   flex-flow: column;
@@ -49,28 +49,6 @@ header {
     cursor: pointer;
     padding-left: calc(2.5 * var(--spacing));
 
-    &::before {
-      content: '';
-      position: absolute;
-      left: calc(0.25 * var(--spacing));
-      display: block;
-      /* width: 26px;
-      height: 32px; */
-      width: calc(2* var(--spacing));
-      height: 100%;
-      background-color: var(--primary);
-      mask: center center no-repeat;
-      transition: background-color 0.3s ease-in-out;
-    }
-
-    &:hover::before {
-      background-color: var(--dark);
-    }
-
-    &.discord-btn::before {
-      mask-image: url('../../assets/svg/discord.svg');
-      mask-size: 16px;
-    }
   }
 }
 
@@ -84,16 +62,26 @@ header {
 }
 
 .tab-button {
-  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
   background: var(--dark);
   color: var(--secondary);
-  border: 1px solid var(--secondary);
+  border: 0;
   border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: none;
   letter-spacing: normal;
   align-self: auto;
+  padding: 3px;
+}
+
+.tab-button svg {
+  height: 1.2em;
+  width: auto;
+  aspect-ratio: 1/1;
+  fill: currentColor;
 }
 
 .tab-button:hover {
@@ -180,13 +168,10 @@ section {
   justify-content: space-between;
   position: relative;
 
-  p {
-    font-size: 1.2em;
-  }
-
-  .cool-text {
-    font-size: 1rem;
-    font-weight: 800;
+  .content {
+    p {
+      font-size: 1.2em;
+    }
   }
 
   .info-section {
@@ -199,12 +184,11 @@ section {
       margin-bottom: calc(2 * var(--spacing));
     }
 
-    h3 {
+    /* h3 {
       font-size: 3em;
-    }
+    } */
 
-    h4 {
-      font-size: 4.5rem;
+    .value-large {
       margin-left: calc(2.1 * var(--spacing));
       margin-bottom: auto;
     }
@@ -220,14 +204,10 @@ section {
     line-height: 80%;
   }
 
-  .setting-value {
+  .value-large {
     font-size: 6rem;
-    margin-left: calc(2.1 * var(--spacing));
+    margin: 0 calc(2.1 * var(--spacing));
   }
-}
-
-.setting-value {
-  color: currentColor;
 }
 
 /* Forms */
@@ -426,6 +406,8 @@ form {
   height: 300px;
   position: relative;
   overflow: hidden;
+  background-color: transparent;
+  z-index: 10;
 
   owadview {
     position: absolute;
@@ -444,7 +426,6 @@ form {
     position: relative;
     opacity: 1;
     transition: 0.25s ease-in-out;
-    background-color: var(--dark);
     z-index: 2;
   }
 

@@ -1,4 +1,4 @@
-import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray } from 'electron';
+import { app as electronApp, ipcMain, BrowserWindow, Menu, shell, nativeImage, Tray, screen } from 'electron';
 import { GameEventsService } from '../services/gep.service';
 import path from 'path';
 import { WINDOW_CONFIG, WindowStateService } from '../services/window-state.service';
@@ -97,6 +97,48 @@ export class MainWindowController {
     return this.browserWindow;
   }
 
+  /**
+   * Move main window to second screen when a supported game is running.
+   * If user has multiple displays, moves to the display that doesn't contain the game.
+   */
+  public moveToSecondScreenWhenGameLaunches(): void {
+    if (!this.browserWindow || this.browserWindow.isDestroyed()) return;
+
+    const displays = screen.getAllDisplays();
+    if (displays.length < 2) return;
+
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const gameDisplay = this.getGameDisplay();
+    const targetDisplay = gameDisplay
+      ? displays.find(d => d.id !== gameDisplay.id)
+      : displays.find(d => d.id !== primaryDisplay.id);
+
+    if (!targetDisplay) return;
+
+    const { workArea } = targetDisplay;
+    const bounds = this.browserWindow.getBounds();
+    const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
+    const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
+
+    this.browserWindow.setBounds({ ...bounds, x, y });
+    this.browserWindow.show();
+    // Windows workaround: toggle always-on-top to force window above others
+    this.browserWindow.setAlwaysOnTop(true);
+    this.browserWindow.setAlwaysOnTop(false);
+    this.browserWindow.focus();
+    this.printLogMessage('Moved main window to second screen');
+  }
+
+  private getGameDisplay(): Electron.Display | null {
+    const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
+    const gameWindowInfo = activeGame?.gameWindowInfo as { bounds?: { x: number; y: number; width: number; height: number }; size?: { width: number; height: number } } | undefined;
+
+    const bounds = gameWindowInfo?.bounds ?? (gameWindowInfo?.size ? { x: 0, y: 0, width: gameWindowInfo.size.width, height: gameWindowInfo.size.height } : null);
+    if (!bounds) return null;
+
+    return screen.getDisplayMatching(bounds);
+  }
+
   // ----------------------------------------------------------------------------
   private logPackageManagerErrors(e: any, packageName: any, ...args: any[]) {
     this.printLogMessage(
@@ -188,7 +230,7 @@ export class MainWindowController {
     // Set up console logging to Chrome dev tools
     setMainWindowForConsole(this.browserWindow);
 
-    this.browserWindow.loadFile(path.join(__dirname, '..', 'my-main.html'));
+    this.browserWindow.loadFile(path.join(__dirname, '..', 'main.html'));
 
     // Show the window after it's loaded
     this.browserWindow.once('ready-to-show', () => {
@@ -502,13 +544,15 @@ export class MainWindowController {
       }
     });
 
-    // Window controls
-    ipcMain.handle('minimize-window', () => {
-      this.browserWindow?.minimize();
+    // Window controls (act on the window that sent the request so aim trainer only affects itself)
+    ipcMain.handle('minimize-window', (event: Electron.IpcMainInvokeEvent) => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      win?.minimize();
     });
 
-    ipcMain.handle('close-window', () => {
-      this.browserWindow?.close();
+    ipcMain.handle('close-window', (event: Electron.IpcMainInvokeEvent) => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      win?.close();
     });
 
     // Widget-specific hotkey info handler

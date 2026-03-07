@@ -134,6 +134,9 @@ export class Application {
       this.mainWindowController.printLogMessage('Creating aimii widget...');
       await this.mainWindowController.createWidgetWindow();
       this.mainWindowController.printLogMessage('aimii widget created successfully!');
+
+      // Move main window to second screen if user has multiple displays
+      this.mainWindowController.moveToSecondScreenWhenGameLaunches();
     } catch (error) {
       this.mainWindowController.printLogMessage('Error creating widget:', error);
     }

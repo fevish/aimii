@@ -68,6 +68,17 @@ declare global {
       openPrivacySettings: (options?: any) => Promise<void>;
       isFirstTimeUser: () => Promise<boolean>;
     };
+    aimTrainer: {
+      open: (config: any) => Promise<void>;
+      updateConfig: (config: any) => Promise<void>;
+      isOpen: () => Promise<boolean>;
+    };
+    aimTrainerWindow: {
+      getInitialConfig: () => Promise<any>;
+      onConfigUpdated: (callback: (event: any, config: any) => void) => void;
+      removeConfigListener: () => void;
+      close: () => Promise<void>;
+    };
     ipcRenderer: {
       on: (channel: string, func: (...args: any[]) => void) => void;
       removeAllListeners: (channel: string) => void;

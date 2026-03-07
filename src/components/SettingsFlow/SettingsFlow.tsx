@@ -2,16 +2,8 @@ import React from 'react';
 import { GameSelectionStep } from './GameSelectionStep';
 import { SensitivityInputStep } from './SensitivityInputStep';
 import { DpiInputStep } from './DpiInputStep';
+import type { GameData } from '../../types/app';
 import './SettingsFlow.css';
-
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
 
 interface SettingsData {
   selectedGame: string;
@@ -33,6 +25,8 @@ interface SettingsFlowProps {
   showProgress?: boolean;
   inputPrefix?: string;
   context?: 'onboarding' | 'preferences';
+  /** Label for the back button (e.g. "Back" or "Cancel") */
+  backButtonLabel?: string;
 }
 
 export const SettingsFlow: React.FC<SettingsFlowProps> = ({
@@ -47,7 +41,8 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
   onComplete,
   showProgress = true,
   inputPrefix = '',
-  context = 'onboarding'
+  context = 'onboarding',
+  backButtonLabel = 'Back'
 }) => {
   const getInputId = (baseId: string) => (inputPrefix ? `${inputPrefix}-${baseId}` : baseId);
 
@@ -129,7 +124,7 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
             onClick={onBack}
             disabled={isLoading}
           >
-            Back
+            {backButtonLabel}
           </button>
         )}
         <button

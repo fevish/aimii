@@ -7,12 +7,6 @@ import { SensitivityConversion } from '../../browser/services/sensitivity-conver
 import { BaselineSettings, HotkeyInfo } from '../../types/app';
 import { formatSensitivity } from '../../utils/format';
 
-// Local type for electronAPI
-type ElectronAPI = {
-  openWidgetDevTools: () => void;
-  openExternalUrl: (url: string) => Promise<boolean>;
-};
-
 const Widget: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -154,9 +148,12 @@ const Widget: React.FC = () => {
     // Listen for game change events from main process
     ipcRenderer.on('current-game-changed', handleGameChanged);
 
-    // Listen for baseline settings changes
-    const handleBaselineSettingsChanged = (settings: any) => {
-      setCanonicalSettings(settings);
+    // Listen for baseline settings changes (e.g. user changed mouse travel in main window)
+    const handleBaselineSettingsChanged = () => {
+      // Refetch all baseline-derived data so suggested sens and cm/360 stay in sync
+      fetchBaselineSettings();
+      fetchSuggestedSensitivity();
+      fetchMouseTravel();
     };
 
     ipcRenderer.on('baseline-settings-changed', handleBaselineSettingsChanged);
@@ -183,15 +180,14 @@ const Widget: React.FC = () => {
     ipcRenderer.on('hotkey-changed', handleHotkeyChanged);
     ipcRenderer.on('hotkeys-reset', handleHotkeysReset);
 
-    // Add hotkey listeners for dev tools
+    // Add hotkey listeners for dev tools (Ctrl+Shift+I or Ctrl+Shift+C)
+    // Widget has nodeIntegration, no preload - use ipcRenderer directly
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey) {
         if (event.key === 'I' || event.key === 'C') {
           event.preventDefault();
-          // Send IPC message to open dev tools
-          if ((window as any).electronAPI) {
-            (window as any).electronAPI.openWidgetDevTools();
-          }
+          const { ipcRenderer } = require('electron');
+          ipcRenderer.invoke('openWidgetDevTools');
         }
       }
     };
@@ -239,7 +235,7 @@ const Widget: React.FC = () => {
           : (
             <div className="current-game-info">
               <div className="game-display">
-                <p>// Sens for: <b className="game-name">{currentGame?.name}</b></p>
+                <h3 className="heading">// Sens for: <b className="game-name">{currentGame?.name}</b></h3>
                 {suggestedSensitivity
                   ? (
                     <div className="sensitivity-suggestion">

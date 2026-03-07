@@ -1,6 +1,6 @@
 {
   "name": "aimii.app",
-  "version": "0.0.8",
+  "version": "0.1.2",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
@@ -14,18 +14,15 @@
     "url": "https://github.com/fevish/aimii"
   },
   "scripts": {
+    "start": "ow-electron .",
     "build": "webpack --mode=development && npm run start",
-    "build:prod": "webpack --mode=production",
-    "build:ow-electron": "ow-electron-builder --publish=never",
+    "watch": "npm run build:dev && concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"npm run start\"",
     "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build:prod && node -e \"require('fs').mkdirSync('build', { recursive: true }); require('fs').copyFileSync('scripts/installer.nsh', 'build/installer.nsh')\" && ow-electron-builder --publish=never",
-    "watch": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start\"",
-    "watch-ad": "concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"wait-on dist/browser/index.js && npm run start:test-ad\"",
+    "build:prod": "webpack --mode=production",
+    "build:dev": "webpack --mode=development --config ./webpack.main.config.js && webpack --mode=development --config ./webpack.renderer.config.js",
     "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
     "watch:renderer": "webpack --watch --mode=development --config ./webpack.renderer.config.js",
-    "start": "ow-electron .",
-    "start:test-ad": "ow-electron . --test-ad",
-    "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
+    "release": "node scripts/release.js"
   },
   "overwolf": {
     "packages": [
@@ -56,6 +53,12 @@
     "removePackageScripts": true,
     "removePackageKeywords": true,
     "win": {
+      "azureSignOptions": {
+        "codeSigningAccountName": "aimii-signer",
+        "certificateProfileName": "aimiiCodeSign",
+        "endpoint": "https://wus.codesigning.azure.net",
+        "publisherName": "Tuomas Wolkowski"
+      },
       "extraResources": [
         {
           "from": "public/app.manifest",
@@ -95,6 +98,8 @@
     }
   },
   "dependencies": {
+    "@types/three": "^0.160.0",
+    "three": "^0.160.0",
     "winreg": "^1.2.5"
   },
   "devDependencies": {
@@ -117,9 +122,6 @@
     "eslint": "^8.57.1",
     "eslint-config-overwolf-ts": "^0.1.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-config-standard-with-typescript": "^43.0.1",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.6.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",

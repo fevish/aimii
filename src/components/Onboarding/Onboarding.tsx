@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SettingsFlow } from '../SettingsFlow/SettingsFlow';
+import type { GameData } from '../../types/app';
 import './Onboarding.css';
-
-interface GameData {
-  game: string;
-  sensitivityScalingFactor: number;
-  owGameId: string;
-  owConstant?: string;
-  owGameName?: string;
-  enable_for_app: boolean;
-}
 
 interface OnboardingData {
   selectedGame: string;
@@ -29,6 +21,8 @@ interface OnboardingProps {
   onBack: () => void;
   onRestart: () => void;
   onComplete: () => void;
+  /** Label for the back button (e.g. "Back" or "Cancel") */
+  backButtonLabel?: string;
 }
 
 export const Onboarding: React.FC<OnboardingProps> = ({
@@ -41,7 +35,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({
   onNext,
   onBack,
   onRestart,
-  onComplete
+  onComplete,
+  backButtonLabel = 'Back'
 }) => {
   const [isCMPRequired, setIsCMPRequired] = useState<boolean>(false);
 
@@ -96,7 +91,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({
         <SettingsFlow
           games={games}
           settingsData={onboardingData}
-          currentStep={onboardingStep} // onboardingStep 1-3 maps to currentStep 1-3
+          currentStep={onboardingStep}
           isLoading={isLoading}
           message={message}
           onDataChange={onDataChange}
@@ -105,6 +100,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({
           onComplete={onComplete}
           showProgress={true}
           context="onboarding"
+          backButtonLabel={backButtonLabel}
         />
       </div>
     </section>

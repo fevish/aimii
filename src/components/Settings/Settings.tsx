@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import './Settings.css';
 
 interface HotkeyConfig {
@@ -135,8 +136,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
     }
   };
 
-  const handleThemeChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newTheme = event.target.value;
+  const handleThemeChangeValue = async (newTheme: string) => {
     try {
       await window.settings.setTheme(newTheme);
       const themeLabel = availableThemes.find(t => t.value === newTheme)?.label || newTheme;
@@ -500,7 +500,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
                 <div className="hotkey-actions">
                   <button
                     onClick={() => handleKeyCapture(hotkey)}
-                    className="hotkey-btn"
+                    className="btn btn-outline hotkey-btn"
                     disabled={!hotkey.enabled || editingHotkey === hotkey.id}
                   >
                     {editingHotkey === hotkey.id
@@ -520,7 +520,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
                       </button>
                       <button
                         onClick={handleCancelCapture}
-                        className="cancel-btn"
+                        className="cancel-btn btn-outline"
                       >
                         Cancel
                       </button>
@@ -530,7 +530,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
               </div>
             ))}
 
-            <button onClick={handleResetToDefaults} className="reset-btn">
+            <button onClick={handleResetToDefaults} className="btn btn-outline reset-btn">
               Reset to Defaults
             </button>
           </div>
@@ -541,19 +541,14 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
           <div className="theme-controls">
             <div className="form-group select-theme">
               <h4>Select Theme</h4>
-              <div className="select-wrapper">
-                <select
-                  id="theme-select"
-                  value={currentTheme}
-                  onChange={handleThemeChange}
-                >
-                  {availableThemes.map(theme => (
-                    <option key={theme.value} value={theme.value}>
-                      {theme.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SearchableSelect
+                id="theme-select"
+                value={currentTheme}
+                options={availableThemes}
+                placeholder="Select theme"
+                onChange={handleThemeChangeValue}
+                searchable={false}
+              />
             </div>
           </div>
         </section>
@@ -567,7 +562,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
             </div>
             <button
               onClick={handleRestartOnboarding}
-              className="danger-btn"
+              className="btn btn-danger btn-outline danger-btn"
               title="Restart App and Clear Settings"
             >
               💀 Kill Switch

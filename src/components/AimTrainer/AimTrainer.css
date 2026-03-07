@@ -1,0 +1,296 @@
+.aim-trainer-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--dark);
+  color: var(--secondary);
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* Layout: header + content (matches main window structure) */
+.aim-trainer-window {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: var(--dark);
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* Uniform header (same look as main window; minimize + close only) */
+.aim-trainer-window .app-header {
+  flex-shrink: 0;
+  background: var(--dark);
+  padding: calc(0.25 * var(--spacing)) var(--spacing);
+  margin-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  -webkit-app-region: drag;
+  transition: height 0.2s ease, padding 0.2s ease, opacity 0.2s ease;
+}
+
+/* When training (pointer locked): header must not capture clicks or pointer lock is lost */
+.aim-trainer-window.training-active .app-header {
+  pointer-events: none;
+  -webkit-app-region: no-drag;
+  z-index: 1;
+}
+
+/* Container fills viewport behind header so canvas receives clicks when aiming up */
+.aim-trainer-window.training-active .aim-trainer-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+/* In fullscreen while training: hide header until Escape (paused) */
+.aim-trainer-window.header-hidden .app-header {
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.aim-trainer-window .app-header .app-logo {
+  display: flex;
+  align-items: flex-end;
+  gap: calc(0.5 * var(--spacing));
+}
+
+.aim-trainer-window .app-header .app-logo h1 {
+  margin: 0;
+  line-height: 1;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.aim-trainer-window .header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing);
+  -webkit-app-region: no-drag;
+}
+
+.aim-trainer-window .window-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.aim-trainer-window .window-control-btn {
+  background: transparent;
+  border: none;
+  color: var(--secondary);
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--radius);
+}
+
+.aim-trainer-window .window-control-btn:hover {
+  background: var(--secondary);
+  color: var(--dark);
+}
+
+.aim-trainer-window .window-control-btn.close-btn:hover {
+  background: var(--primary);
+  color: var(--dark);
+}
+
+.aim-trainer-container {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  width: 100%;
+  background-color: var(--dark);
+  overflow: hidden;
+}
+
+.aim-trainer-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  outline: none;
+}
+
+.aim-trainer-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.aim-trainer-ui.unlocked {
+  pointer-events: auto;
+  background-color: rgba(36, 37, 41, 0.85); /* var(--dark) with opacity */
+  backdrop-filter: blur(8px);
+}
+
+.aim-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: var(--primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 0 8px var(--primary);
+}
+
+.aim-menu {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--spacing));
+  background: var(--dark);
+  padding: calc(4 * var(--spacing));
+  border-radius: calc(2 * var(--radius));
+  border: 1px solid var(--secondary);
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  min-width: 400px;
+}
+
+.aim-title {
+  color: var(--light);
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.aim-subtitle {
+  color: var(--secondary);
+  font-size: 1rem;
+  margin-bottom: var(--spacing);
+}
+
+.aim-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  width: 100%;
+}
+
+.aim-button {
+  padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Inherit button styles from global, but force specificity if needed */
+.aim-button.primary {
+  background: var(--primary);
+  color: var(--dark);
+  border: 2px solid var(--primary);
+}
+
+.aim-button.primary:hover {
+  background: var(--light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+}
+
+.aim-button.secondary {
+  background: transparent;
+  color: var(--secondary);
+  border: 2px solid var(--secondary);
+}
+
+.aim-button.secondary:hover {
+  color: var(--light);
+  border-color: var(--light);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.aim-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing);
+  margin-top: var(--spacing);
+  padding-top: var(--spacing);
+  border-top: 1px solid var(--gray);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--secondary);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  color: var(--light);
+  font-weight: bold;
+}
+
+.aim-trainer-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Ad slot: bottom right corner (same as main window: owadview with cid per ads rule) */
+.aim-trainer-container .ad-section {
+  position: absolute;
+  bottom: var(--spacing);
+  right: var(--spacing);
+  width: 400px;
+  height: 300px;
+  z-index: 20;
+  overflow: hidden;
+  border-radius: var(--radius);
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.aim-fps-counter {
+  position: absolute;
+  top: 1rem;
+  right: 1rem; /* Top Right is standard for FPS */
+  color: var(--primary); /* Green */
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 50;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* When container is full viewport (training), offset FPS below header (~40px) */
+.aim-trainer-window.training-active .aim-fps-counter {
+  top: calc(40px + 1rem);
+}

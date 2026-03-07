@@ -19,11 +19,20 @@ export const WINDOW_CONFIG = {
     transparent: true,
     frame: false
   },
+  aimTrainer: {
+    minWidth: 800,
+    minHeight: 600,
+    frame: false,
+    resizable: false,
+    title: 'aimii Aim Trainer'
+  },
   devTools: {
     mode: 'detach',
     autoOpen: false
   }
 } as const;
+
+export const AIM_TRAINER_HEADER_HEIGHT_PX = 40;
 
 interface WindowState {
   x: number;
