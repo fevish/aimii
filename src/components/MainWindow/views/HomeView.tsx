@@ -126,19 +126,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <>
             <h2>You're ready to go!</h2>
             <p>Launch a game and we'll recommend a sensitivity for you based on your saved preferences.</p>
-            <div className="notes-section">
-              <h3>Notes</h3>
-              <ul>
-                <li>
-                  <p>
-                    <b>This app is early access</b><br />
-                    Features may change or break. Please report bugs to&nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
-                  </p>
-                </li>
-              </ul>
-            </div>
           </>
         )}
+        <section className="notes-section">
+          <h3>News</h3>
+          <ul>
+            <li>
+              <p>
+                <b>This app is in early development phase</b><br />
+                Features may change, features may break. Please report bugs to&nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
+              </p>
+            </li>
+          </ul>
+        </section>
 
         {currentGame && (
           <GameInfo
@@ -212,7 +212,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           />
         </CardButton>
 
-        <CardButton
+        {/* <CardButton
           title="Aim Trainer"
           value=""
           iconName="arrow-north-east"
@@ -226,7 +226,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             baselineSettings={canonicalSettings}
             onChangePreferences={handleChangePreferences}
           />
-        </CardButton>
+        </CardButton> */}
       </div>
     </section>
   );
