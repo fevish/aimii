@@ -15,6 +15,8 @@ export interface CalculatorState {
 
 export interface CalculatorCardContentProps {
   games: GameData[];
+  /** Game name from user preferences; shown as "User Setting (GameName)" in calculator */
+  userPreferenceGameName?: string | null;
   calculatorState: CalculatorState;
   onCalculatorStateChange: (state: CalculatorState) => void;
 }
@@ -24,12 +26,14 @@ export interface CalculatorCardContentProps {
  */
 export const CalculatorCardContent: React.FC<CalculatorCardContentProps> = ({
   games,
+  userPreferenceGameName = null,
   calculatorState,
   onCalculatorStateChange
 }) => {
   return (
     <SensitivityCalculator
       gamesData={games}
+      userPreferenceGameName={userPreferenceGameName}
       initialState={calculatorState}
       onStateChange={onCalculatorStateChange}
     />

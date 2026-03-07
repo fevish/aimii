@@ -7,6 +7,8 @@ import './SensitivityCalculator.css';
 
 interface SensitivityCalculatorProps {
   gamesData: GameData[];
+  /** Game name from user preferences; when selected, shown as "User Setting (GameName)" */
+  userPreferenceGameName?: string | null;
   initialState?: {
     fromGame: GameData | null;
     toGame: GameData | null;
@@ -20,13 +22,24 @@ interface SensitivityCalculatorProps {
   onStateChange?: (newState: any) => void;
 }
 
+const USER_SETTING_VALUE = '__user_setting__';
+
 export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
   gamesData,
+  userPreferenceGameName = null,
   initialState,
   onStateChange
 }) => {
-  const [fromGame, setFromGame] = useState<GameData | null>(initialState?.fromGame || null);
-  const [toGame, setToGame] = useState<GameData | null>(initialState?.toGame || null);
+  const [fromGameValue, setFromGameValue] = useState<string>(() =>
+    userPreferenceGameName && initialState?.fromGame?.game === userPreferenceGameName
+      ? USER_SETTING_VALUE
+      : (initialState?.fromGame?.game || '')
+  );
+  const [toGameValue, setToGameValue] = useState<string>(() =>
+    userPreferenceGameName && initialState?.toGame?.game === userPreferenceGameName
+      ? USER_SETTING_VALUE
+      : (initialState?.toGame?.game || '')
+  );
   const [fromSensitivity, setFromSensitivity] = useState<string>(initialState?.fromSensitivity || '');
   const [fromDpi, setFromDpi] = useState<string>(initialState?.fromDpi || '');
   const [toDpi, setToDpi] = useState<string>('');
@@ -39,14 +52,27 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
   const lastValueRef = useRef(displayedValue);
   lastValueRef.current = displayedValue;
 
-  // Filter enabled games for selection
   const enabledGames = gamesData.filter(game => game.enable_for_app);
 
-  // Convert games to SearchableSelect options format
-  const gameOptions = enabledGames.map(game => ({
-    value: game.game,
-    label: game.game
-  }));
+  const userPreferenceGame = userPreferenceGameName
+    ? enabledGames.find(g => g.game === userPreferenceGameName) ?? null
+    : null;
+  const actualFromGame: GameData | null =
+    fromGameValue === USER_SETTING_VALUE
+      ? userPreferenceGame
+      : (enabledGames.find(g => g.game === fromGameValue) ?? null);
+  const actualToGame: GameData | null =
+    toGameValue === USER_SETTING_VALUE
+      ? userPreferenceGame
+      : (enabledGames.find(g => g.game === toGameValue) ?? null);
+
+  const gameOptions = enabledGames.map(game => ({ value: game.game, label: game.game }));
+  const fromGameOptions = userPreferenceGameName
+    ? [{ value: USER_SETTING_VALUE, label: `User Setting (${userPreferenceGameName})` }, ...gameOptions]
+    : gameOptions;
+  const toGameOptions = userPreferenceGameName
+    ? [{ value: USER_SETTING_VALUE, label: `User Setting (${userPreferenceGameName})` }, ...gameOptions]
+    : gameOptions;
 
   // Debounced sensitivity calculation
   const debouncedCalculateSensitivity = useCallback(
@@ -81,10 +107,9 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
     []
   );
 
-  // Trigger debounced calculation when inputs change
   useEffect(() => {
-    debouncedCalculateSensitivity(fromGame, toGame, fromSensitivity);
-  }, [fromGame, toGame, fromSensitivity, debouncedCalculateSensitivity]);
+    debouncedCalculateSensitivity(actualFromGame, actualToGame, fromSensitivity);
+  }, [actualFromGame, actualToGame, fromSensitivity, debouncedCalculateSensitivity]);
 
   // Animate displayed value when converted result changes (ease-in-out)
   useEffect(() => {
@@ -150,17 +175,15 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
     []
   );
 
-  // Trigger debounced DPI calculation when inputs change
   useEffect(() => {
-    debouncedCalculateDpi(fromGame, toGame, fromSensitivity, fromDpi, convertedSensitivity);
-  }, [fromGame, toGame, fromSensitivity, fromDpi, convertedSensitivity, debouncedCalculateDpi]);
+    debouncedCalculateDpi(actualFromGame, actualToGame, fromSensitivity, fromDpi, convertedSensitivity);
+  }, [actualFromGame, actualToGame, fromSensitivity, fromDpi, convertedSensitivity, debouncedCalculateDpi]);
 
-  // Notify parent of state changes
   useEffect(() => {
     if (onStateChange) {
       onStateChange({
-        fromGame,
-        toGame,
+        fromGame: actualFromGame,
+        toGame: actualToGame,
         fromSensitivity,
         fromDpi,
         convertedSensitivity,
@@ -169,26 +192,19 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
         cm360
       });
     }
-  }, [fromGame, toGame, fromSensitivity, fromDpi, convertedSensitivity, eDpi, inches360, cm360, onStateChange]);
+  }, [actualFromGame, actualToGame, fromSensitivity, fromDpi, convertedSensitivity, eDpi, inches360, cm360, onStateChange]);
 
-  const handleFromGameChange = (gameName: string) => {
-    const game = enabledGames.find(g => g.game === gameName);
-    setFromGame(game || null);
-  };
-
-  const handleToGameChange = (gameName: string) => {
-    const game = enabledGames.find(g => g.game === gameName);
-    setToGame(game || null);
-  };
+  const handleFromGameChange = (value: string) => setFromGameValue(value);
+  const handleToGameChange = (value: string) => setToGameValue(value);
 
   const handleSwapGames = () => {
-    setFromGame(toGame);
-    setToGame(fromGame);
+    setFromGameValue(toGameValue);
+    setToGameValue(fromGameValue);
   };
 
   const handleReset = () => {
-    setFromGame(null);
-    setToGame(null);
+    setFromGameValue('');
+    setToGameValue('');
     setFromSensitivity('');
     setFromDpi('');
     setToDpi('');
@@ -204,7 +220,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
 
   // Keyboard navigation handlers
   const handleFromGameKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && fromGame) {
+    if (e.key === 'Enter' && actualFromGame) {
       e.preventDefault();
       // Focus the "to game" select
       const toGameSelect = document.getElementById('to-game-select');
@@ -213,7 +229,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
   };
 
   const handleToGameKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && toGame) {
+    if (e.key === 'Enter' && actualToGame) {
       e.preventDefault();
       // Focus the sensitivity input
       const sensitivityInput = document.getElementById('sensitivity-input');
@@ -248,8 +264,8 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
           <label>Convert From</label>
           <SearchableSelect
             id="from-game-select"
-            value={fromGame?.game || ''}
-            options={gameOptions}
+            value={fromGameValue}
+            options={fromGameOptions}
             placeholder="Select game"
             onChange={handleFromGameChange}
             onKeyDown={handleFromGameKeyDown}
@@ -260,8 +276,8 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
           <label>Convert To</label>
           <SearchableSelect
             id="to-game-select"
-            value={toGame?.game || ''}
-            options={gameOptions}
+            value={toGameValue}
+            options={toGameOptions}
             placeholder="Select game"
             onChange={handleToGameChange}
             onKeyDown={handleToGameKeyDown}
@@ -311,7 +327,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
 
         <div className="main-setting">
           <div className="setting-row">
-            <h3 className="heading">// Converted Sens {toGame ? `for ${toGame.game}` : 'for.. (Select game)'}</h3>
+            <h3 className="heading">// Converted Sens {actualToGame ? `for ${toGameValue === USER_SETTING_VALUE ? `User Setting (${actualToGame.game})` : actualToGame.game}` : 'for.. (Select game)'}</h3>
             <p className="value-large">{displayedValue ? formatSensitivity(displayedValue) : '0'}</p>
           </div>
         </div>

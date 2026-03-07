@@ -167,7 +167,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           expandedTitle="Preferences"
           headerDescription={
             <>
-              These settings will be used as a baseline for all games. You can{' '}
+              These settings will be used as your baseline for all games. You can{' '}
               <span
                 role="button"
                 tabIndex={0}
@@ -202,9 +202,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
           onToggle={handleOpenCalculatorCard}
           onClose={handleCloseCalculatorCard}
           className="card-secondary"
+          headerDescription="Use this calculater to quickly convert game sensitivities on the fly."
         >
           <CalculatorCardContent
             games={games}
+            userPreferenceGameName={canonicalSettings?.favoriteGame ?? null}
             calculatorState={calculatorState}
             onCalculatorStateChange={setCalculatorState}
           />
