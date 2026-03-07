@@ -60,7 +60,7 @@ body {
   font-family: 'Roboto Mono', 'Courier New', 'Monaco', 'Menlo', 'Consolas', monospace;
   color: var(--light);
   background: var(--dark);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1;
 }
 

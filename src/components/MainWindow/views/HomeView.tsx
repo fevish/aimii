@@ -257,6 +257,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           onClose={handleCloseUserPreferencesCard}
           className="user-preferences"
           contentTitle="Preferences"
+          content="Displaying your current user preferences. This can be changed at any time."
         >
           <UserPreferencesContent
             showForm={showUserPreferencesForm}

@@ -14,6 +14,7 @@ interface CardButtonProps {
   children?: React.ReactNode;
   className?: string;
   contentTitle?: string;
+  content?: string;
 }
 
 export const CardButton: React.FC<CardButtonProps> = ({
@@ -25,7 +26,8 @@ export const CardButton: React.FC<CardButtonProps> = ({
   onClose,
   children,
   className = '',
-  contentTitle
+  contentTitle,
+  content
 }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -64,16 +66,23 @@ export const CardButton: React.FC<CardButtonProps> = ({
           </button>
         </div>
 
-        <div className="card-content" onClick={e => e.stopPropagation()}>
+        <div className="card-wrapper" onClick={e => e.stopPropagation()}>
           {isOpen && (
             <>
               <div className="card-header">
-                <h4>{contentTitle || title}</h4>
+                <div className="card-header-content">
+                  <h4>{contentTitle || title}</h4>
+                  {content && (
+                    <p>{content}</p>
+                  )}
+                </div>
                 <button className="btn-icon btn-close" onClick={onClose}>
                   <SvgIcon name="close" />
                 </button>
               </div>
-              {children}
+              <div className="card-content">
+                {children}
+              </div>
             </>
           )}
         </div>
