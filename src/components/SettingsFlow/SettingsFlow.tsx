@@ -25,6 +25,8 @@ interface SettingsFlowProps {
   showProgress?: boolean;
   inputPrefix?: string;
   context?: 'onboarding' | 'preferences';
+  /** Label for the back button (e.g. "Back" or "Cancel") */
+  backButtonLabel?: string;
 }
 
 export const SettingsFlow: React.FC<SettingsFlowProps> = ({
@@ -39,7 +41,8 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
   onComplete,
   showProgress = true,
   inputPrefix = '',
-  context = 'onboarding'
+  context = 'onboarding',
+  backButtonLabel = 'Back'
 }) => {
   const getInputId = (baseId: string) => (inputPrefix ? `${inputPrefix}-${baseId}` : baseId);
 
@@ -121,7 +124,7 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
             onClick={onBack}
             disabled={isLoading}
           >
-            Back
+            {backButtonLabel}
           </button>
         )}
         <button

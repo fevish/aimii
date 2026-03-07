@@ -24,15 +24,18 @@ function getFilteredResolutions(): { width: number; height: number; label: strin
   );
 }
 
-interface AimTrainerCardContentProps {
-  mouseTravel: number | null;
-  canonicalSettings: BaselineSettings | null;
+export interface AimTrainerCardContentProps {
+  /** Baseline preferences (game, DPI, mouse travel). Used for emulate game default and config. */
+  baselineSettings: BaselineSettings | null;
+  /** Called when user wants to change preferences (e.g. "Change preferences" link). Optional. */
+  onChangePreferences?: () => void;
 }
 
 export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
-  mouseTravel,
-  canonicalSettings
+  baselineSettings,
+  onChangePreferences
 }) => {
+  const mouseTravel = baselineSettings?.mouseTravel ?? null;
   const [conversions, setConversions] = useState<SensitivityConversion[]>([]);
   const [resolution, setResolution] = useState<string>('');
   const [fov, setFov] = useState<number>(AIM_TRAINER_DEFAULT_FOV);
@@ -49,7 +52,7 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
         const data = await window.sensitivityConverter.getAllConversionsFromBaseline();
         setConversions(data);
         if (data.length > 0 && !emulateGame) {
-          const favorite = canonicalSettings?.favoriteGame;
+          const favorite = baselineSettings?.favoriteGame;
           const match = data.find(c => c.gameName === favorite) ?? data[0];
           setEmulateGame(match.gameName);
         }
@@ -58,7 +61,7 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
       }
     };
     loadConversions();
-  }, [canonicalSettings]);
+  }, [baselineSettings]);
 
   useEffect(() => {
     if (resolutions.length > 0 && !resolution) {
@@ -77,8 +80,8 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
       emulateGame: emulateGame || conv?.gameName || '',
       emulateSensitivity: conv?.suggestedSensitivity ?? 1,
       fov: Math.max(1, Math.min(180, fov)) || AIM_TRAINER_DEFAULT_FOV,
-      mouseTravel: canonicalSettings?.mouseTravel,
-      dpi: canonicalSettings?.dpi,
+      mouseTravel: baselineSettings?.mouseTravel,
+      dpi: baselineSettings?.dpi,
     };
   };
 
@@ -97,7 +100,7 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
     (window as any).aimTrainer?.open?.(buildConfig());
   };
 
-  const hasSettings = mouseTravel != null && canonicalSettings != null;
+  const hasSettings = mouseTravel != null && baselineSettings != null;
 
   return (
     <form className="form" onSubmit={e => e.preventDefault()}>
@@ -192,12 +195,24 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
 
       {!hasSettings && (
         <p className="text-muted">
-          Set your Mouse Travel in preferences to choose a game sensitivity.
+          {onChangePreferences ? (
+            <>
+              Set your Mouse Travel in{' '}
+              <button type="button" className="link-button" onClick={onChangePreferences}>
+                preferences
+              </button>
+              {' '}to choose a game sensitivity.
+            </>
+          ) : (
+            'Set your Mouse Travel in preferences to choose a game sensitivity.'
+          )}
         </p>
       )}
-      <button type="button" className="" onClick={handleBegin}>
-        Begin
-      </button>
+      <div className="settings-navigation">
+        <button type="button" className="settings-btn settings-btn-next" onClick={handleBegin}>
+          Begin
+        </button>
+      </div>
     </form>
   );
 };

@@ -1,107 +1,55 @@
 import React from 'react';
-import { SettingsFlow } from '../SettingsFlow/SettingsFlow';
-import { BaselineSettings, GameData } from '../../types/app';
 import { formatSensitivity } from '../../utils/format';
+import type { BaselineSettings } from '../../types/app';
 
-interface UserPreferencesContentProps {
-  showForm: boolean;
-  canonicalSettings: BaselineSettings | null;
-  mouseTravel: number | null;
-  trueSens: number | null; // accept trueSens via props
-  games: GameData[];
-  settingsData: {
-    selectedGame: string;
-    sensitivity: string;
-    dpi: string;
-    edpi: string;
-  };
-  settingsStep: number;
-  isLoading: boolean;
-  message: string;
-  onDataChange: (field: string, value: string) => void;
-  onNext: () => void;
-  onBack: () => void;
-  onShowForm: () => void;
-  onCancelForm: () => void;
+export interface UserPreferencesContentProps {
+  /** Current baseline preferences (game, sensitivity, DPI, etc.). Null when not set. */
+  baselineSettings: BaselineSettings | null;
 }
 
+/**
+ * Displays the user's current mouse travel preferences.
+ * The parent is responsible for providing a "Change" (or similar) action via CardButton headerActions
+ * that triggers onboarding restart or opens an edit flow.
+ */
 export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
-  showForm,
-  canonicalSettings,
-  mouseTravel,
-  trueSens,
-  games,
-  settingsData,
-  settingsStep,
-  isLoading,
-  message,
-  onDataChange,
-  onNext,
-  onBack,
-  onShowForm,
-  onCancelForm
+  baselineSettings
 }) => {
+  if (!baselineSettings) {
+    return (
+      <div className="card-empty">
+        <p>No settings configured</p>
+      </div>
+    );
+  }
+
   return (
-    <>
-      {showForm ? (
-        <SettingsFlow
-          games={games}
-          settingsData={settingsData}
-          currentStep={settingsStep}
-          isLoading={isLoading}
-          message={message}
-          onDataChange={onDataChange}
-          onNext={onNext}
-          onBack={() => { if (settingsStep === 1) { onCancelForm(); } else { onBack(); } }}
-          onComplete={onNext}
-          showProgress={false}
-          inputPrefix="card"
-          context="preferences"
-        />
-      ) : canonicalSettings ? (
-        <div className="current-settings">
-          <div className="main-setting">
-            <div className="setting-row">
-              <h3 className="heading">// MOUSE TRAVEL cm/360°
-                <button
-                  className="btn btn-secondary btn-outline btn-sm pref-btn"
-                  onClick={onShowForm}
-                >
-                  Change
-                </button>
-              </h3>
-              <p className="value-large">{formatSensitivity(canonicalSettings.mouseTravel)}</p>
-            </div>
-          </div>
-          <h3 className="heading">// EQUIVALENT TO</h3>
-          <div className="settings-grid">
-            <div className="setting-row">
-              <span className="setting-label">Game</span>
-              <span className="setting-value">{canonicalSettings.favoriteGame || 'Baseline (Any)'}</span>
-            </div>
-            <div className="setting-row">
-              <span className="setting-label">Sensitivity</span>
-              <span className="setting-value">{canonicalSettings.favoriteSensitivity}</span>
-            </div>
-            <div className="setting-row">
-              <span className="setting-label">eDPI</span>
-              <span className="setting-value">{canonicalSettings.eDPI}</span>
-            </div>
-            <div className="setting-row">
-              <span className="setting-label">Mouse DPI</span>
-              <span className="setting-value">{canonicalSettings.dpi}</span>
-            </div>
-            {/* <div className="setting-row">
-              <span className="setting-label">Mouse Travel cm/360°</span>
-              <span className="setting-value">{formatSensitivity(canonicalSettings.mouseTravel)}</span>
-            </div> */}
-          </div>
+    <div className="current-settings">
+      <div className="main-setting">
+        <div className="setting-row">
+          <h3 className="heading">// MOUSE TRAVEL cm/360°</h3>
+          <p className="value-large">{formatSensitivity(baselineSettings.mouseTravel)}</p>
         </div>
-      ) : (
-        <div className="card-empty">
-          <p>No settings configured</p>
+      </div>
+      <h3 className="heading">// EQUIVALENT TO</h3>
+      <div className="settings-grid">
+        <div className="setting-row">
+          <span className="setting-label">Game</span>
+          <span className="setting-value">{baselineSettings.favoriteGame || 'Baseline (Any)'}</span>
         </div>
-      )}
-    </>
+        <div className="setting-row">
+          <span className="setting-label">Sensitivity</span>
+          <span className="setting-value">{baselineSettings.favoriteSensitivity}</span>
+        </div>
+        <div className="setting-row">
+          <span className="setting-label">eDPI</span>
+          <span className="setting-value">{baselineSettings.eDPI}</span>
+        </div>
+        <div className="setting-row">
+          <span className="setting-label">Mouse DPI</span>
+          <span className="setting-value">{baselineSettings.dpi}</span>
+        </div>
+      </div>
+    </div>
   );
 };

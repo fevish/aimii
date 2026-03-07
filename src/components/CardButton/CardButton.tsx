@@ -4,17 +4,26 @@ import './CardButton.css';
 
 const CARD_TRANSITION_MS = 750;
 
-interface CardButtonProps {
+export interface CardButtonProps {
+  /** Card title when collapsed (e.g. "Mouse Travel") */
   title: string;
+  /** Value shown under the title when collapsed */
   value: string | number;
   iconName: string;
   isOpen: boolean;
   onToggle: () => void;
   onClose: () => void;
+  /** Content shown when card is expanded */
   children?: React.ReactNode;
   className?: string;
-  contentTitle?: string;
-  content?: string;
+  /** Title shown in the expanded card header (defaults to title) */
+  expandedTitle?: string;
+  /** Optional description or subtitle in the expanded header */
+  headerDescription?: string;
+  /** Optional action(s) in the expanded header (e.g. "Change" button) */
+  headerActions?: React.ReactNode;
+  /** When true and card is open, no expand/collapse transition (e.g. when returning from another flow) */
+  openWithoutTransition?: boolean;
 }
 
 export const CardButton: React.FC<CardButtonProps> = ({
@@ -26,16 +35,19 @@ export const CardButton: React.FC<CardButtonProps> = ({
   onClose,
   children,
   className = '',
-  contentTitle,
-  content
+  expandedTitle,
+  headerDescription,
+  headerActions,
+  openWithoutTransition = false
 }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
+    if (openWithoutTransition) return;
     setIsTransitioning(true);
     const t = setTimeout(() => setIsTransitioning(false), CARD_TRANSITION_MS);
     return () => clearTimeout(t);
-  }, [isOpen]);
+  }, [isOpen, openWithoutTransition]);
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (isOpen) {
@@ -56,7 +68,7 @@ export const CardButton: React.FC<CardButtonProps> = ({
       )}
 
       <div
-        className={`card-button ${isOpen ? 'card-open' : ''} ${isTransitioning ? 'is-changing' : ''} ${className}`}
+        className={`card-button ${isOpen ? 'card-open' : ''} ${isTransitioning ? 'is-changing' : ''} ${isOpen && openWithoutTransition ? 'card-open-no-transition' : ''} ${className}`}
         onClick={handleCardClick}
       >
         <div className="card-header">
@@ -71,12 +83,11 @@ export const CardButton: React.FC<CardButtonProps> = ({
             <>
               <div className="card-header">
                 <div className="card-header-content">
-                  <h4>{contentTitle || title}</h4>
-                  {content && (
-                    <p>{content}</p>
-                  )}
+                  <h4>{expandedTitle ?? title}</h4>
+                  {headerDescription && <p>{headerDescription}</p>}
                 </div>
-                <button className="btn-icon btn-close" onClick={onClose}>
+                {headerActions}
+                <button className="btn-icon btn-close" onClick={onClose} type="button">
                   <SvgIcon name="close" />
                 </button>
               </div>

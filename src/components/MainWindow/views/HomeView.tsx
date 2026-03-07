@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GameInfo } from '../GameInfo';
 import { CardButton } from '../../CardButton/CardButton';
 import { UserPreferencesContent } from '../../CardButton/UserPreferencesContent';
-import { SecondaryCardContent } from '../../CardButton/SecondaryCardContent';
+import { CalculatorCardContent } from '../../CardButton/CalculatorCardContent';
 import { AimTrainerCardContent } from '../../CardButton/AimTrainerCardContent';
 import { formatSensitivity } from '../../../utils/format';
 import { GameData, BaselineSettings } from '../../../types/app';
@@ -24,6 +24,12 @@ interface HomeViewProps {
   currentGameIndex: number;
   handlePreviousGame: () => void;
   handleNextGame: () => void;
+  /** Open onboarding at step 1 to edit preferences (Cancel returns to home with preferences card open) */
+  onEditPreferences: () => void;
+  /** When true, open the preferences card (e.g. after cancelling edit or after completing edit) */
+  shouldOpenPreferencesCard: boolean;
+  /** Call after opening the preferences card so parent can clear the flag */
+  onOpenPreferencesCardHandled: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -40,23 +46,30 @@ export const HomeView: React.FC<HomeViewProps> = ({
   loadAllData,
   currentGameIndex,
   handlePreviousGame,
-  handleNextGame
+  handleNextGame,
+  onEditPreferences,
+  shouldOpenPreferencesCard,
+  onOpenPreferencesCardHandled
 }) => {
-  // Card states
-  const [isUserPreferencesCardOpen, setIsUserPreferencesCardOpen] = useState<boolean>(false);
-  const [isSecondaryCardOpen, setIsSecondaryCardOpen] = useState<boolean>(false);
-  const [isAimTrainerCardOpen, setIsAimTrainerCardOpen] = useState<boolean>(false);
-  const [showUserPreferencesForm, setShowUserPreferencesForm] = useState<boolean>(false);
+  const [isPreferencesCardOpen, setIsPreferencesCardOpen] = useState(false);
+  const [openPreferencesWithoutTransition, setOpenPreferencesWithoutTransition] = useState(false);
+  const [isCalculatorCardOpen, setIsCalculatorCardOpen] = useState(false);
+  const [isAimTrainerCardOpen, setIsAimTrainerCardOpen] = useState(false);
 
-  const [userPreferencesSettingsData, setUserPreferencesSettingsData] = useState({
-    selectedGame: '',
-    sensitivity: '',
-    dpi: '',
-    edpi: ''
-  });
-  const [userPreferencesSettingsStep, setUserPreferencesSettingsStep] = useState(1);
+  useEffect(() => {
+    if (shouldOpenPreferencesCard) {
+      setOpenPreferencesWithoutTransition(true);
+      setIsPreferencesCardOpen(true);
+      onOpenPreferencesCardHandled();
+    }
+  }, [shouldOpenPreferencesCard, onOpenPreferencesCardHandled]);
 
-  // Calculator state
+  useEffect(() => {
+    if (!openPreferencesWithoutTransition || !isPreferencesCardOpen) return;
+    const t = setTimeout(() => setOpenPreferencesWithoutTransition(false), 100);
+    return () => clearTimeout(t);
+  }, [openPreferencesWithoutTransition, isPreferencesCardOpen]);
+
   const [calculatorState, setCalculatorState] = useState({
     fromGame: null as any,
     toGame: null as any,
@@ -91,124 +104,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
     }
   }, [currentGame, games, suggestedSensitivity, canonicalSettings]);
 
-  const handleOpenUserPreferencesCard = () => {
-    setIsUserPreferencesCardOpen(true);
-    setShowUserPreferencesForm(false);
-  };
-
-  const handleCloseUserPreferencesCard = () => {
-    setIsUserPreferencesCardOpen(false);
-    setShowUserPreferencesForm(false);
-  };
-
-  const handleOpenSecondaryCard = () => setIsSecondaryCardOpen(true);
-  const handleCloseSecondaryCard = () => setIsSecondaryCardOpen(false);
+  const handleOpenPreferencesCard = () => setIsPreferencesCardOpen(true);
+  const handleClosePreferencesCard = () => setIsPreferencesCardOpen(false);
+  const handleOpenCalculatorCard = () => setIsCalculatorCardOpen(true);
+  const handleCloseCalculatorCard = () => setIsCalculatorCardOpen(false);
   const handleOpenAimTrainerCard = () => setIsAimTrainerCardOpen(true);
   const handleCloseAimTrainerCard = () => setIsAimTrainerCardOpen(false);
 
-  const handleShowUserPreferencesForm = () => {
-    setShowUserPreferencesForm(true);
-    setUserPreferencesSettingsData({
-      selectedGame: '',
-      sensitivity: '',
-      dpi: canonicalSettings?.dpi?.toString() || '800',
-      edpi: ''
-    });
-    setUserPreferencesSettingsStep(1);
-  };
-
-  const handleCancelUserPreferencesForm = () => {
-    setShowUserPreferencesForm(false);
-    setUserPreferencesSettingsData({
-      selectedGame: '',
-      sensitivity: '',
-      dpi: canonicalSettings?.dpi?.toString() || '800',
-      edpi: ''
-    });
-    setUserPreferencesSettingsStep(1);
-  };
-
-  const handleUserPreferencesDataChange = useCallback((field: string, value: string) => {
-    setUserPreferencesSettingsData(prev => {
-      const newData = { ...prev, [field]: value };
-      if (field === 'sensitivity' || field === 'dpi') {
-        const sens = field === 'sensitivity' ? parseFloat(value) : parseFloat(newData.sensitivity);
-        const dpi = field === 'dpi' ? parseInt(value) : parseInt(newData.dpi);
-        if (!isNaN(sens) && !isNaN(dpi) && sens > 0 && dpi > 0) {
-          newData.edpi = Math.round(sens * dpi).toString();
-        }
-      }
-      return newData;
-    });
-  }, []);
-
-  const handleSaveSettingsFromCard = async (game: string, sensitivity: number, dpi: number, customMessage?: string): Promise<boolean> => {
-    try {
-      const gameData = games.find(g => g.game === game);
-      if (!gameData) {
-        setMessage('Game not found');
-        setTimeout(() => setMessage(''), 3000);
-        return false;
-      }
-
-      const newMouseTravel = await window.sensitivityConverter.calculateMouseTravelFromGame(gameData, sensitivity, dpi);
-      if (!newMouseTravel) {
-        setMessage('Error calculating mouse travel');
-        setTimeout(() => setMessage(''), 3000);
-        return false;
-      }
-
-      const eDPI = dpi * sensitivity;
-      const success = await (window.settings as any).setBaselineSettings(newMouseTravel, dpi, game, sensitivity, eDPI);
-      if (success) {
-        await loadAllData();
-        setShowUserPreferencesForm(false);
-        if (customMessage) {
-          setMessage(customMessage);
-          setTimeout(() => setMessage(''), 3000);
-        }
-      } else {
-        setMessage('Error saving settings');
-        setTimeout(() => setMessage(''), 3000);
-      }
-      return success;
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      setMessage('Error saving settings');
-      setTimeout(() => setMessage(''), 3000);
-      return false;
-    }
-  };
-
-  const handleUserPreferencesNext = async () => {
-    if (userPreferencesSettingsStep < 3) {
-      setUserPreferencesSettingsStep(prev => prev + 1);
-      return;
-    }
-
-    if (!userPreferencesSettingsData.selectedGame || !userPreferencesSettingsData.sensitivity || !userPreferencesSettingsData.dpi) {
-      setMessage('Please fill in all fields');
-      setTimeout(() => setMessage(''), 3000);
-      return;
-    }
-
-    const success = await handleSaveSettingsFromCard(
-      userPreferencesSettingsData.selectedGame,
-      parseFloat(userPreferencesSettingsData.sensitivity),
-      parseInt(userPreferencesSettingsData.dpi),
-      'Baseline updated'
-    );
-
-    if (success) {
-      setShowUserPreferencesForm(false);
-      setUserPreferencesSettingsStep(1);
-    }
-  };
-
-  const handleUserPreferencesBack = () => {
-    if (userPreferencesSettingsStep > 1) {
-      setUserPreferencesSettingsStep(prev => prev - 1);
-    }
+  const handleChangePreferences = () => {
+    handleClosePreferencesCard();
+    handleCloseCalculatorCard();
+    handleCloseAimTrainerCard();
+    onEditPreferences();
   };
 
   return (
@@ -250,43 +157,38 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <div className="cards-section">
         <CardButton
           title="Mouse Travel"
-          value={canonicalSettings?.mouseTravel ? `${formatSensitivity(canonicalSettings.mouseTravel)}` : 'Not set'}
+          value={canonicalSettings?.mouseTravel ? formatSensitivity(canonicalSettings.mouseTravel) : 'Not set'}
           iconName="arrow-north-east"
-          isOpen={isUserPreferencesCardOpen}
-          onToggle={handleOpenUserPreferencesCard}
-          onClose={handleCloseUserPreferencesCard}
+          isOpen={isPreferencesCardOpen}
+          onToggle={handleOpenPreferencesCard}
+          onClose={handleClosePreferencesCard}
           className="user-preferences"
-          contentTitle="Preferences"
-          content="Displaying your current user preferences. This can be changed at any time."
+          expandedTitle="Preferences"
+          headerDescription="Your current mouse travel. Use Change to set a new baseline."
+          headerActions={
+            <button
+              type="button"
+              className="btn btn-secondary btn-outline btn-sm pref-btn"
+              onClick={handleChangePreferences}
+            >
+              Change
+            </button>
+          }
+          openWithoutTransition={openPreferencesWithoutTransition}
         >
-          <UserPreferencesContent
-            showForm={showUserPreferencesForm}
-            canonicalSettings={canonicalSettings}
-            mouseTravel={mouseTravel}
-            trueSens={trueSens}
-            games={games}
-            settingsData={userPreferencesSettingsData}
-            settingsStep={userPreferencesSettingsStep}
-            isLoading={isLoading}
-            message={message}
-            onDataChange={handleUserPreferencesDataChange}
-            onNext={handleUserPreferencesNext}
-            onBack={handleUserPreferencesBack}
-            onShowForm={handleShowUserPreferencesForm}
-            onCancelForm={handleCancelUserPreferencesForm}
-          />
+          <UserPreferencesContent baselineSettings={canonicalSettings} />
         </CardButton>
 
         <CardButton
           title="Calculator"
           value=""
           iconName="arrow-north-east"
-          isOpen={isSecondaryCardOpen}
-          onToggle={handleOpenSecondaryCard}
-          onClose={handleCloseSecondaryCard}
+          isOpen={isCalculatorCardOpen}
+          onToggle={handleOpenCalculatorCard}
+          onClose={handleCloseCalculatorCard}
           className="card-secondary"
         >
-          <SecondaryCardContent
+          <CalculatorCardContent
             games={games}
             calculatorState={calculatorState}
             onCalculatorStateChange={setCalculatorState}
@@ -301,11 +203,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
           onToggle={handleOpenAimTrainerCard}
           onClose={handleCloseAimTrainerCard}
           className="card-secondary card-aim-trainer"
-          contentTitle="Aim Trainer"
+          expandedTitle="Aim Trainer"
         >
           <AimTrainerCardContent
-            mouseTravel={canonicalSettings?.mouseTravel ?? mouseTravel ?? null}
-            canonicalSettings={canonicalSettings}
+            baselineSettings={canonicalSettings}
+            onChangePreferences={handleChangePreferences}
           />
         </CardButton>
       </div>

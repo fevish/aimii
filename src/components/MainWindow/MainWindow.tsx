@@ -45,6 +45,8 @@ export const MainWindow: React.FC = () => {
     dpi: '',
     edpi: ''
   });
+  const [isEditPreferencesMode, setIsEditPreferencesMode] = useState(false);
+  const [shouldOpenPreferencesCard, setShouldOpenPreferencesCard] = useState(false);
 
   const handleMinimize = () => {
     window.windowControls.minimize();
@@ -176,26 +178,37 @@ export const MainWindow: React.FC = () => {
     }
   };
 
+  /** Full restart: clear settings and show onboarding from welcome (step 0). Used by Settings kill switch. */
   const handleRestartOnboarding = async () => {
     try {
-      // Clear all canonical settings
       await (window.settings as any).clearBaselineSettings();
-
-      // Reset all state
       setCanonicalSettings(null);
-
       setSuggestedSensitivity(null);
       setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '', edpi: '' });
       setOnboardingStep(0);
+      setIsEditPreferencesMode(false);
       setShowOnboarding(true);
-
-      // Switch to main tab to show onboarding
       setActiveTab('main');
-
       console.log('Onboarding restarted - all settings cleared');
     } catch (error) {
       console.error('Error restarting onboarding:', error);
     }
+  };
+
+  /** Open onboarding at step 1 (set reference game) to edit preferences. Cancel returns to home with preferences card open. */
+  const handleEditPreferences = () => {
+    if (canonicalSettings) {
+      setOnboardingData({
+        selectedGame: canonicalSettings.favoriteGame || '',
+        sensitivity: String(canonicalSettings.favoriteSensitivity ?? ''),
+        dpi: String(canonicalSettings.dpi ?? ''),
+        edpi: String(canonicalSettings.eDPI ?? '')
+      });
+    }
+    setOnboardingStep(1);
+    setIsEditPreferencesMode(true);
+    setShowOnboarding(true);
+    setActiveTab('main');
   };
 
   // Onboarding handlers
@@ -210,7 +223,12 @@ export const MainWindow: React.FC = () => {
   };
 
   const handleOnboardingBack = () => {
-    if (onboardingStep > 0) {
+    if (isEditPreferencesMode) {
+      setShowOnboarding(false);
+      setIsEditPreferencesMode(false);
+      setOnboardingStep(0);
+      setShouldOpenPreferencesCard(true);
+    } else if (onboardingStep > 0) {
       setOnboardingStep(prev => prev - 1);
     }
   };
@@ -302,10 +320,13 @@ export const MainWindow: React.FC = () => {
       // Reload data to update suggestions
       await loadAllData();
 
-      // Hide onboarding and show main screen
       setShowOnboarding(false);
       setOnboardingStep(0);
       setOnboardingData({ selectedGame: '', sensitivity: '', dpi: '800', edpi: '' });
+      if (isEditPreferencesMode) {
+        setIsEditPreferencesMode(false);
+        setShouldOpenPreferencesCard(true);
+      }
       console.log('Onboarding complete. User preferences saved:', { mouseTravel, dpi: dpiNum, game: favoriteGame, sensitivity: favoriteSensitivity });
       setMessage('Baseline saved successfully!');
       setTimeout(() => setMessage(''), 3000);
@@ -342,6 +363,7 @@ export const MainWindow: React.FC = () => {
                 onBack={handleOnboardingBack}
                 onRestart={handleRestartOnboarding}
                 onComplete={handleCompleteOnboarding}
+                backButtonLabel={isEditPreferencesMode ? 'Cancel' : 'Back'}
               />
             ) : (
               <>
@@ -360,6 +382,9 @@ export const MainWindow: React.FC = () => {
                   currentGameIndex={currentGameIndex}
                   handlePreviousGame={handlePreviousGame}
                   handleNextGame={handleNextGame}
+                  onEditPreferences={handleEditPreferences}
+                  shouldOpenPreferencesCard={shouldOpenPreferencesCard}
+                  onOpenPreferencesCardHandled={() => setShouldOpenPreferencesCard(false)}
                 />
               </>
             )}

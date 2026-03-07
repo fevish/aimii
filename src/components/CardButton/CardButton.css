@@ -93,6 +93,10 @@
       height: calc(100% - var(--spacing));
     }
 
+    &.card-open-no-transition .card-wrapper {
+      transition: none;
+    }
+
     .card-content {
       overflow: auto;
       padding-right: calc(1.5 * var(--spacing));
@@ -109,6 +113,7 @@
     .card-header {
       display: flex;
       flex-flow: row;
+      align-items: center;
       justify-content: space-between;
       gap: calc(1.5 * var(--spacing));
 
