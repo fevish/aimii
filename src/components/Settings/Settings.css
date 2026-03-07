@@ -52,7 +52,6 @@
     gap: calc(0.5 * var(--spacing));
   }
 
-
   .modifier-warning {
     background: var(--dark);
     color: var(--secondary);
@@ -76,7 +75,7 @@
     display: none;
   }
 
-  .select-wrapper {
+  .select-input-wrapper {
     width: fit-content;
   }
 

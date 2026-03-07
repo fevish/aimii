@@ -8,22 +8,6 @@
     color: currentColor;
   }
 
-  .select-arrow,
-  .select-arrow:hover,
-  .select-clear,
-  .select-clear:hover {
-    right: calc(1 * var(--spacing));
-  }
-
-  .select-clear {
-    svg {
-      height: calc(1 * var(--spacing));
-      width: calc(1 * var(--spacing));
-    }
-  }
-  .select-option {
-    padding: calc(0.75 * var(--spacing));
-  }
 }
 
 .game-selection {

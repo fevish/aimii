@@ -126,17 +126,17 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
       )}
       <div className="form-group">
         <label htmlFor="aim-trainer-resolution">Resolution</label>
-        <select
+        <SearchableSelect
           id="aim-trainer-resolution"
           value={resolution}
-          onChange={e => setResolution(e.target.value)}
-        >
-          {resolutions.map(r => (
-            <option key={`${r.width}x${r.height}`} value={`${r.width}x${r.height}`}>
-              {r.label}
-            </option>
-          ))}
-        </select>
+          options={resolutions.map(r => ({
+            value: `${r.width}x${r.height}`,
+            label: r.label
+          }))}
+          placeholder="Select resolution"
+          onChange={setResolution}
+          searchable={false}
+        />
       </div>
 
       <div className="form-group">

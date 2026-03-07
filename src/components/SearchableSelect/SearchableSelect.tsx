@@ -12,6 +12,8 @@ interface SearchableSelectProps {
   required?: boolean;
   disabled?: boolean;
   className?: string;
+  /** When false, acts as a simple dropdown (no type-to-filter). Default true. */
+  searchable?: boolean;
 }
 
 export const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -23,7 +25,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   onKeyDown,
   required = false,
   disabled = false,
-  className = ''
+  className = '',
+  searchable = true
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,12 +35,13 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLUListElement>(null);
 
-  // Filter options based on search term
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOptions = searchable
+    ? options.filter(option =>
+      option.label.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    : options;
 
   // Update input value when value prop changes
   useEffect(() => {
@@ -59,7 +63,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-    // Handle keyboard navigation
+  // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
@@ -89,17 +93,16 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         case 'Escape':
           setIsOpen(false);
           setHighlightedIndex(-1);
-          // If a game is selected, clear the selection entirely
-          if (value) {
-            onChange('');
-            setInputValue('');
-            setSearchTerm('');
-            // Refocus the input so user can start typing immediately
-            setTimeout(() => inputRef.current?.focus(), 0);
-          } else {
-            // If no game selected, just clear the input
-            setInputValue('');
-            setSearchTerm('');
+          if (searchable) {
+            if (value) {
+              onChange('');
+              setInputValue('');
+              setSearchTerm('');
+              setTimeout(() => inputRef.current?.focus(), 0);
+            } else {
+              setInputValue('');
+              setSearchTerm('');
+            }
           }
           break;
       }
@@ -107,26 +110,24 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, highlightedIndex, filteredOptions, value, onChange]);
+  }, [isOpen, highlightedIndex, filteredOptions, value, onChange, searchable]);
 
-  // Handle Escape key globally (even when input is readOnly)
+  // Handle Escape key globally (searchable only: clear selection when Escape and value)
   useEffect(() => {
     const handleGlobalEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && value) {
-        // Clear selection when Escape is pressed and we have a value
+      if (searchable && e.key === 'Escape' && value) {
         onChange('');
         setInputValue('');
         setSearchTerm('');
         setIsOpen(false);
         setHighlightedIndex(-1);
-        // Refocus the input so user can start typing immediately
         setTimeout(() => inputRef.current?.focus(), 0);
       }
     };
 
     document.addEventListener('keydown', handleGlobalEscape);
     return () => document.removeEventListener('keydown', handleGlobalEscape);
-  }, [value, onChange]);
+  }, [value, onChange, searchable]);
 
   const handleInputClick = () => {
     if (!disabled) {
@@ -139,15 +140,14 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     }
   };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow typing if no game is selected
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!searchable) return;
     if (value) return;
 
     const newValue = e.target.value;
     setInputValue(newValue);
     setSearchTerm(newValue);
     setIsOpen(true);
-    // Auto-highlight first result when typing
     setHighlightedIndex(newValue ? 0 : -1);
   };
 
@@ -199,14 +199,14 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           }}
           required={required}
           disabled={disabled}
-          readOnly={!!value}
+          readOnly={!searchable || !!value}
           className="select-input"
           autoComplete="off"
         />
-        {value ? (
+        {searchable && value ? (
           <button
             type="button"
-            className="select-clear"
+            className="select-button select-clear"
             onClick={() => {
               onChange('');
               setInputValue('');
@@ -222,20 +222,18 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         ) : (
           <button
             type="button"
-            className="select-arrow"
+            className="select-button select-arrow"
             onClick={handleInputClick}
             disabled={disabled}
           >
             <SvgIcon name="chevron-down" />
           </button>
         )}
-      </div>
 
-      {isOpen && (
-        <div ref={dropdownRef} className="select-dropdown">
-          {filteredOptions.length > 0 ? (
-            <ul className="select-options">
-              {filteredOptions.map((option, index) => (
+        {isOpen && (
+          <ul ref={dropdownRef} className="select-dropdown">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option, index) => (
                 <li
                   key={option.value}
                   className={`select-option ${index === highlightedIndex ? 'highlighted' : ''} ${option.value === value ? 'selected' : ''}`}
@@ -244,15 +242,14 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 >
                   {option.label}
                 </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="select-no-results">
-              No Results
-            </div>
-          )}
-        </div>
-      )}
+              ))
+            ) : (
+              <li className="select-no-results">No Results</li>
+            )}
+          </ul>
+        )}
+      </div>
+
     </div>
   );
 };
