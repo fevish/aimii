@@ -35,11 +35,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
       ? USER_SETTING_VALUE
       : (initialState?.fromGame?.game || '')
   );
-  const [toGameValue, setToGameValue] = useState<string>(() =>
-    userPreferenceGameName && initialState?.toGame?.game === userPreferenceGameName
-      ? USER_SETTING_VALUE
-      : (initialState?.toGame?.game || '')
-  );
+  const [toGameValue, setToGameValue] = useState<string>(() => initialState?.toGame?.game || '');
   const [fromSensitivity, setFromSensitivity] = useState<string>(initialState?.fromSensitivity || '');
   const [fromDpi, setFromDpi] = useState<string>(initialState?.fromDpi || '');
   const [toDpi, setToDpi] = useState<string>('');
@@ -61,18 +57,13 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
     fromGameValue === USER_SETTING_VALUE
       ? userPreferenceGame
       : (enabledGames.find(g => g.game === fromGameValue) ?? null);
-  const actualToGame: GameData | null =
-    toGameValue === USER_SETTING_VALUE
-      ? userPreferenceGame
-      : (enabledGames.find(g => g.game === toGameValue) ?? null);
+  const actualToGame: GameData | null = enabledGames.find(g => g.game === toGameValue) ?? null;
 
   const gameOptions = enabledGames.map(game => ({ value: game.game, label: game.game }));
   const fromGameOptions = userPreferenceGameName
     ? [{ value: USER_SETTING_VALUE, label: `User Setting (${userPreferenceGameName})` }, ...gameOptions]
     : gameOptions;
-  const toGameOptions = userPreferenceGameName
-    ? [{ value: USER_SETTING_VALUE, label: `User Setting (${userPreferenceGameName})` }, ...gameOptions]
-    : gameOptions;
+  const toGameOptions = gameOptions;
 
   // Debounced sensitivity calculation
   const debouncedCalculateSensitivity = useCallback(
@@ -327,7 +318,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
 
         <div className="main-setting">
           <div className="setting-row">
-            <h3 className="heading">// Converted Sens {actualToGame ? `for ${toGameValue === USER_SETTING_VALUE ? `User Setting (${actualToGame.game})` : actualToGame.game}` : 'for.. (Select game)'}</h3>
+            <h3 className="heading">// Converted Sens {actualToGame ? `for ${actualToGame.game}` : 'for.. (Select game)'}</h3>
             <p className="value-large">{displayedValue ? formatSensitivity(displayedValue) : '0'}</p>
           </div>
         </div>
