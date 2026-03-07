@@ -9,8 +9,6 @@ export interface UserPreferencesContentProps {
 
 /**
  * Displays the user's current mouse travel preferences.
- * The parent is responsible for providing a "Change" (or similar) action via CardButton headerActions
- * that triggers onboarding restart or opens an edit flow.
  */
 export const UserPreferencesContent: React.FC<UserPreferencesContentProps> = ({
   baselineSettings

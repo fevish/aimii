@@ -18,8 +18,8 @@ export interface CardButtonProps {
   className?: string;
   /** Title shown in the expanded card header (defaults to title) */
   expandedTitle?: string;
-  /** Optional description or subtitle in the expanded header */
-  headerDescription?: string;
+  /** Optional description or subtitle in the expanded header (string or JSX with links etc.) */
+  headerDescription?: React.ReactNode;
   /** Optional action(s) in the expanded header (e.g. "Change" button) */
   headerActions?: React.ReactNode;
   /** When true and card is open, no expand/collapse transition (e.g. when returning from another flow) */

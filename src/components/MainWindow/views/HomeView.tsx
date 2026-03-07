@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GameInfo } from '../GameInfo';
 import { CardButton } from '../../CardButton/CardButton';
 import { UserPreferencesContent } from '../../CardButton/UserPreferencesContent';
+import { SvgIcon } from '../../SvgIcon/SvgIcon';
 import { CalculatorCardContent } from '../../CardButton/CalculatorCardContent';
 import { AimTrainerCardContent } from '../../CardButton/AimTrainerCardContent';
 import { formatSensitivity } from '../../../utils/format';
@@ -164,14 +165,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
           onClose={handleClosePreferencesCard}
           className="user-preferences"
           expandedTitle="Preferences"
-          headerDescription="Your current mouse travel. Use Change to set a new baseline."
+          headerDescription={
+            <>
+              These settings will be used as a baseline for all games. You can{' '}
+              <span
+                role="button"
+                tabIndex={0}
+                className="link-button"
+                onClick={handleChangePreferences}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleChangePreferences(); } }}
+              >
+                change this
+              </span>
+              {' '}at any time.
+            </>
+          }
           headerActions={
             <button
               type="button"
-              className="btn btn-secondary btn-outline btn-sm pref-btn"
+              className="btn btn-icon btn-pref"
               onClick={handleChangePreferences}
             >
-              Change
+              <SvgIcon name="edit" />
             </button>
           }
           openWithoutTransition={openPreferencesWithoutTransition}
