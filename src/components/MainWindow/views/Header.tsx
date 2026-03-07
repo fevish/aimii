@@ -1,4 +1,5 @@
 import React from 'react';
+import { SvgIcon } from '../../SvgIcon/SvgIcon';
 
 interface HeaderProps {
   activeTab: 'main' | 'settings';
@@ -28,15 +29,15 @@ export const Header: React.FC<HeaderProps> = ({
               className={`tab-button ${activeTab === 'main' ? 'active' : ''}`}
               onClick={() => setActiveTab('main')}
             >
-              Main
+              <SvgIcon name="home" />
             </button>
             <button
               className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
               onClick={() => setActiveTab('settings')}
             >
-              Settings
+              <SvgIcon name="settings" />
             </button>
-            <button className="tab-button btn-icon discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>Discord</button>
+            <button className="tab-button discord-btn" onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}><SvgIcon name="discord" /></button>
           </nav>
         )}
         <div className="window-controls">

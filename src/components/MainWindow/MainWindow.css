@@ -49,28 +49,6 @@ header {
     cursor: pointer;
     padding-left: calc(2.5 * var(--spacing));
 
-    &::before {
-      content: '';
-      position: absolute;
-      left: calc(0.25 * var(--spacing));
-      display: block;
-      /* width: 26px;
-      height: 32px; */
-      width: calc(2* var(--spacing));
-      height: 100%;
-      background-color: var(--primary);
-      mask: center center no-repeat;
-      transition: background-color 0.3s ease-in-out;
-    }
-
-    &:hover::before {
-      background-color: var(--dark);
-    }
-
-    &.discord-btn::before {
-      mask-image: url('../../assets/svg/discord.svg');
-      mask-size: 16px;
-    }
   }
 }
 
@@ -84,16 +62,26 @@ header {
 }
 
 .tab-button {
-  padding: calc(0.25 * var(--spacing)) calc(0.5 * var(--spacing));
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
   background: var(--dark);
   color: var(--secondary);
-  border: 1px solid var(--secondary);
+  border: 0;
   border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: none;
   letter-spacing: normal;
   align-self: auto;
+  padding: 3px;
+}
+
+.tab-button svg {
+  height: 1.2em;
+  width: auto;
+  aspect-ratio: 1/1;
+  fill: currentColor;
 }
 
 .tab-button:hover {

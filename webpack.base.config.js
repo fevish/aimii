@@ -38,7 +38,25 @@ module.exports = {
           // For React components (SvgIcon) - convert to React components using SVGR
           {
             resourceQuery: /react/,
-            use: ['@svgr/webpack']
+            use: [
+              {
+                loader: '@svgr/webpack',
+                options: {
+                  svgoConfig: {
+                    plugins: [
+                      {
+                        name: 'preset-default',
+                        params: {
+                          overrides: {
+                            removeViewBox: false
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           },
           // For CSS and other uses - treat as files
           {
