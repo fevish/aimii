@@ -111,7 +111,6 @@
     .card-header {
       display: flex;
       flex-flow: row;
-      align-items: center;
       justify-content: space-between;
       gap: calc(1 * var(--spacing));
 

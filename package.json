@@ -1,6 +1,6 @@
 {
   "name": "aimii.app",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
