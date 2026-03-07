@@ -208,11 +208,9 @@ export const AimTrainerCardContent: React.FC<AimTrainerCardContentProps> = ({
           )}
         </p>
       )}
-      <div className="settings-navigation">
-        <button type="button" className="settings-btn settings-btn-next" onClick={handleBegin}>
-          Begin
-        </button>
-      </div>
+      <button type="button" className="settings-btn settings-btn-next" onClick={handleBegin}>
+        Begin
+      </button>
     </form>
   );
 };
