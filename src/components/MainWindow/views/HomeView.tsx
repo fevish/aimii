@@ -126,20 +126,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <>
             <h2>You're ready to go!</h2>
             <p>Launch a game and we'll recommend a sensitivity for you based on your saved preferences.</p>
+            <section className="notes-section">
+              <h3>News and Updates</h3>
+              <ul>
+                <li>
+                  <p>
+                    <b>This app is in early development phase</b><br />
+                    Features may change, features may break. Please report bugs to&nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish</a>.
+                  </p>
+                </li>
+              </ul>
+            </section>
+
           </>
         )}
-        <section className="notes-section">
-          <h3>News</h3>
-          <ul>
-            <li>
-              <p>
-                <b>This app is in early development phase</b><br />
-                Features may change, features may break. Please report bugs to&nbsp;<a onClick={() => window.electronAPI?.openExternalUrl('https://discord.gg/Nj2Xj3W4eY')}>@fevish on our Discord</a>.
-              </p>
-            </li>
-          </ul>
-        </section>
-
         {currentGame && (
           <GameInfo
             title={allDetectedGames.length > 1 ? 'Multiple Games Detected' : 'Supported Game Detected'}

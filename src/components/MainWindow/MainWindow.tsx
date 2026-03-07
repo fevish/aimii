@@ -395,9 +395,9 @@ export const MainWindow: React.FC = () => {
 
         <section className="ad-section" hidden={showOnboarding}>
           {/* <owadview /> */}
-          {/* <div className="terminal-container">
+          <div className="terminal-container">
             <Terminal />
-          </div> */}
+          </div>
         </section>
       </main>
 
