@@ -520,7 +520,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
                       </button>
                       <button
                         onClick={handleCancelCapture}
-                        className="cancel-btn"
+                        className="cancel-btn btn-outline"
                       >
                         Cancel
                       </button>

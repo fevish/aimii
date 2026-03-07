@@ -16,7 +16,15 @@
       opacity: 1;
       color: currentColor;
     }
+
     margin-right: 3rem;
+  }
+
+  button.save-btn {
+    color: var(--dark);
+    &:disabled {
+      background: var(--secondary);
+    }
   }
 
   .hotkey-actions {
@@ -97,6 +105,7 @@
     padding: calc(1 * var(--spacing)) calc(2 * var(--spacing));
     padding-right: calc(3 * var(--spacing));
   }
+
   .privacy-link {
     padding: 0;
   }
