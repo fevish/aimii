@@ -8,6 +8,7 @@ import { useMainWindowData } from './useMainWindowData';
 import { useAdDetection } from './useAdDetection';
 import { HomeView } from './views/HomeView';
 import { Header } from './views/Header';
+import { BackgroundPulseGrid } from './BackgroundPulseGrid';
 import { applyTheme } from '../../utils/theme';
 
 export const MainWindow: React.FC = () => {
@@ -393,12 +394,15 @@ export const MainWindow: React.FC = () => {
           <Settings handleRestartOnboarding={handleRestartOnboarding} />
         )}
 
-        <section className="ad-section" hidden={showOnboarding}>
-          {/* <owadview /> */}
-          <div className="terminal-container">
-            <Terminal />
-          </div>
-        </section>
+        <div className="right-section">
+          <section className="ad-section" hidden={showOnboarding}>
+            {/* <owadview /> */}
+            <div className="terminal-container">
+              <Terminal />
+            </div>
+          </section>
+          <BackgroundPulseGrid />
+        </div>
       </main>
 
     </div >
