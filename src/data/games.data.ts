@@ -112,61 +112,10 @@ export const gamesData: GameData[] = [
     enable_for_app: false
   },
   {
-    game: 'Call of Duty: Black Ops 4',
+    game: 'Call of Duty (All Games)',
+    processName: 'cod.exe',
     scalingFactor: 0.00660000176,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Black Ops 6',
-    scalingFactor: 0.00660000176,
-    owGameId: '24542',
-    owConstant: 'CallOfDutyBlackOps6',
-    owGameName: 'Call of Duty: Black Ops 6',
-    enable_for_app: true
-  },
-  {
-    game: 'Call of Duty: Black Ops Cold War',
-    scalingFactor: 0.00660000176,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Modern Warfare (2019)',
-    scalingFactor: 0.00660000176,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Modern Warfare 2 (2022)',
-    scalingFactor: 0.00660000176,
-    owGameId: '22328',
-    owConstant: 'CallOfDutyModernWarfare22022',
-    owGameName: 'Call of Duty: Modern Warfare 2 (2022)',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Modern Warfare 3 (2023)',
-    scalingFactor: 0.00660000176,
-    owGameId: '23424',
-    owConstant: 'CallOfDutyModernWarfare32023',
-    owGameName: 'Call of Duty: Modern Warfare 3 (2023)',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Vanguard',
-    scalingFactor: 0.00660000176,
-    owGameId: '21876',
-    owConstant: 'CallOfDutyVanguard',
-    owGameName: 'Call of Duty: Vanguard',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Warzone',
-    scalingFactor: 0.00660000176,
-    owGameId: '24542',
-    owConstant: 'CallOfDutyWarzone',
-    owGameName: 'Call of Duty: Warzone',
+    owGameId: '',
     enable_for_app: true
   },
   {
