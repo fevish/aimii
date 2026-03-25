@@ -31,7 +31,7 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'ARC Raiders',
-    scalingFactor: 0.0013610,
+    scalingFactor: 0.001555424552,
     owGameId: '27168',
     enable_for_app: true
   },
@@ -151,7 +151,7 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Rainbow Six Siege',
-    scalingFactor: 0.00572957914,
+    scalingFactor: 0.005729577951,
     owGameId: '10826',
     owConstant: 'RainbowSixSiege',
     owGameName: 'Rainbow Six Siege',
@@ -202,7 +202,7 @@ export const gamesData: GameData[] = [
   {
     game: 'Valorant',
     processName: 'VALORANT-Win64-Shipping.exe',
-    scalingFactor: 0.07,
+    scalingFactor: 0.07000016952,
     owGameId: '21640',
     owConstant: 'Valorant',
     owGameName: 'Valorant',
