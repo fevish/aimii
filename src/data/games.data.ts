@@ -101,7 +101,7 @@ export const gamesData: GameData[] = [
   {
     game: 'Left 4 Dead 2',
     processName: 'left4dead2.exe',
-    scalingFactor: 0.02199999511,
+    scalingFactor: 0.022,
     owGameId: '0',
     enable_for_app: true
   },
