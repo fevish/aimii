@@ -84,7 +84,7 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Halo Infinite',
-    scalingFactor: 0.0225,
+    scalingFactor: 0.0222,
     owGameId: '21854',
     owConstant: 'HaloInfinite',
     owGameName: 'Halo Infinite',
