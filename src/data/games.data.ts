@@ -117,7 +117,11 @@ export const gamesData: GameData[] = [
     game: 'Minecraft Java',
     scalingFactor: 1.0,
     specialConversion: true,
-    conversionParams: { linearCoefficient: 1.2, offset: 0.6, multiplier: 0.005, constant: 0.2, scaleFactor: 0.003 },
+    conversionParams: { 
+      linearCoefficient: 1.2, 
+      offset: 0.6, 
+      multiplier: 0.005
+    },
     owGameId: '8032',
     owConstant: 'MinecraftJavaEdition',
     owGameName: 'Minecraft: Java Edition',
@@ -135,7 +139,10 @@ export const gamesData: GameData[] = [
     game: 'PUBG',
     scalingFactor: 1.0,
     specialConversion: true,
-    conversionParams: { baseValue: 114.80, scaleFactor: 21.769 },
+    conversionParams: { 
+      baseValue: 114.80, 
+      scaleFactor: 21.769 
+    },
     owGameId: '10906',
     owConstant: 'PUBG',
     owGameName: 'PlayerUnknown\'s Battlegrounds',
