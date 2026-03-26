@@ -143,7 +143,7 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Rainbow Six Siege',
-    scalingFactor: 0.005729577951,
+    scalingFactor: 0.00573,
     owGameId: '10826',
     owConstant: 'RainbowSixSiege',
     owGameName: 'Rainbow Six Siege',
@@ -176,7 +176,7 @@ export const gamesData: GameData[] = [
   {
     game: 'Valorant',
     processName: 'VALORANT-Win64-Shipping.exe',
-    scalingFactor: 0.07000105297,
+    scalingFactor: 0.07,
     owGameId: '21640',
     owConstant: 'Valorant',
     owGameName: 'Valorant',
