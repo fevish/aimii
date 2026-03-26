@@ -31,7 +31,7 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'ARC Raiders',
-    scalingFactor: 0.001555424552,
+    scalingFactor: 0.00156,
     owGameId: '27168',
     enable_for_app: true
   },
@@ -176,7 +176,7 @@ export const gamesData: GameData[] = [
   {
     game: 'Valorant',
     processName: 'VALORANT-Win64-Shipping.exe',
-    scalingFactor: 0.07000016952,
+    scalingFactor: 0.07000105297,
     owGameId: '21640',
     owConstant: 'Valorant',
     owGameName: 'Valorant',
