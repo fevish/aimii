@@ -9,6 +9,7 @@ import { formatSensitivity } from '../../../utils/format';
 import { GameData, BaselineSettings } from '../../../types/app';
 import { CurrentGameInfo } from '../../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../../browser/services/sensitivity-converter.service';
+import { gameNotesByName } from '../../../constants/gameNotes';
 
 interface HomeViewProps {
   games: GameData[];
@@ -144,6 +145,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <GameInfo
             title={allDetectedGames.length > 1 ? 'Multiple Games Detected' : 'Supported Game Detected'}
             gameName={currentGame.name}
+            gameNote={gameNotesByName[currentGame.name] ?? ''}
             suggestedSensitivity={suggestedSensitivity}
             canonicalSettings={canonicalSettings}
             mouseTravel={mouseTravel}
