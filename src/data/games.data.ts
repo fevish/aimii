@@ -132,14 +132,6 @@ export const gamesData: GameData[] = [
     enable_for_app: true
   },
   {
-    game: 'Palworld',
-    scalingFactor: 0.0437455,
-    owGameId: '23944',
-    owConstant: 'Palworld',
-    owGameName: 'Palworld',
-    enable_for_app: false
-  },
-  {
     game: 'PUBG',
     scalingFactor: 1.0,
     specialConversion: true,
@@ -166,14 +158,6 @@ export const gamesData: GameData[] = [
     enable_for_app: false
   },
   {
-    game: 'Spectre Divide',
-    scalingFactor: 0.07152052639,
-    owGameId: '24484',
-    owConstant: 'SpectreDivide',
-    owGameName: 'Spectre Divide',
-    enable_for_app: false
-  },
-  {
     game: 'Splitgate 2',
     scalingFactor: 0.01117268501,
     owGameId: '25884',
@@ -187,16 +171,6 @@ export const gamesData: GameData[] = [
     owGameId: '23478',
     owConstant: 'THEFINALS',
     owGameName: 'THE FINALS',
-    enable_for_app: false
-  },
-  {
-    game: 'The First Descendant',
-    scalingFactor: 1.0,
-    specialConversion: true,
-    conversionParams: { offset: 1.667, constant: 133.35 },
-    owGameId: '24360',
-    owConstant: 'TheFirstDescendant',
-    owGameName: 'The First Descendant',
     enable_for_app: false
   },
   {
