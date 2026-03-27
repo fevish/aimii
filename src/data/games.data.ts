@@ -106,6 +106,13 @@ export const gamesData: GameData[] = [
     enable_for_app: true
   },
   {
+    game: 'Marathon',
+    processName: 'Marathon.exe',
+    scalingFactor: 0.0033,
+    owGameId: '',
+    enable_for_app: true
+  },
+  {
     game: 'Marvel Rivals',
     scalingFactor: 0.01749999027,
     owGameId: '24890',
