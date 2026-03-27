@@ -140,8 +140,8 @@ export const gamesData: GameData[] = [
     scalingFactor: 1.0,
     specialConversion: true,
     conversionParams: { 
-      baseValue: 114.80, 
-      scaleFactor: 21.769 
+      baseValue: 114.684, 
+      scaleFactor: 21.488 
     },
     owGameId: '10906',
     owConstant: 'PUBG',
