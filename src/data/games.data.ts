@@ -38,7 +38,7 @@ export const gamesData: GameData[] = [
   {
     game: 'Call of Duty (All Games)',
     processName: 'cod.exe',
-    scalingFactor: 0.00660000176,
+    scalingFactor: 0.0066,
     owGameId: '',
     enable_for_app: true
   },
