@@ -5,7 +5,9 @@ import './Widget.css';
 import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import { BaselineSettings, HotkeyInfo } from '../../types/app';
+import { gameNotesByName } from '../../constants/gameNotes';
 import { formatSensitivity } from '../../utils/format';
+import { GameNote } from '../GameNote/GameNote';
 
 const Widget: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -210,6 +212,12 @@ const Widget: React.FC = () => {
     setTheme(theme);
   };
 
+  const gameNoteHtml = React.useMemo(() => {
+    const name = currentGame?.name;
+    if (!name) return '';
+    return gameNotesByName[name] ?? '';
+  }, [currentGame?.name]);
+
   return (
     <div className="widget-container">
       <div className="widget-header">
@@ -240,7 +248,7 @@ const Widget: React.FC = () => {
                   ? (
                     <div className="sensitivity-suggestion">
                       <p className="suggested-value">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
-                      {cm360 &&
+                      {cm360 && !gameNoteHtml &&
                         <div className="settings-grid">
                           <div className="setting-row">
                             <span className="setting-label">eDPI</span>
@@ -252,6 +260,7 @@ const Widget: React.FC = () => {
                           </div>
                         </div>
                       }
+                      {!!gameNoteHtml && <GameNote html={gameNoteHtml} className="widget-game-note" />}
                     </div>
                   )
                   : !canonicalSettings
