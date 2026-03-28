@@ -167,6 +167,7 @@ section {
 .main-section {
   justify-content: space-between;
   position: relative;
+  overflow: auto;
 
   .content {
     p {
