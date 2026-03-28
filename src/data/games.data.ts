@@ -23,7 +23,7 @@ export interface GameData {
 export const gamesData: GameData[] = [
   {
     game: 'Apex Legends',
-    scalingFactor: 0.02199999511,
+    scalingFactor: 0.022,
     owGameId: '21566',
     owConstant: 'ApexLegends',
     owGameName: 'Apex Legends',
@@ -36,7 +36,7 @@ export const gamesData: GameData[] = [
     enable_for_app: true
   },
   {
-    game: 'Call of Duty (All Games)',
+    game: 'Call of Duty (All)',
     processName: 'cod.exe',
     scalingFactor: 0.0066,
     owGameId: '',
