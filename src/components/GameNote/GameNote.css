@@ -1,0 +1,3 @@
+.game-note {
+  margin-left: calc(2.5 * var(--spacing));
+}

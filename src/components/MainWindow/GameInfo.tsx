@@ -1,4 +1,5 @@
 import React from 'react';
+import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import { BaselineSettings } from '../../types/app';
 import { formatSensitivity } from '../../utils/format';
@@ -51,11 +52,11 @@ export const GameInfo: React.FC<GameInfoProps> = ({
 
   return (
     <>
-      <h2>{title}</h2>
+      <h2 className="heading">// Sensitivity for {gameName}</h2>
+      {!!gameNote && <GameNote html={gameNote} />}
       {/* Only show current sensitivity if we have suggested sensitivity (meaning we're in a different game) */}
       {suggestedSensitivity && (
         <>
-          <h3 className="heading">// Suggested Sensitivity for {gameName}</h3>
           <p className="value-large">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
         </>
       )}
@@ -70,8 +71,6 @@ export const GameInfo: React.FC<GameInfoProps> = ({
           <span className="setting-value">{eDPI}</span>
         </div>
       </div>
-
-      {!!gameNote && <GameNote html={gameNote} />}
 
       {showNavigation && (
         <div className="multi-games-nav">

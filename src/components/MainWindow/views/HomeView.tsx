@@ -143,7 +143,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         )}
         {currentGame && (
           <GameInfo
-            title={allDetectedGames.length > 1 ? 'Multiple Games Detected' : 'Supported Game Detected'}
+            title={''}
             gameName={currentGame.name}
             gameNote={gameNotesByName[currentGame.name] ?? ''}
             suggestedSensitivity={suggestedSensitivity}

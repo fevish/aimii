@@ -49,7 +49,7 @@ export interface GameNoteProps {
   className?: string;
 }
 
-export const GameNote: React.FC<GameNoteProps> = ({ html, label = 'Note', className }) => {
+export const GameNote: React.FC<GameNoteProps> = ({ html, label = 'Recommended', className }) => {
   const sanitized = React.useMemo(() => {
     if (typeof document === 'undefined') return html;
     return sanitizeNoteHtml(html);
@@ -59,7 +59,6 @@ export const GameNote: React.FC<GameNoteProps> = ({ html, label = 'Note', classN
 
   return (
     <div className={['game-note', className].filter(Boolean).join(' ')} role="note" aria-label="Game note">
-      <span className="game-note-label">{label}</span>
       <div className="game-note-content" dangerouslySetInnerHTML={{ __html: sanitized }} />
     </div>
   );

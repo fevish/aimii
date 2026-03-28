@@ -89,6 +89,7 @@ h3 {
 
 h4 {
   margin: 0;
+  margin-bottom: calc(0.5 * var(--spacing));
   font-weight: normal;
   color: currentColor;
   letter-spacing: 0.5px;
