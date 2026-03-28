@@ -6,7 +6,17 @@ export const gameNotesByName: Record<string, string> = {
   `,
   'Marathon': `
     <p>
-      Recommended: Turn [<b>Aim Smoothing: Off</b>]
+      Recommended: Turn [<b>Aim Smoothing: OFF</b>]
+    </p>
+  `,
+  'Apex Legends': `
+    <p>
+      Recommended: Turn [<b>Mouse Acceleration: OFF</b>]
+    </p>
+  `,
+  'PUBG': `
+    <p>
+      Recommended: Set [<b>Vertical Sensitivity Multiplier:</b> 1]
     </p>
   `,
 };
