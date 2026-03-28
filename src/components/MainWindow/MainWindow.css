@@ -191,7 +191,9 @@ section {
 
     .value-large {
       margin-left: calc(2.1 * var(--spacing));
-      margin-bottom: auto;
+    }
+    .settings-grid {
+      margin-top: auto;
     }
   }
 }

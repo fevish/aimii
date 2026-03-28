@@ -53,13 +53,13 @@ export const GameInfo: React.FC<GameInfoProps> = ({
   return (
     <>
       <h2 className="heading">// Sensitivity for {gameName}</h2>
-      {!!gameNote && <GameNote html={gameNote} />}
       {/* Only show current sensitivity if we have suggested sensitivity (meaning we're in a different game) */}
       {suggestedSensitivity && (
         <>
           <p className="value-large">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
         </>
       )}
+      {!!gameNote && <GameNote html={gameNote} />}
 
       <div className="settings-grid">
         <div className="setting-row">
