@@ -53,11 +53,11 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Deadlock',
-    scalingFactor: 0.04400009777,
+    scalingFactor: 0.044,
     owGameId: '24482',
     owConstant: 'Deadlock',
     owGameName: 'Deadlock',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Destiny 2',

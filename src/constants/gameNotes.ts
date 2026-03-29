@@ -19,5 +19,10 @@ export const gameNotesByName: Record<string, string> = {
       Recommended: Set [<b>Vertical Sensitivity Multiplier:</b> 1]
     </p>
   `,
+  'Deadlock': `
+    <p>
+      Recommended: Set [<b>Y-axis scaling:</b> 1]
+    </p>
+  `,
 };
 
