@@ -83,11 +83,10 @@ export const gamesData: GameData[] = [
     enable_for_app: true
   },
   {
-    game: 'Halo Infinite',
+    game: 'Halo (All)',
     scalingFactor: 0.0222,
-    owGameId: '21854',
-    owConstant: 'HaloInfinite',
-    owGameName: 'Halo Infinite',
+    processName: 'MCC-Win64-Shipping.exe',
+    owGameId: '',
     enable_for_app: true
   },
   {
