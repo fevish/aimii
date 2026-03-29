@@ -172,12 +172,12 @@ export const gamesData: GameData[] = [
     enable_for_app: false
   },
   {
-    game: 'Splitgate 2',
-    scalingFactor: 0.01117268501,
+    game: 'Splitgate Arena Reloaded',
+    scalingFactor: 0.00937,
     owGameId: '25884',
     owConstant: 'Splitgate2',
     owGameName: 'Splitgate 2',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'THE FINALS',
