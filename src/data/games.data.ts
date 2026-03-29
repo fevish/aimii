@@ -185,7 +185,7 @@ export const gamesData: GameData[] = [
     owGameId: '23478',
     owConstant: 'THEFINALS',
     owGameName: 'THE FINALS',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Valorant',
