@@ -131,7 +131,7 @@ export const gamesData: GameData[] = [
     owGameId: '8032',
     owConstant: 'MinecraftJavaEdition',
     owGameName: 'Minecraft: Java Edition',
-    enable_for_app: true
+    enable_for_app: false 
   },
   {
     game: 'Overwatch 2',
