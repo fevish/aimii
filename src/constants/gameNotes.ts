@@ -24,6 +24,16 @@ export const gameNotesByName: Record<string, string> = {
       Recommended: Set [<b>Y-axis scaling:</b> 1]
     </p>
   `,
+  'Helldivers 2': `
+    <p>
+      Recommended: 
+      <ul>
+        <li>Set [<b>Mouse Aim Sensitivity:</b> 1.00]</li>
+        <li>Set [<b>Mouse Smoothing:</b> OFF]</li>
+        <li>Set [<b>Mouse Acceleration:</b> 0.00]</li>
+      </ul>
+    </p>
+  `,
   'Fortnite': `
     <p>
       Recommended: Set [<b>X-Axis</b> and <b>Y-Axis</b> Sensitivity sliders] to the same sensitivity.

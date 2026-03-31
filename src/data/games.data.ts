@@ -91,11 +91,11 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Helldivers 2',
-    scalingFactor: 0.57295,
+    scalingFactor: 0.58,
     owGameId: '24000',
     owConstant: 'Helldivers2',
     owGameName: 'Helldivers 2',
-    enable_for_app: false
+    enable_for_app: true 
   },
   {
     game: 'Left 4 Dead 2',
