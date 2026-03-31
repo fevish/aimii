@@ -24,6 +24,11 @@ export const gameNotesByName: Record<string, string> = {
       Recommended: Set [<b>Y-axis scaling:</b> 1]
     </p>
   `,
+  'Destiny 2': `
+    <p>
+      Recommended: Turn [<b>Mouse Smoothing</b>: OFF]
+    </p>
+  `,
   'Helldivers 2': `
     <p>
       Recommended: 

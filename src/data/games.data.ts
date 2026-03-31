@@ -62,7 +62,7 @@ export const gamesData: GameData[] = [
   {
     game: 'Destiny 2',
     processName: 'destiny2.exe',
-    scalingFactor: 0.00660000176,
+    scalingFactor: 0.0066,
     owGameId: '0',
     enable_for_app: true
   },
