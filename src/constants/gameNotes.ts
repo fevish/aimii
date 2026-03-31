@@ -24,6 +24,11 @@ export const gameNotesByName: Record<string, string> = {
       Recommended: Set [<b>Y-axis scaling:</b> 1]
     </p>
   `,
+  'Fortnite': `
+    <p>
+      Recommended: Set [<b>X-Axis</b> and <b>Y-Axis</b> Sensitivity sliders] to the same sensitivity.
+    </p>
+  `,
   'Marvel Rivals': `
     <p>Recommended:</p>
     <ul>

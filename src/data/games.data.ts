@@ -76,7 +76,7 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Fortnite',
-    scalingFactor: 0.00555500005,
+    scalingFactor: 0.00556,
     owGameId: '21216',
     owConstant: 'Fortnite',
     owGameName: 'Fortnite',
