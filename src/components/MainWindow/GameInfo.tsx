@@ -63,7 +63,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({
 
       <div className="settings-grid">
         <div className="setting-row">
-          <span className="setting-label">Running Game</span>
+          <span className="setting-label">Current Game</span>
           <span className="setting-value">{gameName}</span>
         </div>
         <div className="setting-row">
