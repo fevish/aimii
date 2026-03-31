@@ -36,12 +36,11 @@ export const gameNotesByName: Record<string, string> = {
       <li>Turn [<b>Mouse Smoothing</b>: OFF].</li>
       <li>Turn [<b>Mouse Acceleration</b>: OFF].</li>
       <li>Turn [<b>Raw Input</b>: ON].</li>
-      <li>Set [<b>High Polling Rate</b>: User Preference]</li>
     </ul>
   `,
   'Escape From Tarkov': `
     <p>
-      Recommended: Set [<b>Mouse sensitivity</b> and <b>Mouse sensitivity (aiming)<b>] to the same sensitivity.
+      Recommended: Set [<b>Mouse sensitivity</b> and <b>Mouse sensitivity (aiming)</b>] to the same sensitivity.
     </p>
   `,
   'Splitgate Arena Reloaded': `
