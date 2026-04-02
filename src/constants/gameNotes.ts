@@ -64,4 +64,3 @@ export const gameNotesByName: Record<string, string> = {
     </p>
   `,
 };
-
