@@ -11,7 +11,7 @@ rendererConfig.entry = {
   'preload': './src/preload/preload.ts',
   'main': './src/main.tsx',
   'widget': './src/widget.tsx',
-  'aim-trainer': './src/aim-trainer-window.tsx'
+  // 'aim-trainer': './src/aim-trainer-window.tsx'
 };
 
 
@@ -30,12 +30,12 @@ rendererConfig.plugins.push(new HtmlWebpackPlugin({
   inject: true
 }));
 
-rendererConfig.plugins.push(new HtmlWebpackPlugin({
-  template: './public/aim-trainer.html',
-  filename: 'aim-trainer.html',
-  chunks: ['aim-trainer'],
-  inject: true
-}));
+// rendererConfig.plugins.push(new HtmlWebpackPlugin({
+//   template: './public/aim-trainer.html',
+//   filename: 'aim-trainer.html',
+//   chunks: ['aim-trainer'],
+//   inject: true
+// }));
 
 // Add DefinePlugin to inject version from package.json
 rendererConfig.plugins.push(new webpack.DefinePlugin({
