@@ -400,6 +400,10 @@ form {
   }
 }
 
+.right-section {
+  display: flex;
+  flex-flow: column;
+}
 /* Ad / Debug Section */
 .ad-section {
   top: 1px;
@@ -409,8 +413,9 @@ form {
   height: 300px;
   position: relative;
   overflow: hidden;
-  background-color: transparent;
+  background-color: var(--dark);
   z-index: 10;
+  flex-shrink: 0;
 
   owadview {
     position: absolute;
@@ -456,7 +461,6 @@ form {
     display: none;
   }
 }
-
 
 
 /* Notes Section */
