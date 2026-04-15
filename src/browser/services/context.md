@@ -24,15 +24,14 @@ Conversion math is **not** in `GamesService` — it delegates to `src/utils/sens
 
 Do not poll for game detection or state changes. Use `EventEmitter`. Debounce game updates (~200 ms).
 
-## Ad Detection (`AdService`)
+## Ad Detection
 
-> Feature: detect when Overwolf ads are running and apply `.ad-running` to `terminal-container`.
+Implemented as a hook, not a service: `src/components/MainWindow/useAdDetection.ts`.
 
-- Listen to Overwolf ad events (`ad-started`, `ad-completed`) — no polling
-- Apply/remove `.ad-running` CSS class on state change; clean up listeners on unmount
-- Debounce state updates to prevent excessive re-renders
-- Graceful fallback: if detection fails, assume no ad running and continue normally
-- Expose state via `AdContext` provider; components subscribe through context, not direct service calls
+- Watches `owadview` DOM element events: `play`, `display_ad_loaded`, `player_loaded` → adds `.ad-running` to `.ad-section`
+- `complete` event → removes `.ad-running`
+- Waits for `dom-ready` on the WebView before attaching listeners if needed
+- Cleans up all listeners on unmount
 
 ## aim-trainer/
 

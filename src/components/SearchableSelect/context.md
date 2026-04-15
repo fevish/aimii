@@ -38,6 +38,7 @@ the tree. Import `GameData` from `src/types/app`.
 | `required`  | boolean                           | No       | Default: false                           |
 | `disabled`  | boolean                           | No       | Default: false                           |
 | `className` | string                            | No       | Additional CSS classes                   |
+| `searchable`| boolean                           | No       | Default: true. When false, disables type-to-filter (acts as a plain dropdown) |
 
 ## Behavior
 

@@ -37,16 +37,6 @@ Games with `specialConversion: true` in `games.data.ts` use `conversionParams` f
 (Battlefield, GTA5, PUBG, Minecraft, STALKER 2, First Descendant, XDefiant, etc.).
 See the branches in `sensitivity-conversion.ts` for each variant.
 
-### Games with H/V sliders (e.g. Arc Raiders)
-
-Conversion math is unchanged — always produces one logical sensitivity value.
-For display, if `GameData.sensitivitySliders === 'horizontalVertical'`, show the same value for
-both H and V sliders (or apply a slider-range mapping if the game's UI scale is known).
-
-Recommended additions to `GameData` when implementing:
-- `sensitivitySliders?: 'single' | 'horizontalVertical'`
-- `sliderRange?: { min: number; max: number }` (optional, for UI mapping)
-
 ### Derived metrics
 
 - **True Sens**: `Math.round(mouseTravel * 10)` — normalized for comparison
