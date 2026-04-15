@@ -193,6 +193,6 @@ export const gamesData: GameData[] = [
     owGameId: '21640',
     owConstant: 'Valorant',
     owGameName: 'Valorant',
-    enable_for_app: false
+    enable_for_app: true 
   }
 ];
