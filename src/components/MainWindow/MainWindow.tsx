@@ -394,7 +394,7 @@ export const MainWindow: React.FC = () => {
         )}
 
         <section className="ad-section" hidden={showOnboarding}>
-          {/* <owadview /> */}
+          <owadview cid="aimii-main-window"/>
           <div className="terminal-container">
             <Terminal />
           </div>

@@ -90,7 +90,7 @@ declare global {
 declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      owadview: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      owadview: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { cid?: string };
     }
   }
 }
