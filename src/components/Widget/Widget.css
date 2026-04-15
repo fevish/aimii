@@ -18,6 +18,7 @@
   color: var(--light);
   display: flex;
   flex-direction: column;
+
   * :not(.window-control-btn) {
     -webkit-app-region: drag;
   }
@@ -31,17 +32,17 @@
 }
 
 .hotkey-info {
-  font-size: 0.9em;
+  font-size: 1em;
   text-align: center;
   opacity: 0.8;
   padding: 0.25rem;
   color: var(--secondary);
   margin-right: 2rem;
+
   p {
     margin: 0;
   }
 }
-
 
 .window-control-btn {
   -webkit-app-region: no-drag;
@@ -69,18 +70,20 @@
   display: flex;
   flex-direction: column;
   gap: calc(0.5 * var(--spacing));
+
   .settings-grid {
-    font-size: 1.15rem;
+    font-size: 1.8em;
     padding: 0;
     margin-bottom: 0.3rem;
+
     .setting-label {
-      font-size: 0.7rem;
+      font-size: 0.65em;
       opacity: 0.6;
     }
   }
 }
 
-.widget-content > p {
+.widget-content>p {
   margin: 0;
   color: var(--secondary);
 }
@@ -105,7 +108,7 @@
 }
 
 .game-display .heading {
-  font-size: 1em;
+  font-size: 1.1em;
   margin: 0;
 }
 
@@ -115,7 +118,7 @@
 
 .game-status {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .game-status.no-game {
@@ -133,8 +136,8 @@
   justify-content: space-between;
   height: 100%;
   padding-left: calc(1.7 * var(--spacing));
+
   p {
-    font-size: 1.2em;
     margin: calc(0.5 * var(--spacing)) 0;
   }
 
@@ -142,7 +145,7 @@
     margin: 0;
     color: var(--light);
     text-shadow: none;
-    font-size: 3.5rem;
+    font-size: 4.5em;
     font-weight: 800;
     white-space: nowrap;
     overflow: hidden;

@@ -7,10 +7,6 @@
     gap: 1.2rem;
   }
 
-  h4 {
-    margin-bottom: calc(0.5 * var(--spacing));
-  }
-
   button.hotkey-btn {
     &:disabled {
       opacity: 1;

@@ -107,8 +107,8 @@ export class WidgetWindowController {
 
     const options: OverlayWindowOptions = {
       name: 'aimii-widget',
-      height: 200,
-      width: 300,
+      height: 250,
+      width: 400,
       title: 'aimii In-Game Widget',
       show: false, // Start hidden
       transparent: true, // Frameless overlay

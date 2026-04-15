@@ -22,224 +22,49 @@ export interface GameData {
 
 export const gamesData: GameData[] = [
   {
-    game: 'Aimlab',
-    scalingFactor: 0.05,
-    owGameId: '0',
-    owConstant: 'Aimlab',
-    owGameName: 'Aim Lab',
-    enable_for_app: false
-  },
-  {
     game: 'Apex Legends',
-    scalingFactor: 0.02199999511,
+    scalingFactor: 0.022,
     owGameId: '21566',
     owConstant: 'ApexLegends',
     owGameName: 'Apex Legends',
     enable_for_app: true
   },
   {
-    game: 'Arena Breakout: Infinite',
-    scalingFactor: 0.10237393,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'ARK: Survival Evolved',
-    scalingFactor: 0.17498152972,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
     game: 'ARC Raiders',
-    scalingFactor: 0.0013610,
+    scalingFactor: 0.00156,
     owGameId: '27168',
     enable_for_app: true
   },
   {
-    game: 'Back 4 Blood',
-    scalingFactor: 0.00136097503,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'BattleBit Remastered',
-    scalingFactor: 0.0005,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Battlefield 1',
-    scalingFactor: 0.0015,
-    specialConversion: true,
-    conversionParams: { linearCoefficient: 0.0015, offset: 0.005, multiplier: 2.29183118052 },
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Battlefield 2042',
-    scalingFactor: 0.0015,
-    specialConversion: true,
-    conversionParams: { linearCoefficient: 0.0015, offset: 0.005, multiplier: 2.29183118052 },
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Battlefield 4',
-    scalingFactor: 0.0015,
-    specialConversion: true,
-    conversionParams: { linearCoefficient: 0.0015, offset: 0.005, multiplier: 2.29183118052 },
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Battlefield V',
-    scalingFactor: 0.0015,
-    specialConversion: true,
-    conversionParams: { linearCoefficient: 0.0015, offset: 0.005, multiplier: 2.29183118052 },
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Black Squad',
-    scalingFactor: 0.00549316406,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Borderlands 3',
-    scalingFactor: 0.00699929929,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Black Ops 4',
-    scalingFactor: 0.00660000176,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Black Ops 6',
-    scalingFactor: 0.00660000176,
-    owGameId: '24542',
-    owConstant: 'CallOfDutyBlackOps6',
-    owGameName: 'Call of Duty: Black Ops 6',
+    game: 'Call of Duty (All)',
+    processName: 'cod.exe',
+    scalingFactor: 0.0066,
+    owGameId: '',
     enable_for_app: true
-  },
-  {
-    game: 'Call of Duty: Black Ops Cold War',
-    scalingFactor: 0.00660000176,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Modern Warfare (2019)',
-    scalingFactor: 0.00660000176,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Modern Warfare 2 (2022)',
-    scalingFactor: 0.00660000176,
-    owGameId: '22328',
-    owConstant: 'CallOfDutyModernWarfare22022',
-    owGameName: 'Call of Duty: Modern Warfare 2 (2022)',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Modern Warfare 3 (2023)',
-    scalingFactor: 0.00660000176,
-    owGameId: '23424',
-    owConstant: 'CallOfDutyModernWarfare32023',
-    owGameName: 'Call of Duty: Modern Warfare 3 (2023)',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Vanguard',
-    scalingFactor: 0.00660000176,
-    owGameId: '21876',
-    owConstant: 'CallOfDutyVanguard',
-    owGameName: 'Call of Duty: Vanguard',
-    enable_for_app: false
-  },
-  {
-    game: 'Call of Duty: Warzone',
-    scalingFactor: 0.00660000176,
-    owGameId: '24542',
-    owConstant: 'CallOfDutyWarzone',
-    owGameName: 'Call of Duty: Warzone',
-    enable_for_app: true
-  },
-  {
-    game: 'Combat Master',
-    scalingFactor: 0.001,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'CS 1.6',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
   },
   {
     game: 'Counter-Strike 2',
     processName: 'cs2.exe',
-    scalingFactor: 0.02199999511,
+    scalingFactor: 0.022,
     owGameId: '22730',
     owConstant: 'CounterStrike2',
     owGameName: 'Counter-Strike 2',
     enable_for_app: true
   },
   {
-    game: 'CS:GO',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'CS:S',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Cyberpunk 2077',
-    scalingFactor: 0.01,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
     game: 'Deadlock',
-    scalingFactor: 0.04400009777,
+    scalingFactor: 0.044,
     owGameId: '24482',
     owConstant: 'Deadlock',
     owGameName: 'Deadlock',
-    enable_for_app: false
-  },
-  {
-    game: 'Delta Force',
-    scalingFactor: 0.01,
-    owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Destiny 2',
     processName: 'destiny2.exe',
-    scalingFactor: 0.00660000176,
+    scalingFactor: 0.0066,
     owGameId: '0',
     enable_for_app: true
-  },
-  {
-    game: 'DOOM Eternal',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Dying Light 2',
-    scalingFactor: 0.00833333333,
-    owGameId: '0',
-    enable_for_app: false
   },
   {
     game: 'Escape From Tarkov',
@@ -250,116 +75,40 @@ export const gamesData: GameData[] = [
     enable_for_app: true
   },
   {
-    game: 'Fallout 4',
-    scalingFactor: 3.77992440151,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Fallout 76',
-    scalingFactor: 3.77992440151,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Far Cry 5',
-    scalingFactor: 0.00179960012,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
     game: 'Fortnite',
-    scalingFactor: 0.00555500005,
+    scalingFactor: 0.00556,
     owGameId: '21216',
     owConstant: 'Fortnite',
     owGameName: 'Fortnite',
     enable_for_app: true
   },
   {
-    game: 'FragPunk',
-    scalingFactor: 0.05555006912,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Garry\'s Mod',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Gray Zone Warfare',
-    scalingFactor: 0.063,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Grand Theft Auto V',
-    scalingFactor: 1.0,
-    specialConversion: true,
-    conversionParams: { constant: 66124.8, offset: 6.024 },
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Grand Theft Auto V - Enhanced',
-    scalingFactor: 1.0,
-    specialConversion: true,
-    conversionParams: { constant: 66124.8, offset: 6.024 },
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Half-Life 2',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Halo Infinite',
-    scalingFactor: 0.0225,
-    owGameId: '21854',
-    owConstant: 'HaloInfinite',
-    owGameName: 'Halo Infinite',
+    game: 'Halo (All)',
+    scalingFactor: 0.0222,
+    processName: 'MCC-Win64-Shipping.exe',
+    owGameId: '',
     enable_for_app: true
   },
   {
-    game: 'Halo: Reach',
-    scalingFactor: 0.02222222222,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
     game: 'Helldivers 2',
-    scalingFactor: 0.57295,
+    scalingFactor: 0.58,
     owGameId: '24000',
     owConstant: 'Helldivers2',
     owGameName: 'Helldivers 2',
-    enable_for_app: false
-  },
-  {
-    game: 'Heroes & Generals',
-    scalingFactor: 0.1512605042,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Hunt: Showdown',
-    scalingFactor: 0.04297173414,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Insurgency: Sandstorm',
-    scalingFactor: 0.13999937778,
-    owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true 
   },
   {
     game: 'Left 4 Dead 2',
     processName: 'left4dead2.exe',
-    scalingFactor: 0.02199999511,
+    scalingFactor: 0.022,
     owGameId: '0',
+    enable_for_app: true
+  },
+  {
+    game: 'Marathon',
+    processName: 'Marathon.exe',
+    scalingFactor: 0.0033,
+    owGameId: '',
     enable_for_app: true
   },
   {
@@ -374,95 +123,44 @@ export const gamesData: GameData[] = [
     game: 'Minecraft Java',
     scalingFactor: 1.0,
     specialConversion: true,
-    conversionParams: { linearCoefficient: 1.2, offset: 0.6, multiplier: 0.005, constant: 0.2, scaleFactor: 0.003 },
+    conversionParams: { 
+      linearCoefficient: 1.2, 
+      offset: 0.6, 
+      multiplier: 0.005
+    },
     owGameId: '8032',
     owConstant: 'MinecraftJavaEdition',
     owGameName: 'Minecraft: Java Edition',
-    enable_for_app: true
-  },
-  {
-    game: 'Off The Grid',
-    scalingFactor: 0.07000023333,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'osu!',
-    scalingFactor: 0.0796,
-    owGameId: '0',
-    enable_for_app: false
+    enable_for_app: false 
   },
   {
     game: 'Overwatch 2',
-    scalingFactor: 0.00660000176,
+    scalingFactor: 0.0066,
     owGameId: '10844',
     owConstant: 'Overwatch2',
     owGameName: 'Overwatch 2',
     enable_for_app: true
   },
   {
-    game: 'Paladins',
-    scalingFactor: 0.00915527343,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Palworld',
-    scalingFactor: 0.0437455,
-    owGameId: '23944',
-    owConstant: 'Palworld',
-    owGameName: 'Palworld',
-    enable_for_app: false
-  },
-  {
-    game: 'PAYDAY 2',
-    scalingFactor: 0.015,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
     game: 'PUBG',
     scalingFactor: 1.0,
     specialConversion: true,
-    conversionParams: { baseValue: 114.80, scaleFactor: 21.769 },
+    conversionParams: { 
+      baseValue: 114.684, 
+      scaleFactor: 21.488 
+    },
     owGameId: '10906',
     owConstant: 'PUBG',
     owGameName: 'PlayerUnknown\'s Battlegrounds',
     enable_for_app: true
   },
   {
-    game: 'Quake Champions',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Rainbow Six Extraction',
-    scalingFactor: 0.00572957914,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
     game: 'Rainbow Six Siege',
-    scalingFactor: 0.00572957914,
+    scalingFactor: 0.00573,
     owGameId: '10826',
     owConstant: 'RainbowSixSiege',
     owGameName: 'Rainbow Six Siege',
     enable_for_app: true
-  },
-  {
-    game: 'Redmatch 2',
-    scalingFactor: 0.05,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'REMATCH',
-    scalingFactor: 0.11043,
-    owGameId: '26120',
-    owConstant: 'REMATCH',
-    owGameName: 'REMATCH',
-    enable_for_app: false
   },
   {
     game: 'Roblox',
@@ -473,64 +171,12 @@ export const gamesData: GameData[] = [
     enable_for_app: false
   },
   {
-    game: 'Rust',
-    scalingFactor: 0.1125,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Spectre Divide',
-    scalingFactor: 0.07152052639,
-    owGameId: '24484',
-    owConstant: 'SpectreDivide',
-    owGameName: 'Spectre Divide',
-    enable_for_app: false
-  },
-  {
-    game: 'Spellbreak',
-    scalingFactor: 0.008,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Splitgate',
-    scalingFactor: 0.0036574884,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Splitgate 2',
-    scalingFactor: 0.01117268501,
+    game: 'Splitgate Arena Reloaded',
+    scalingFactor: 0.00937,
     owGameId: '25884',
     owConstant: 'Splitgate2',
     owGameName: 'Splitgate 2',
-    enable_for_app: false
-  },
-  {
-    game: 'STALKER 2',
-    scalingFactor: 1.0,
-    specialConversion: true,
-    conversionParams: { linearCoefficient: 0.9, offset: 9.99998, constant: 428.571 },
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Strinova',
-    scalingFactor: 0.01388194791,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Squad',
-    scalingFactor: 0.17498152972,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Team Fortress 2',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'THE FINALS',
@@ -538,41 +184,7 @@ export const gamesData: GameData[] = [
     owGameId: '23478',
     owConstant: 'THEFINALS',
     owGameName: 'THE FINALS',
-    enable_for_app: false
-  },
-  {
-    game: 'The First Descendant',
-    scalingFactor: 1.0,
-    specialConversion: true,
-    conversionParams: { offset: 1.667, constant: 133.35 },
-    owGameId: '24360',
-    owConstant: 'TheFirstDescendant',
-    owGameName: 'The First Descendant',
-    enable_for_app: false
-  },
-  {
-    game: 'Titanfall 2',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Titanfall 2: Northstar',
-    scalingFactor: 0.02199999511,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Unturned',
-    scalingFactor: 0.5,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'Valheim',
-    scalingFactor: 0.05,
-    owGameId: '0',
-    enable_for_app: false
+    enable_for_app: true
   },
   {
     game: 'Valorant',
@@ -581,22 +193,6 @@ export const gamesData: GameData[] = [
     owGameId: '21640',
     owConstant: 'Valorant',
     owGameName: 'Valorant',
-    enable_for_app: true
-  },
-  {
-    game: 'Warface',
-    scalingFactor: 0.00332999963,
-    owGameId: '0',
-    enable_for_app: false
-  },
-  {
-    game: 'XDefiant',
-    scalingFactor: 1.0,
-    specialConversion: true,
-    conversionParams: { linearCoefficient: 0.9, offset: 0.6780, constant: 527.1486 },
-    owGameId: '22994',
-    owConstant: 'XDefiant',
-    owGameName: 'XDefiant',
-    enable_for_app: false
+    enable_for_app: true 
   }
 ];

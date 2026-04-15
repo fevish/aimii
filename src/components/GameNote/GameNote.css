@@ -1,0 +1,7 @@
+.game-note {
+  margin-left: calc(2.5 * var(--spacing));
+}
+.widget-game-note {
+  margin-left: 0;
+  margin-bottom: calc(1.5 * var(--spacing));
+}

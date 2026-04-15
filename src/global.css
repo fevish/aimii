@@ -89,6 +89,7 @@ h3 {
 
 h4 {
   margin: 0;
+  margin-bottom: calc(0.5 * var(--spacing));
   font-weight: normal;
   color: currentColor;
   letter-spacing: 0.5px;
@@ -105,6 +106,11 @@ h4 {
 .heading {
   font-size: 1rem;
   font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: calc(5 * var(--spacing));
+  text-transform: uppercase;
 }
 
 p {

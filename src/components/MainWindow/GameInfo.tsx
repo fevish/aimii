@@ -1,11 +1,14 @@
 import React from 'react';
+import { CurrentGameInfo } from '../../browser/services/current-game.service';
 import { SensitivityConversion } from '../../browser/services/sensitivity-converter.service';
 import { BaselineSettings } from '../../types/app';
 import { formatSensitivity } from '../../utils/format';
+import { GameNote } from '../GameNote/GameNote';
 
 interface GameInfoProps {
   title: string;
   gameName?: string;
+  gameNote?: string;
   suggestedSensitivity: SensitivityConversion | null;
   canonicalSettings: BaselineSettings | null;
   mouseTravel: number | null;
@@ -18,6 +21,7 @@ interface GameInfoProps {
 export const GameInfo: React.FC<GameInfoProps> = ({
   title,
   gameName,
+  gameNote,
   suggestedSensitivity,
   canonicalSettings,
   mouseTravel,
@@ -48,38 +52,24 @@ export const GameInfo: React.FC<GameInfoProps> = ({
 
   return (
     <>
-      <h2>{title}</h2>
+      <h2 className="heading">// Sensitivity for {gameName}</h2>
       {/* Only show current sensitivity if we have suggested sensitivity (meaning we're in a different game) */}
       {suggestedSensitivity && (
         <>
-          <h3 className="heading">// Suggested Sensitivity for {gameName}</h3>
           <p className="value-large">{formatSensitivity(suggestedSensitivity.suggestedSensitivity)}</p>
         </>
       )}
+      {!!gameNote && <GameNote html={gameNote} />}
 
       <div className="settings-grid">
         <div className="setting-row">
-          <span className="setting-label">Running Game</span>
+          <span className="setting-label">Current Game</span>
           <span className="setting-value">{gameName}</span>
         </div>
         <div className="setting-row">
           <span className="setting-label">eDPI</span>
           <span className="setting-value">{eDPI}</span>
         </div>
-        {/* <div className="setting-row">
-          <span className="setting-label">Mouse Travel</span>
-          <span className="setting-value">
-            {suggestedSensitivity
-              ? `${suggestedSensitivity.mouseTravel.toFixed(2)} cm`
-              : mouseTravel !== null
-                ? `${mouseTravel.toFixed(2)} cm`
-                : 'Calculating...'}
-          </span>
-        </div>
-        <div className="setting-row">
-          <span className="setting-label">Mouse DPI</span>
-          <span className="setting-value">{canonicalSettings?.dpi}</span>
-        </div> */}
       </div>
 
       {showNavigation && (

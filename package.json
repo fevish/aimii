@@ -1,6 +1,6 @@
 {
   "name": "aimii.app",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
@@ -38,7 +38,7 @@
     "overwolf": {
       "disableAdOptimization": false
     },
-    "productName": "aimii",
+    "productName": "aimii.app",
     "directories": {
       "output": "build"
     },
