@@ -136,3 +136,4 @@ hotkeys.md
 
 _ignore/
 .env
+.claude/
