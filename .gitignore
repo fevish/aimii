@@ -132,7 +132,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-hotkeys.md
+docs/roadmap.md
 
 _ignore/
 .env
