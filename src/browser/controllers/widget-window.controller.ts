@@ -1,6 +1,6 @@
 import path from 'path';
 import { OverlayService } from '../services/overlay.service';
-import { OverlayBrowserWindow, OverlayWindowOptions, PassthroughType, ZOrderType } from '@overwolf/ow-electron-packages-types';
+import { OverlayBrowserWindow, OverlayWindowOptions } from '@overwolf/ow-electron-packages-types';
 import { SettingsService } from '../services/settings.service';
 import { CurrentGameService } from '../services/current-game.service';
 import { HotkeyService } from '../services/hotkey.service';
@@ -114,8 +114,8 @@ export class WidgetWindowController {
       transparent: true, // Frameless overlay
       resizable: false, // Keep fixed size
       frame: false, // No title bar
-      passthrough: PassthroughType.NoPassThrough,
-      zOrder: ZOrderType.TopMost,
+      passthrough: 'noPassThrough',
+      zOrder: 'topMost',
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
