@@ -572,7 +572,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
         {/* Privacy Settings - Only show for EU users */}
         {cmpRequired && (
           <section>
-            <button className="privacy-link"
+            <button className="privacy-link link-button"
               onClick={async () => {
                 try {
                   await window.cmp.openPrivacySettings();

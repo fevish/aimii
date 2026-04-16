@@ -69,7 +69,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({
         </div>
         {/* Privacy Link - Only show for EU users */}
         {isCMPRequired && (
-          <button className="privacy-link"
+          <button className="privacy-link link-button"
             onClick={async () => {
               try {
                 await window.cmp.openPrivacySettings();
