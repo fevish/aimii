@@ -18,10 +18,7 @@
   color: var(--light);
   display: flex;
   flex-direction: column;
-
-  * :not(.window-control-btn) {
-    -webkit-app-region: drag;
-  }
+  -webkit-app-region: drag;
 }
 
 .widget-header {
@@ -55,7 +52,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  z-index: 10;
 }
 
 .window-control-btn:hover {
