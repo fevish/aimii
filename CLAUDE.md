@@ -34,7 +34,7 @@ Built with Overwolf-wrapped Electron (`ow-electron`), React, TypeScript, and Web
 | `src/types/`               | Shared TypeScript types.                                                                       |
 | `public/`                  | Static HTML entry points and assets.                                                           |
 | `scripts/`                 | Build and packaging scripts.                                                                   |
-| `docs/`                    | Internal docs including `roadmap.md`.                                                          |
+| `ROADMAP.md`               | Product and feature roadmap.                                                                   |
 
 Key directories contain a `context.md` with further detail on their contents and conventions.
 
