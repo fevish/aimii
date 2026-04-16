@@ -120,6 +120,16 @@ Function ConsentPageLeave
   ${EndIf}
 FunctionEnd
 
+; Cleanup on uninstall
+!macro customUnInstall
+  ; customInit sets SetShellVarContext all (makes $APPDATA = C:\ProgramData).
+  ; Electron userData lives in the current user's %APPDATA%, so reset before cleanup.
+  SetShellVarContext current
+  RMDir /r "$APPDATA\aimii.app"
+  ; Remove registry entries written by installer
+  DeleteRegKey HKCU "Software\aimii"
+!macroend
+
 ; Hook into existing initialization using macro
 !macro customInit
   StrCpy $RegionSelection "OTHER"

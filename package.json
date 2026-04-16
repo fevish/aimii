@@ -1,6 +1,6 @@
 {
   "name": "aimii.app",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
@@ -17,7 +17,7 @@
     "start": "ow-electron .",
     "build": "webpack --mode=development && npm run start",
     "watch": "npm run build:dev && concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"npm run start\"",
-    "installer": "node -e \"if (require('fs').existsSync('build')) require('fs').rmSync('build', { recursive: true, force: true })\" && npm run build:prod && node -e \"require('fs').mkdirSync('build', { recursive: true }); require('fs').copyFileSync('scripts/installer.nsh', 'build/installer.nsh')\" && ow-electron-builder --publish=never",
+    "installer": "node scripts/package-local.js",
     "build:prod": "webpack --mode=production",
     "build:dev": "webpack --mode=development --config ./webpack.main.config.js && webpack --mode=development --config ./webpack.renderer.config.js",
     "watch:main": "webpack --watch --mode=development --config ./webpack.main.config.js",
