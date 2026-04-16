@@ -131,6 +131,10 @@ FunctionEnd
   RMDir /r "$R0\aimii.app-updater"
   ; Remove registry entries written by installer
   DeleteRegKey HKCU "Software\aimii"
+  ; Remove install directory. /REBOOTOK schedules any locked files for silent deletion
+  ; at next reboot (no prompt). SetRebootFlag false suppresses the reboot dialog.
+  RMDir /r /REBOOTOK "$INSTDIR"
+  SetRebootFlag false
 !macroend
 
 ; Hook into existing initialization using macro
