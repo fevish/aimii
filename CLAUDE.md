@@ -66,6 +66,11 @@ the `public/aim-trainer.html` inclusion.
 - The widget window is created/destroyed on game inject/eject events, not at app startup
 - GEP (`GameEventsService`) detects game events; `OverlayService` handles injection and widget creation
 
+## Current Focus
+
+We are working through Overwolf QA feedback fixes tracked in `overwolf-fixes.md`. After completing
+any item from that list, mark it `[x]` in the doc before finishing.
+
 ## Post-Prompt Checklist
 
 After completing every prompt, verify the following before finishing:
