@@ -87,6 +87,12 @@ contextBridge.exposeInMainWorld('settings', {
   },
   removeThemeListener: () => {
     ipcRenderer.removeAllListeners('theme-changed');
+  },
+  getLaunchOnStartup: () => {
+    return ipcRenderer.invoke('settings-get-launch-on-startup');
+  },
+  setLaunchOnStartup: (enable: boolean) => {
+    return ipcRenderer.invoke('settings-set-launch-on-startup', enable);
   }
 });
 

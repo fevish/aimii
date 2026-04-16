@@ -44,6 +44,8 @@ declare global {
       setTheme: (theme: string) => Promise<boolean>;
       onThemeChanged: (callback: (theme: string) => void) => void;
       removeThemeListener: () => void;
+      getLaunchOnStartup: () => Promise<boolean>;
+      setLaunchOnStartup: (enable: boolean) => Promise<boolean>;
     };
     currentGame: {
       getCurrentGameInfo: () => Promise<any>;

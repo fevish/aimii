@@ -1,5 +1,6 @@
 /* Settings Styles - Minimalistic Typewriter Theme */
 .settings-container {
+  overflow: auto;
 
   .settings-content {
     display: flex;
@@ -104,5 +105,59 @@
 
   .privacy-link {
     padding: 0;
+  }
+
+  /* Toggle switch — size via vars; thumb travel derived from track + thumb + inset */
+  .toggle-switch {
+    --toggle-track-w: 3rem;
+    --toggle-track-h: 1.4rem;
+    --toggle-thumb-inset: calc(0.25 * var(--spacing));
+    --toggle-thumb-size: calc(var(--toggle-track-h) - 2 * var(--toggle-thumb-inset));
+    --toggle-thumb-travel-x: calc(
+      var(--toggle-track-w) - 2 * var(--toggle-thumb-inset) - var(--toggle-thumb-size)
+    );
+
+    flex-shrink: 0;
+    position: relative;
+    width: var(--toggle-track-w);
+    height: var(--toggle-track-h);
+    box-sizing: border-box;
+    background: transparent;
+    border: 1px solid var(--gray);
+    border-radius: calc(1.5 * var(--radius));
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: var(--toggle-thumb-inset);
+      width: var(--toggle-thumb-size);
+      height: var(--toggle-thumb-size);
+      background: var(--gray);
+      border-radius: calc(0.75 * var(--radius));
+      transform: translate(0, -50%);
+      transition: transform 0.2s ease;
+    }
+
+    &:hover {
+      border-color: var(--light-gray);
+      &::after {
+        background: var(--primary);
+      }
+      box-shadow: none;
+    }
+
+    &.active {
+      background: var(--primary);
+      border-color: var(--primary);
+
+      &::after {
+        transform: translate(var(--toggle-thumb-travel-x), -50%);
+        background: var(--dark);
+      }
+    }
   }
 }

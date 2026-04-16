@@ -58,6 +58,8 @@ declare global {
       setTheme: (theme: string) => Promise<boolean>;
       onThemeChanged: (callback: (theme: string) => void) => void;
       removeThemeListener: () => void;
+      getLaunchOnStartup: () => Promise<boolean>;
+      setLaunchOnStartup: (enable: boolean) => Promise<boolean>;
     };
   }
 }
@@ -72,6 +74,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   const [modifierDisplay, setModifierDisplay] = useState<string>('');
   const [currentTheme, setCurrentTheme] = useState<string>('default');
   const [cmpRequired, setCmpRequired] = useState<boolean | null>(null);
+  const [launchOnStartup, setLaunchOnStartup] = useState<boolean>(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Available themes
@@ -84,7 +87,27 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
     loadHotkeys();
     loadTheme();
     checkCmpRequirement();
+    loadLaunchOnStartup();
   }, []);
+
+  const loadLaunchOnStartup = async () => {
+    try {
+      const enabled = await window.settings.getLaunchOnStartup();
+      setLaunchOnStartup(enabled);
+    } catch (error) {
+      console.error('Failed to load launch on startup setting:', error);
+    }
+  };
+
+  const handleLaunchOnStartupToggle = async () => {
+    const newValue = !launchOnStartup;
+    try {
+      await window.settings.setLaunchOnStartup(newValue);
+      setLaunchOnStartup(newValue);
+    } catch (error) {
+      console.error('Failed to set launch on startup:', error);
+    }
+  };
 
   const checkCmpRequirement = async () => {
     try {
@@ -536,8 +559,23 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
           </div>
         </section>
 
-        <section className="theme-section">
+        {/* Launch on Startup */}
+        <section className="settings-section">
+          <div className="setting-item">
+            <div className="setting-info">
+              <h4>Launch on Startup</h4>
+              <p className="setting-description">Automatically start aimii when Windows starts.</p>
+            </div>
+            <button
+              onClick={handleLaunchOnStartupToggle}
+              className={`toggle-switch${launchOnStartup ? ' active' : ''}`}
+              title={launchOnStartup ? 'Disable launch on startup' : 'Enable launch on startup'}
+              aria-pressed={launchOnStartup}
+            />
+          </div>
+        </section>
 
+        <section className="theme-section">
           <div className="theme-controls">
             <div className="form-group select-theme">
               <h4>Select Theme</h4>
@@ -555,7 +593,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
 
         {/* Kill Switch Section */}
         <section className="settings-section">
-          <div className="setting-item">
+          <div>
             <div className="setting-info">
               <h4>Reset Application</h4>
               <p className="setting-description">Clears all user + app settings and restarts onboarding.</p>
