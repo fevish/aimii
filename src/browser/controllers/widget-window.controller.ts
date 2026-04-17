@@ -10,7 +10,8 @@ export class WidgetWindowController {
   private widgetWindow: OverlayBrowserWindow | null = null;
   private isVisible: boolean = false;
   private savePositionTimeout: NodeJS.Timeout | null = null;
-  private hotkeysRegistered: boolean = false; // Prevent duplicate registrations
+  private hotkeysRegistered: boolean = false;
+  private gameWindowListenerAdded: boolean = false;
 
   // Centralized hotkey configuration
   private readonly WIDGET_HOTKEY = {
@@ -148,11 +149,12 @@ export class WidgetWindowController {
       path.join(__dirname, '../widget/widget.html')
     );
 
-    // Listen for game window changes (resolution changes, etc.)
-    if (this.overlayService.overlayApi) {
-      this.overlayService.overlayApi.on('game-window-changed', (windowInfo: any, gameInfo: any, reason: any) => {
+    // Listen for game window changes (resolution changes, etc.) — only add once
+    if (this.overlayService.overlayApi && !this.gameWindowListenerAdded) {
+      this.overlayService.overlayApi.on('game-window-changed', (windowInfo: any) => {
         this.checkAndRepositionWidget(windowInfo);
       });
+      this.gameWindowListenerAdded = true;
     }
 
     // Show widget if auto-show is enabled
@@ -265,6 +267,7 @@ export class WidgetWindowController {
       this.widgetWindow.window.close();
       this.widgetWindow = null;
       this.isVisible = false;
+      this.hotkeysRegistered = false; // Re-register on next game launch
     }
   }
 

@@ -105,28 +105,29 @@ export class MainWindowController {
     if (!this.browserWindow || this.browserWindow.isDestroyed()) return;
 
     const displays = screen.getAllDisplays();
-    if (displays.length < 2) return;
 
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const gameDisplay = this.getGameDisplay();
-    const targetDisplay = gameDisplay
-      ? displays.find(d => d.id !== gameDisplay.id)
-      : displays.find(d => d.id !== primaryDisplay.id);
+    if (displays.length >= 2) {
+      const primaryDisplay = screen.getPrimaryDisplay();
+      const gameDisplay = this.getGameDisplay();
+      const targetDisplay = gameDisplay
+        ? displays.find(d => d.id !== gameDisplay.id)
+        : displays.find(d => d.id !== primaryDisplay.id);
 
-    if (!targetDisplay) return;
+      if (targetDisplay) {
+        const { workArea } = targetDisplay;
+        const bounds = this.browserWindow.getBounds();
+        const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
+        const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
+        this.browserWindow.setBounds({ ...bounds, x, y });
+      }
+    }
 
-    const { workArea } = targetDisplay;
-    const bounds = this.browserWindow.getBounds();
-    const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
-    const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
-
-    this.browserWindow.setBounds({ ...bounds, x, y });
+    // Always show and focus the main window when a game launches
     this.browserWindow.show();
     // Windows workaround: toggle always-on-top to force window above others
     this.browserWindow.setAlwaysOnTop(true);
     this.browserWindow.setAlwaysOnTop(false);
     this.browserWindow.focus();
-    this.printLogMessage('Moved main window to second screen');
   }
 
   private getGameDisplay(): Electron.Display | null {
@@ -595,26 +596,30 @@ export class MainWindowController {
    * Public method to destroy widget (called from Application on game exit)
    */
   public destroyWidgetWindow(): void {
-    if (this.widgetController) {
-      this.widgetController.destroy();
-      this.widgetController = null;
+    // Destroy the overlay window only — keep the controller alive for reuse
+    this.widgetController?.destroy();
+  }
+
+  private getOrCreateWidgetController(): WidgetWindowController {
+    if (!this.widgetController) {
+      this.widgetController = this.createWidgetWinController();
     }
+    return this.widgetController;
   }
 
   private async createWidget() {
-    // create a browser window for overlay widget and load a url
-    this.widgetController = this.createWidgetWinController();
-    await this.widgetController.createWidget();
+    // Reuse the existing controller so IPC handlers and listeners aren't duplicated
+    const controller = this.getOrCreateWidgetController();
+    await controller.createWidget();
   }
 
   private async toggleWidget() {
-    if (this.widgetController) {
-      this.widgetController.toggleVisibility();
-      return;
+    const controller = this.getOrCreateWidgetController();
+    if (controller.overlayBrowserWindow) {
+      controller.toggleVisibility();
+    } else {
+      await controller.createWidget();
     }
-
-    this.widgetController = this.createWidgetWinController();
-    await this.widgetController.createWidget();
   }
 
   private async openWidgetDevTools() {
