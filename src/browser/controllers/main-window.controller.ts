@@ -24,6 +24,7 @@ export class MainWindowController {
   private browserWindow: BrowserWindow | null = null;
   private widgetController: WidgetWindowController | null = null;
   private tray: Tray | null = null;
+  private preGameBounds: Electron.Rectangle | null = null;
 
   /**
    *
@@ -98,34 +99,66 @@ export class MainWindowController {
   }
 
   /**
-   * Move main window to second screen when a supported game is running.
-   * If user has multiple displays, moves to the display that doesn't contain the game.
+   * Show main window when a game launches. On multi-monitor setups, saves the
+   * current position and moves the window to the non-game display.
    */
   public moveToSecondScreenWhenGameLaunches(): void {
     if (!this.browserWindow || this.browserWindow.isDestroyed()) return;
 
+    // Only capture once per game session — double-calls (overlay + GEP both fire) would
+    // otherwise overwrite with secondary-screen coords after the window already moved.
+    if (!this.preGameBounds) {
+      this.preGameBounds = this.browserWindow.getBounds();
+      this.printLogMessage(`[window] game launch: saved pre-game bounds x=${this.preGameBounds.x} y=${this.preGameBounds.y}`);
+    }
+
     const displays = screen.getAllDisplays();
-    if (displays.length < 2) return;
+    if (displays.length >= 2) {
+      const primaryDisplay = screen.getPrimaryDisplay();
+      const gameDisplay = this.getGameDisplay();
+      const targetDisplay = gameDisplay
+        ? displays.find(d => d.id !== gameDisplay.id)
+        : displays.find(d => d.id !== primaryDisplay.id);
 
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const gameDisplay = this.getGameDisplay();
-    const targetDisplay = gameDisplay
-      ? displays.find(d => d.id !== gameDisplay.id)
-      : displays.find(d => d.id !== primaryDisplay.id);
-
-    if (!targetDisplay) return;
-
-    const { workArea } = targetDisplay;
-    const bounds = this.browserWindow.getBounds();
-    const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
-    const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
-    this.browserWindow.setBounds({ ...bounds, x, y });
+      if (targetDisplay) {
+        const { workArea } = targetDisplay;
+        const bounds = this.browserWindow.getBounds();
+        const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
+        const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
+        this.printLogMessage(`[window] game launch: moving to secondary display x=${x} y=${y}`);
+        this.browserWindow.setBounds({ ...bounds, x, y });
+      }
+    }
 
     // Show and force to front — setAlwaysOnTop must come before focus() on Windows
     this.browserWindow.show();
     this.browserWindow.setAlwaysOnTop(true, 'pop-up-menu');
     this.browserWindow.focus();
-    this.browserWindow?.setAlwaysOnTop(false);
+    this.browserWindow.setAlwaysOnTop(false);
+  }
+
+  /**
+   * Restore main window after game exits. On multi-monitor setups, moves the
+   * window back to its pre-game position. Always shows and brings to front.
+   */
+  public restoreWindowAfterGameExit(): void {
+    if (!this.browserWindow || this.browserWindow.isDestroyed()) return;
+
+    const savedBounds = this.preGameBounds;
+    this.preGameBounds = null;
+
+    // Show and bring to front first so the window is in a stable visible state
+    this.browserWindow.show();
+    this.browserWindow.setAlwaysOnTop(true, 'pop-up-menu');
+    this.browserWindow.focus();
+    this.browserWindow.setAlwaysOnTop(false);
+
+    // Set bounds after show — on Windows, show() can restore last-visible position
+    const displays = screen.getAllDisplays();
+    if (displays.length >= 2 && savedBounds) {
+      this.printLogMessage(`[window] game exit: restoring to x=${savedBounds.x} y=${savedBounds.y}`);
+      this.browserWindow.setBounds(savedBounds);
+    }
   }
 
   private getGameDisplay(): Electron.Display | null {

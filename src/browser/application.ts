@@ -122,6 +122,7 @@ export class Application {
 
           this.mainWindowController.printLogMessage('Game exited:', gameName);
           this.mainWindowController.destroyWidgetWindow();
+          this.mainWindowController.restoreWindowAfterGameExit();
         });
       }
     });
@@ -171,6 +172,8 @@ export class Application {
     // Listen for GEP game exit to clean up
     this.gepService.on('game-exit', (gameId, processName, pid) => {
       this.mainWindowController.printLogMessage(`GEP detected game exit: ${processName} (${gameId})`);
+      this.mainWindowController.destroyWidgetWindow();
+      this.mainWindowController.restoreWindowAfterGameExit();
     });
   }
 }
