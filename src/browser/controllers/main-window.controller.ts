@@ -105,29 +105,27 @@ export class MainWindowController {
     if (!this.browserWindow || this.browserWindow.isDestroyed()) return;
 
     const displays = screen.getAllDisplays();
+    if (displays.length < 2) return;
 
-    if (displays.length >= 2) {
-      const primaryDisplay = screen.getPrimaryDisplay();
-      const gameDisplay = this.getGameDisplay();
-      const targetDisplay = gameDisplay
-        ? displays.find(d => d.id !== gameDisplay.id)
-        : displays.find(d => d.id !== primaryDisplay.id);
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const gameDisplay = this.getGameDisplay();
+    const targetDisplay = gameDisplay
+      ? displays.find(d => d.id !== gameDisplay.id)
+      : displays.find(d => d.id !== primaryDisplay.id);
 
-      if (targetDisplay) {
-        const { workArea } = targetDisplay;
-        const bounds = this.browserWindow.getBounds();
-        const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
-        const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
-        this.browserWindow.setBounds({ ...bounds, x, y });
-      }
-    }
+    if (!targetDisplay) return;
 
-    // Always show and focus the main window when a game launches
+    const { workArea } = targetDisplay;
+    const bounds = this.browserWindow.getBounds();
+    const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
+    const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
+    this.browserWindow.setBounds({ ...bounds, x, y });
+
+    // Show and force to front — setAlwaysOnTop must come before focus() on Windows
     this.browserWindow.show();
-    // Windows workaround: toggle always-on-top to force window above others
-    this.browserWindow.setAlwaysOnTop(true);
-    this.browserWindow.setAlwaysOnTop(false);
+    this.browserWindow.setAlwaysOnTop(true, 'pop-up-menu');
     this.browserWindow.focus();
+    this.browserWindow?.setAlwaysOnTop(false);
   }
 
   private getGameDisplay(): Electron.Display | null {
