@@ -323,7 +323,7 @@ export class WidgetWindowController {
         shift: widgetHotkeyInfo.modifiers.shift,
         alt: widgetHotkeyInfo.modifiers.alt
       },
-      passthrough: true
+      passthrough: false
     }, (hotkey, state) => {
       if (state === 'pressed') {
         this.toggleVisibility();
@@ -338,7 +338,7 @@ export class WidgetWindowController {
         ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
         shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
       },
-      passthrough: true
+      passthrough: false
     }, (hotkey, state) => {
       if (state === 'pressed') {
         this.openDevTools();
