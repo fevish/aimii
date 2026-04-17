@@ -62,7 +62,7 @@ export const gamesData: GameData[] = [
     game: 'Destiny 2',
     processName: 'destiny2.exe',
     scalingFactor: 0.0066,
-    owGameId: '0',
+    owGameId: '',
     enable_for_app: true
   },
   {
@@ -100,7 +100,7 @@ export const gamesData: GameData[] = [
     game: 'Left 4 Dead 2',
     processName: 'left4dead2.exe',
     scalingFactor: 0.022,
-    owGameId: '0',
+    owGameId: '',
     enable_for_app: true
   },
   {
