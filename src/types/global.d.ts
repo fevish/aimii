@@ -46,6 +46,8 @@ declare global {
       removeThemeListener: () => void;
       getLaunchOnStartup: () => Promise<boolean>;
       setLaunchOnStartup: (enable: boolean) => Promise<boolean>;
+      getWidgetAutoShow: () => Promise<boolean>;
+      setWidgetAutoShow: (value: boolean) => Promise<boolean>;
     };
     currentGame: {
       getCurrentGameInfo: () => Promise<any>;

@@ -121,6 +121,7 @@ export class Application {
           const gameName = gameData?.game || gameInfo.name || 'Unknown Game';
 
           this.mainWindowController.printLogMessage('Game exited:', gameName);
+          this.mainWindowController.destroyWidgetWindow();
         });
       }
     });

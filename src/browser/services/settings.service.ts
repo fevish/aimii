@@ -29,6 +29,7 @@ export interface UserSettings {
   widget: {
     position: { x: number; y: number };
     visible: boolean;
+    autoShow: boolean;
   };
   baseline: StorageBaselineSettings | null;
   hotkeys: HotkeyConfig[];
@@ -52,7 +53,8 @@ export class SettingsService {
     return {
       widget: {
         position: { x: 100, y: 100 },
-        visible: true
+        visible: true,
+        autoShow: true
       },
       baseline: null,
       hotkeys: [],
@@ -112,6 +114,15 @@ export class SettingsService {
 
   public setWidgetVisible(visible: boolean): void {
     this.settings.widget.visible = visible;
+    this.saveSettings();
+  }
+
+  public getWidgetAutoShow(): boolean {
+    return this.settings.widget.autoShow ?? true;
+  }
+
+  public setWidgetAutoShow(value: boolean): void {
+    this.settings.widget.autoShow = value;
     this.saveSettings();
   }
 

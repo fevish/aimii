@@ -60,6 +60,8 @@ declare global {
       removeThemeListener: () => void;
       getLaunchOnStartup: () => Promise<boolean>;
       setLaunchOnStartup: (enable: boolean) => Promise<boolean>;
+      getWidgetAutoShow: () => Promise<boolean>;
+      setWidgetAutoShow: (value: boolean) => Promise<boolean>;
     };
   }
 }
@@ -75,6 +77,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   const [currentTheme, setCurrentTheme] = useState<string>('default');
   const [cmpRequired, setCmpRequired] = useState<boolean | null>(null);
   const [launchOnStartup, setLaunchOnStartup] = useState<boolean>(false);
+  const [widgetAutoShow, setWidgetAutoShow] = useState<boolean>(true);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Available themes
@@ -88,6 +91,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
     loadTheme();
     checkCmpRequirement();
     loadLaunchOnStartup();
+    loadWidgetAutoShow();
   }, []);
 
   const loadLaunchOnStartup = async () => {
@@ -96,6 +100,25 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
       setLaunchOnStartup(enabled);
     } catch (error) {
       console.error('Failed to load launch on startup setting:', error);
+    }
+  };
+
+  const loadWidgetAutoShow = async () => {
+    try {
+      const value = await window.settings.getWidgetAutoShow();
+      setWidgetAutoShow(value);
+    } catch (error) {
+      console.error('Failed to load widget auto-show setting:', error);
+    }
+  };
+
+  const handleWidgetAutoShowToggle = async () => {
+    const newValue = !widgetAutoShow;
+    try {
+      await window.settings.setWidgetAutoShow(newValue);
+      setWidgetAutoShow(newValue);
+    } catch (error) {
+      console.error('Failed to set widget auto-show setting:', error);
     }
   };
 
@@ -556,6 +579,22 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
             <button onClick={handleResetToDefaults} className="btn btn-outline reset-btn">
               Reset to Defaults
             </button>
+          </div>
+        </section>
+
+        {/* Show Widget at Game Launch */}
+        <section className="settings-section">
+          <div className="setting-item">
+            <div className="setting-info">
+              <h4>Show widget at game launch</h4>
+              <p className="setting-description">Automatically display the in-game overlay when a supported game starts.</p>
+            </div>
+            <button
+              onClick={handleWidgetAutoShowToggle}
+              className={`toggle-switch${widgetAutoShow ? ' active' : ''}`}
+              title={widgetAutoShow ? 'Disable auto-show widget' : 'Enable auto-show widget'}
+              aria-pressed={widgetAutoShow}
+            />
           </div>
         </section>
 

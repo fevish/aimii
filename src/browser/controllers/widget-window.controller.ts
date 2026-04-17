@@ -155,9 +155,8 @@ export class WidgetWindowController {
       });
     }
 
-    // Restore visibility state
-    const savedVisibility = this.settingsService.getWidgetVisible();
-    if (savedVisibility) {
+    // Show widget if auto-show is enabled
+    if (this.settingsService.getWidgetAutoShow()) {
       this.show();
     }
 
@@ -233,11 +232,9 @@ export class WidgetWindowController {
     if (this.isVisible) {
       this.widgetWindow.window.hide();
       this.isVisible = false;
-      this.settingsService.setWidgetVisible(false);
     } else {
       this.widgetWindow.window.show();
       this.isVisible = true;
-      this.settingsService.setWidgetVisible(true);
     }
   }
 
@@ -245,14 +242,12 @@ export class WidgetWindowController {
     if (!this.widgetWindow) return;
     this.widgetWindow.window.show();
     this.isVisible = true;
-    this.settingsService.setWidgetVisible(true);
   }
 
   public hide(): void {
     if (!this.widgetWindow) return;
     this.widgetWindow.window.hide();
     this.isVisible = false;
-    this.settingsService.setWidgetVisible(false);
   }
 
   public destroy(): void {
@@ -260,7 +255,6 @@ export class WidgetWindowController {
       // Save final position before destroying
       const bounds = this.widgetWindow.window.getBounds();
       this.settingsService.setWidgetPosition(bounds.x, bounds.y);
-      this.settingsService.setWidgetVisible(false);
 
       // Clear any pending timeouts
       if (this.savePositionTimeout) {

@@ -93,6 +93,12 @@ contextBridge.exposeInMainWorld('settings', {
   },
   setLaunchOnStartup: (enable: boolean) => {
     return ipcRenderer.invoke('settings-set-launch-on-startup', enable);
+  },
+  getWidgetAutoShow: () => {
+    return ipcRenderer.invoke('settings-get-widget-auto-show');
+  },
+  setWidgetAutoShow: (value: boolean) => {
+    return ipcRenderer.invoke('settings-set-widget-auto-show', value);
   }
 });
 

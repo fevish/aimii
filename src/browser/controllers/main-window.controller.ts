@@ -399,6 +399,15 @@ export class MainWindowController {
       return true;
     });
 
+    ipcMain.handle('settings-get-widget-auto-show', () => {
+      return this.settingsService.getWidgetAutoShow();
+    });
+
+    ipcMain.handle('settings-set-widget-auto-show', (_event, value: boolean) => {
+      this.settingsService.setWidgetAutoShow(value);
+      return true;
+    });
+
     ipcMain.handle('settings-get-theme', () => {
       return this.settingsService.getTheme();
     });
@@ -580,6 +589,16 @@ export class MainWindowController {
    */
   public async createWidgetWindow(): Promise<void> {
     await this.createWidget();
+  }
+
+  /**
+   * Public method to destroy widget (called from Application on game exit)
+   */
+  public destroyWidgetWindow(): void {
+    if (this.widgetController) {
+      this.widgetController.destroy();
+      this.widgetController = null;
+    }
   }
 
   private async createWidget() {
