@@ -390,10 +390,12 @@ export class MainWindowController {
 
     // Theme settings IPC handlers
     ipcMain.handle('settings-get-launch-on-startup', () => {
+      if (!electronApp.isPackaged) return false;
       return electronApp.getLoginItemSettings().openAtLogin;
     });
 
     ipcMain.handle('settings-set-launch-on-startup', (event, enable: boolean) => {
+      if (!electronApp.isPackaged) return false;
       electronApp.setLoginItemSettings({ openAtLogin: enable });
       return true;
     });
