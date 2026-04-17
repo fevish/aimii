@@ -233,14 +233,11 @@ export class GameEventsService extends EventEmitter {
       // Remove from active games set
       this.activeGames.delete(gameId);
 
-      // Clear active game if this was the active one
       if (this.activeGame === gameId) {
-        // console.log('gep: clearing active game due to exit', gameId);
         this.activeGame = 0;
-        this.emit('game-exit', gameId, processName, pid);
-      } else {
-        // console.log('gep: game exit for non-active game', gameId, 'active:', this.activeGame);
       }
+
+      this.emit('game-exit', gameId, processName, pid);
     });
 
     // If a game is detected running in elevated mode

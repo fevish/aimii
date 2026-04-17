@@ -194,6 +194,18 @@ export class CurrentGameService extends EventEmitter {
         this.scheduleUpdate();
       }
     });
+
+    // Use the overlay's reliable Win32-based exit signal to clean up GEP state,
+    // since GEP sometimes misses its own game-exit event.
+    this.overlayService.overlayApi.on('game-exit', (gameInfo) => {
+      const classId = typeof gameInfo.classId === 'string'
+        ? parseInt(gameInfo.classId, 10)
+        : gameInfo.classId;
+      if (classId) {
+        this.removeGepGame(classId);
+      }
+      this.scheduleUpdate();
+    });
   }
 
   private setupGepEventListeners(gepService: any): void {
