@@ -19,10 +19,9 @@ interface OnboardingProps {
   onDataChange: (field: string, value: string) => void;
   onNext: () => void;
   onBack: () => void;
-  onRestart: () => void;
   onComplete: () => void;
-  /** Label for the back button (e.g. "Back" or "Cancel") */
-  backButtonLabel?: string;
+  /** When provided, a Cancel button is shown that exits the flow entirely. */
+  onCancel?: () => void;
 }
 
 export const Onboarding: React.FC<OnboardingProps> = ({
@@ -34,9 +33,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({
   onDataChange,
   onNext,
   onBack,
-  onRestart,
   onComplete,
-  backButtonLabel = 'Back'
+  onCancel
 }) => {
   const [isCMPRequired, setIsCMPRequired] = useState<boolean>(false);
 
@@ -98,9 +96,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({
           onNext={onNext}
           onBack={onBack}
           onComplete={onComplete}
-          showProgress={true}
           context="onboarding"
-          backButtonLabel={backButtonLabel}
+          onCancel={onCancel}
         />
       </div>
     </section>

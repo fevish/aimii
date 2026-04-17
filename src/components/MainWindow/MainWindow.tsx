@@ -222,15 +222,17 @@ export const MainWindow: React.FC = () => {
     handleCompleteOnboarding();
   };
 
-  const handleOnboardingBack = () => {
-    if (isEditPreferencesMode) {
-      setShowOnboarding(false);
-      setIsEditPreferencesMode(false);
-      setOnboardingStep(0);
-      setShouldOpenPreferencesCard(true);
-    } else if (onboardingStep > 0) {
+  const handleOnboardingStepBack = () => {
+    if (onboardingStep > 0) {
       setOnboardingStep(prev => prev - 1);
     }
+  };
+
+  const handleOnboardingCancel = () => {
+    setShowOnboarding(false);
+    setIsEditPreferencesMode(false);
+    setOnboardingStep(0);
+    setShouldOpenPreferencesCard(true);
   };
 
   const handleOnboardingDataChange = (field: string, value: string) => {
@@ -360,10 +362,9 @@ export const MainWindow: React.FC = () => {
                 message={message}
                 onDataChange={handleOnboardingDataChange}
                 onNext={handleOnboardingNext}
-                onBack={handleOnboardingBack}
-                onRestart={handleRestartOnboarding}
+                onBack={handleOnboardingStepBack}
                 onComplete={handleCompleteOnboarding}
-                backButtonLabel={isEditPreferencesMode ? 'Cancel' : 'Back'}
+                onCancel={isEditPreferencesMode ? handleOnboardingCancel : undefined}
               />
             ) : (
               <>

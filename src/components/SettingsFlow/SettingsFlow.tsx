@@ -25,8 +25,8 @@ interface SettingsFlowProps {
   showProgress?: boolean;
   inputPrefix?: string;
   context?: 'onboarding' | 'preferences';
-  /** Label for the back button (e.g. "Back" or "Cancel") */
-  backButtonLabel?: string;
+  /** When provided, a Cancel button is shown on the left that exits the flow entirely. */
+  onCancel?: () => void;
 }
 
 export const SettingsFlow: React.FC<SettingsFlowProps> = ({
@@ -42,7 +42,7 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
   showProgress = true,
   inputPrefix = '',
   context = 'onboarding',
-  backButtonLabel = 'Back'
+  onCancel
 }) => {
   const getInputId = (baseId: string) => (inputPrefix ? `${inputPrefix}-${baseId}` : baseId);
 
@@ -72,8 +72,6 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
     if (currentStep < 3) onNext();
     else onComplete();
   };
-
-  const showBackButton = true;
 
   return (
     <div className="settings-flow">
@@ -118,22 +116,33 @@ export const SettingsFlow: React.FC<SettingsFlowProps> = ({
       )}
 
       <div className="settings-navigation">
-        {showBackButton && (
+        {onCancel && (
           <button
-            className="btn btn-outline settings-btn settings-btn-back"
-            onClick={onBack}
+            className="btn btn-outline settings-btn settings-btn-cancel"
+            onClick={onCancel}
             disabled={isLoading}
           >
-            {backButtonLabel}
+            Cancel
           </button>
         )}
-        <button
-          className="settings-btn settings-btn-next"
-          onClick={handlePrimary}
-          disabled={!canProceed()}
-        >
-          {currentStep < 3 ? 'Next' : 'Complete'}
-        </button>
+        <div className="settings-navigation-right">
+          {(!onCancel || currentStep > 1) && (
+            <button
+              className="btn btn-outline settings-btn settings-btn-back"
+              onClick={onBack}
+              disabled={isLoading}
+            >
+              Back
+            </button>
+          )}
+          <button
+            className="settings-btn settings-btn-next"
+            onClick={handlePrimary}
+            disabled={!canProceed()}
+          >
+            {currentStep < 3 ? 'Next' : 'Complete'}
+          </button>
+        </div>
       </div>
 
       {message && (
