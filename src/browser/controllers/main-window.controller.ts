@@ -122,12 +122,15 @@ export class MainWindowController {
       : displays.find(d => d.id !== primaryDisplay.id);
 
     if (targetDisplay) {
-      const { workArea } = targetDisplay;
       const bounds = this.browserWindow.getBounds();
-      const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
-      const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
-      this.printLogMessage(`[window] game launch: moving to secondary display x=${x} y=${y}`);
-      this.browserWindow.setBounds({ ...bounds, x, y });
+      const currentDisplay = screen.getDisplayMatching(bounds);
+      if (currentDisplay.id !== targetDisplay.id) {
+        const { workArea } = targetDisplay;
+        const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
+        const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
+        this.printLogMessage(`[window] game launch: moving to secondary display x=${x} y=${y}`);
+        this.browserWindow.setBounds({ ...bounds, x, y });
+      }
     }
 
     // Show and force to front — setAlwaysOnTop must come before focus() on Windows
