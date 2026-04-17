@@ -44,7 +44,6 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Counter-Strike 2',
-    processName: 'cs2.exe',
     scalingFactor: 0.022,
     owGameId: '22730',
     owConstant: 'CounterStrike2',
@@ -188,7 +187,6 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Valorant',
-    processName: 'VALORANT-Win64-Shipping.exe',
     scalingFactor: 0.07,
     owGameId: '21640',
     owConstant: 'Valorant',
