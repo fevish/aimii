@@ -1,11 +1,29 @@
 /* Settings Styles - Minimalistic Typewriter Theme */
 .settings-container {
-  overflow: auto;
+  overflow: hidden;
+  display: flex;
+  flex-flow: column;
+
+  .settings-header {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    gap: 1rem;
+    padding: calc(1 * var(--spacing));
+    padding-top: 0;
+
+    h2 {
+      margin: 0;
+    }
+  }
 
   .settings-content {
     display: flex;
     flex-flow: column;
     gap: 1.2rem;
+    overflow: auto;
+    height: 100%;
+    padding: 0 calc(1.5 * var(--spacing));
   }
 
   button.hotkey-btn {
@@ -19,6 +37,7 @@
 
   button.save-btn {
     color: var(--dark);
+
     &:disabled {
       background: var(--secondary);
     }
@@ -67,7 +86,26 @@
     border: 1px solid var(--secondary);
   }
 
+  .hotkeys-section {
+    .hotkey-info {
+      .hotkey-description {
+        margin-bottom: var(--spacing);
+      }
+    }
+  }
+
+  .reset-btn {
+    display: none;
+  }
+
   /* Theme Section */
+
+  .select-theme {
+    label {
+      margin-bottom: calc(0.25 * var(--spacing));
+    }
+  }
+
   .theme-controls {
     display: flex;
     flex-direction: column;
@@ -113,9 +151,7 @@
     --toggle-track-h: 1.4rem;
     --toggle-thumb-inset: calc(0.25 * var(--spacing));
     --toggle-thumb-size: calc(var(--toggle-track-h) - 2 * var(--toggle-thumb-inset));
-    --toggle-thumb-travel-x: calc(
-      var(--toggle-track-w) - 2 * var(--toggle-thumb-inset) - var(--toggle-thumb-size)
-    );
+    --toggle-thumb-travel-x: calc(var(--toggle-track-w) - 2 * var(--toggle-thumb-inset) - var(--toggle-thumb-size));
 
     flex-shrink: 0;
     position: relative;
@@ -144,9 +180,11 @@
 
     &:hover {
       border-color: var(--light-gray);
+
       &::after {
         background: var(--primary);
       }
+
       box-shadow: none;
     }
 

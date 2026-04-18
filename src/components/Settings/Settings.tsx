@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import './Settings.css';
+import { SvgIcon } from '../SvgIcon/SvgIcon';
 
 interface HotkeyConfig {
   id: string;
@@ -36,6 +37,7 @@ interface CanonicalSettings {
 
 interface SettingsProps {
   handleRestartOnboarding: () => Promise<void>;
+  onBack: () => void;
 }
 
 declare global {
@@ -66,7 +68,7 @@ declare global {
   }
 }
 
-const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
+const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: handleBack }) => {
   const [hotkeys, setHotkeys] = useState<HotkeyConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingHotkey, setEditingHotkey] = useState<string | null>(null);
@@ -528,8 +530,10 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   return (
     <div className="settings-container">
       <div className="settings-header">
+        <button onClick={handleBack} className="btn-back">
+          <SvgIcon name="arrow-back" />
+        </button>
         <h2>Settings</h2>
-        {/* {message && <div className="message">{message}</div>} */}
       </div>
 
       <div className="settings-content">

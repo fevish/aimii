@@ -485,30 +485,6 @@ form {
   }
 }
 
-/* Settings */
-.settings-container {
-  padding: var(--spacing);
-
-  .hotkeys-section {
-    .hotkey-info {
-      .hotkey-description {
-        margin-bottom: var(--spacing);
-      }
-    }
-  }
-
-  .reset-btn {
-    display: none;
-  }
-
-  .select-theme {
-    label {
-      margin-bottom: calc(0.25 * var(--spacing));
-    }
-  }
-}
-
-
 /* Sensitivity */
 .sensitivity-suggestion {
   p {

@@ -119,6 +119,11 @@ export const MainWindow: React.FC = () => {
     }
   }, [currentGame, allDetectedGames]);
 
+  // Return to home view on any game state change (launch or exit)
+  useEffect(() => {
+    setActiveTab('main');
+  }, [currentGame]);
+
   // Show welcome message when MyMainWindow renders
   React.useEffect(() => {
     console.log(`aimii v${process.env.APP_VERSION} successfully loaded`);
@@ -391,7 +396,7 @@ export const MainWindow: React.FC = () => {
             )}
           </>
         ) : (
-          <Settings handleRestartOnboarding={handleRestartOnboarding} />
+          <Settings handleRestartOnboarding={handleRestartOnboarding} onBack={() => setActiveTab('main')} />
         )}
 
         <section className="ad-section" hidden={showOnboarding}>
