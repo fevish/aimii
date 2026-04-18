@@ -125,7 +125,7 @@ export class Application {
           const exitedId = String(owId ?? '');
           const nextGame = this.overlayService.overlayApi?.getActiveGameInfo();
           const nextId = String((nextGame as any)?.gameInfo?.classId ?? '');
-          const anotherGameRunning = nextGame?.gameInfo && nextId && nextId !== exitedId;
+          const anotherGameRunning = exitedId && nextGame?.gameInfo && nextId && nextId !== exitedId;
           if (!anotherGameRunning) {
             this.mainWindowController.destroyWidgetWindow();
             this.mainWindowController.restoreWindowAfterGameExit();

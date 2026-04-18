@@ -85,7 +85,8 @@ export class CurrentGameService extends EventEmitter {
       const exitedId = String(gameInfo?.classId ?? gameInfo?.id ?? '');
       const next = this.overlayService.overlayApi?.getActiveGameInfo();
       const nextId = String((next as any)?.gameInfo?.classId ?? '');
-      if (next?.gameInfo && nextId && nextId !== exitedId) {
+      const anotherGameRunning = exitedId && next?.gameInfo && nextId && nextId !== exitedId;
+      if (anotherGameRunning) {
         this.syncFromOverlay();
       } else {
         this.updateCurrentGame(null);
