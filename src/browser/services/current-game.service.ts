@@ -57,10 +57,6 @@ export class CurrentGameService extends EventEmitter {
     this.syncFromOverlay();
   }
 
-  public setGepService(gepService: any): void {
-    this.setupGepEventListeners(gepService);
-  }
-
   public cleanup(): void {}
 
   // ============================================================================
@@ -91,34 +87,6 @@ export class CurrentGameService extends EventEmitter {
       } else {
         this.updateCurrentGame(null);
       }
-    });
-  }
-
-  private setupGepEventListeners(gepService: any): void {
-    if (!gepService) return;
-
-    gepService.on('game-detected', () => {
-      this.syncFromOverlay();
-    });
-
-    gepService.on('game-exit', (gameId: number) => {
-      const next = this.overlayService.overlayApi?.getActiveGameInfo();
-      const nextId = String((next as any)?.gameInfo?.classId ?? '');
-      if (next?.gameInfo && nextId && nextId !== String(gameId)) {
-        this.syncFromOverlay();
-      } else {
-        this.updateCurrentGame(null);
-      }
-    });
-
-    gepService.on('ready', async () => {
-      try {
-        await gepService.setRequiredFeaturesForAllSupportedGames?.();
-        await gepService.checkForAlreadyRunningGames?.();
-      } catch (_) {
-        // ignore
-      }
-      this.syncFromOverlay();
     });
   }
 
