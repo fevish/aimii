@@ -399,14 +399,15 @@ export const MainWindow: React.FC = () => {
         ) : (
           <Settings handleRestartOnboarding={handleRestartOnboarding} onBack={() => setActiveTab('main')} />
         )}
-
-        <section className="ad-section" hidden={showOnboarding}>
-          <SvgIcon name="aimii-logo" />
-          <owadview cid="aimii-main-window"/>
-          {/* <div className="terminal-container">
-            <Terminal />
-          </div> */}
-        </section>
+        {!showOnboarding && (
+          <section className="ad-section" hidden={showOnboarding}>
+            <SvgIcon name="aimii-logo" />
+            <owadview cid="aimii-main-window" />
+            {/* <div className="terminal-container">
+              <Terminal />
+            </div> */}
+          </section>
+        )}
       </main>
 
     </div >
