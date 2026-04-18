@@ -422,6 +422,14 @@ form {
   background-color: transparent;
   z-index: 10;
 
+  svg {
+    opacity: 0.1;
+    height: 30%;
+    width: auto;
+    margin: auto;
+    pointer-events: none;
+  }
+
   owadview {
     position: absolute;
     top: 0;

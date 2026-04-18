@@ -9,6 +9,7 @@ import { useAdDetection } from './useAdDetection';
 import { HomeView } from './views/HomeView';
 import { Header } from './views/Header';
 import { applyTheme } from '../../utils/theme';
+import { SvgIcon } from '../SvgIcon/SvgIcon';
 
 export const MainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
@@ -400,6 +401,7 @@ export const MainWindow: React.FC = () => {
         )}
 
         <section className="ad-section" hidden={showOnboarding}>
+          <SvgIcon name="aimii-logo" />
           <owadview cid="aimii-main-window"/>
           {/* <div className="terminal-container">
             <Terminal />
