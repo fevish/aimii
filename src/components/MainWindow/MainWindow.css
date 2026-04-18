@@ -428,12 +428,12 @@ form {
     left: 0;
     height: 100%;
     width: 100%;
-    opacity: 0;
+    /* opacity: 0; */
     z-index: 1;
     transition: 0.25s ease-in-out;
   }
 
-  .terminal-container {
+  /* .terminal-container {
     width: 100%;
     height: 100%;
     position: relative;
@@ -464,7 +464,7 @@ form {
   }
   &[hidden] {
     display: none;
-  }
+  } */
 }
 
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import Settings from '../Settings/Settings';
 import { Onboarding } from '../Onboarding';
-import { Terminal } from '../Terminal/Terminal';
+// import { Terminal } from '../Terminal/Terminal';
 import './MainWindow.css';
 import { useMainWindowData } from './useMainWindowData';
 import { useAdDetection } from './useAdDetection';
@@ -401,9 +401,9 @@ export const MainWindow: React.FC = () => {
 
         <section className="ad-section" hidden={showOnboarding}>
           <owadview cid="aimii-main-window"/>
-          <div className="terminal-container">
+          {/* <div className="terminal-container">
             <Terminal />
-          </div>
+          </div> */}
         </section>
       </main>
 
