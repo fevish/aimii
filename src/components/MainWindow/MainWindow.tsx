@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 
 import Settings from '../Settings/Settings';
 import { Onboarding } from '../Onboarding';
-import { Terminal } from '../Terminal/Terminal';
+// import { Terminal } from '../Terminal/Terminal';
 import './MainWindow.css';
 import { useMainWindowData } from './useMainWindowData';
 import { useAdDetection } from './useAdDetection';
 import { HomeView } from './views/HomeView';
 import { Header } from './views/Header';
 import { applyTheme } from '../../utils/theme';
+import { SvgIcon } from '../SvgIcon/SvgIcon';
 
 export const MainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
@@ -119,6 +120,11 @@ export const MainWindow: React.FC = () => {
     }
   }, [currentGame, allDetectedGames]);
 
+  // Return to home view on any game state change (launch or exit)
+  useEffect(() => {
+    setActiveTab('main');
+  }, [currentGame]);
+
   // Show welcome message when MyMainWindow renders
   React.useEffect(() => {
     console.log(`aimii v${process.env.APP_VERSION} successfully loaded`);
@@ -222,15 +228,17 @@ export const MainWindow: React.FC = () => {
     handleCompleteOnboarding();
   };
 
-  const handleOnboardingBack = () => {
-    if (isEditPreferencesMode) {
-      setShowOnboarding(false);
-      setIsEditPreferencesMode(false);
-      setOnboardingStep(0);
-      setShouldOpenPreferencesCard(true);
-    } else if (onboardingStep > 0) {
+  const handleOnboardingStepBack = () => {
+    if (onboardingStep > 0) {
       setOnboardingStep(prev => prev - 1);
     }
+  };
+
+  const handleOnboardingCancel = () => {
+    setShowOnboarding(false);
+    setIsEditPreferencesMode(false);
+    setOnboardingStep(0);
+    setShouldOpenPreferencesCard(true);
   };
 
   const handleOnboardingDataChange = (field: string, value: string) => {
@@ -360,10 +368,9 @@ export const MainWindow: React.FC = () => {
                 message={message}
                 onDataChange={handleOnboardingDataChange}
                 onNext={handleOnboardingNext}
-                onBack={handleOnboardingBack}
-                onRestart={handleRestartOnboarding}
+                onBack={handleOnboardingStepBack}
                 onComplete={handleCompleteOnboarding}
-                backButtonLabel={isEditPreferencesMode ? 'Cancel' : 'Back'}
+                onCancel={isEditPreferencesMode ? handleOnboardingCancel : undefined}
               />
             ) : (
               <>
@@ -390,15 +397,17 @@ export const MainWindow: React.FC = () => {
             )}
           </>
         ) : (
-          <Settings handleRestartOnboarding={handleRestartOnboarding} />
+          <Settings handleRestartOnboarding={handleRestartOnboarding} onBack={() => setActiveTab('main')} />
         )}
-
-        <section className="ad-section" hidden={showOnboarding}>
-          <owadview cid="aimii-main-window"/>
-          <div className="terminal-container">
-            <Terminal />
-          </div>
-        </section>
+        {!showOnboarding && (
+          <section className="ad-section" hidden={showOnboarding}>
+            <SvgIcon name="aimii-logo" />
+            <owadview cid="aimii-main-window" />
+            {/* <div className="terminal-container">
+              <Terminal />
+            </div> */}
+          </section>
+        )}
       </main>
 
     </div >

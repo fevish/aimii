@@ -10,7 +10,6 @@ export interface ConversionParams {
 
 export interface GameData {
   game: string;
-  processName?: string;
   scalingFactor: number;
   owGameId: string;
   owConstant?: string;
@@ -36,15 +35,21 @@ export const gamesData: GameData[] = [
     enable_for_app: true
   },
   {
-    game: 'Call of Duty (All)',
-    processName: 'cod.exe',
+    game: 'Call of Duty: BO6, BO7, MW3, Warzone',
     scalingFactor: 0.0066,
-    owGameId: '',
+    owGameId: '27860',
+    owGameName: 'Call of Duty',
+    enable_for_app: true
+  },
+  {
+    game: 'Call of Duty: MW2',
+    scalingFactor: 0.0066,
+    owGameId: '22328',
+    owGameName: 'Call of Duty: Modern Warfare 2',
     enable_for_app: true
   },
   {
     game: 'Counter-Strike 2',
-    processName: 'cs2.exe',
     scalingFactor: 0.022,
     owGameId: '22730',
     owConstant: 'CounterStrike2',
@@ -61,9 +66,8 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Destiny 2',
-    processName: 'destiny2.exe',
     scalingFactor: 0.0066,
-    owGameId: '0',
+    owGameId: '21812',
     enable_for_app: true
   },
   {
@@ -83,10 +87,15 @@ export const gamesData: GameData[] = [
     enable_for_app: true
   },
   {
-    game: 'Halo (All)',
+    game: 'Halo Master Chief Collection (MCC)',
     scalingFactor: 0.0222,
-    processName: 'MCC-Win64-Shipping.exe',
-    owGameId: '',
+    owGameId: '21790',
+    enable_for_app: true
+  },
+  {
+    game: 'Halo Infinite',
+    scalingFactor: 0.0222,
+    owGameId: '21854',
     enable_for_app: true
   },
   {
@@ -99,16 +108,14 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Left 4 Dead 2',
-    processName: 'left4dead2.exe',
     scalingFactor: 0.022,
-    owGameId: '0',
+    owGameId: '5594',
     enable_for_app: true
   },
   {
     game: 'Marathon',
-    processName: 'Marathon.exe',
     scalingFactor: 0.0033,
-    owGameId: '',
+    owGameId: '27856',
     enable_for_app: true
   },
   {
@@ -188,7 +195,6 @@ export const gamesData: GameData[] = [
   },
   {
     game: 'Valorant',
-    processName: 'VALORANT-Win64-Shipping.exe',
     scalingFactor: 0.07,
     owGameId: '21640',
     owConstant: 'Valorant',

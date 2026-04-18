@@ -33,8 +33,6 @@ export class Application {
     // Register games for GEP when GEP service is ready
     gepService.on('ready', this.registerGepGames.bind(this));
 
-    // Coordinate GEP and overlay for faster injection
-    this.setupGepOverlayCoordination();
   }
 
   /**
@@ -121,6 +119,15 @@ export class Application {
           const gameName = gameData?.game || gameInfo.name || 'Unknown Game';
 
           this.mainWindowController.printLogMessage('Game exited:', gameName);
+
+          const exitedId = String(owId ?? '');
+          const nextGame = this.overlayService.overlayApi?.getActiveGameInfo();
+          const nextId = String((nextGame as any)?.gameInfo?.classId ?? '');
+          const anotherGameRunning = exitedId && nextGame?.gameInfo && nextId && nextId !== exitedId;
+          if (!anotherGameRunning) {
+            this.mainWindowController.destroyWidgetWindow();
+            this.mainWindowController.restoreWindowAfterGameExit();
+          }
         });
       }
     });
@@ -142,34 +149,4 @@ export class Application {
     }
   }
 
-  /**
-   * Coordinate GEP and overlay for faster injection
-   */
-  private setupGepOverlayCoordination() {
-    // Listen for GEP game detection to trigger immediate overlay injection
-    this.gepService.on('game-detected', (gameId, name, gameInfo) => {
-      this.mainWindowController.printLogMessage(`GEP detected game: ${name} (${gameId})`);
-
-      // If overlay is ready, try to inject immediately
-      if (this.overlayService.overlayApi) {
-        this.mainWindowController.printLogMessage('Triggering immediate overlay injection for GEP-detected game');
-
-        // Try to get the game info from overlay API to trigger injection
-        const activeGame = this.overlayService.overlayApi.getActiveGameInfo();
-        if (activeGame && activeGame.gameInfo.classId === gameId) {
-          this.mainWindowController.printLogMessage('Game already detected by overlay, creating widget');
-          this.createGameWidget();
-        } else {
-          this.mainWindowController.printLogMessage('Waiting for overlay to detect game...');
-        }
-      } else {
-        this.mainWindowController.printLogMessage('Overlay not ready yet, will inject when available');
-      }
-    });
-
-    // Listen for GEP game exit to clean up
-    this.gepService.on('game-exit', (gameId, processName, pid) => {
-      this.mainWindowController.printLogMessage(`GEP detected game exit: ${processName} (${gameId})`);
-    });
-  }
 }

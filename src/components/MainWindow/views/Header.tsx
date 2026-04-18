@@ -19,8 +19,11 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="app-header">
       <div className="app-logo">
-        <h1>aimii.app</h1>
-        <span className="version">v{process.env.APP_VERSION}</span>
+        <SvgIcon name="aimii-logo" />
+        <div className="title">
+          <h1>aimii.app</h1>
+          <span className="version">v{process.env.APP_VERSION}</span>
+        </div>
       </div>
       <div className="header-controls">
         {!showOnboarding && (

@@ -24,6 +24,7 @@ export class MainWindowController {
   private browserWindow: BrowserWindow | null = null;
   private widgetController: WidgetWindowController | null = null;
   private tray: Tray | null = null;
+  private preGameBounds: Electron.Rectangle | null = null;
 
   /**
    *
@@ -98,11 +99,18 @@ export class MainWindowController {
   }
 
   /**
-   * Move main window to second screen when a supported game is running.
-   * If user has multiple displays, moves to the display that doesn't contain the game.
+   * Show main window when a game launches. On multi-monitor setups, saves the
+   * current position and moves the window to the non-game display.
    */
   public moveToSecondScreenWhenGameLaunches(): void {
     if (!this.browserWindow || this.browserWindow.isDestroyed()) return;
+
+    // Only capture once per game session — double-calls (overlay + GEP both fire) would
+    // otherwise overwrite with secondary-screen coords after the window already moved.
+    if (!this.preGameBounds) {
+      this.preGameBounds = this.browserWindow.getBounds();
+      this.printLogMessage(`[window] game launch: saved pre-game bounds x=${this.preGameBounds.x} y=${this.preGameBounds.y}`);
+    }
 
     const displays = screen.getAllDisplays();
     if (displays.length < 2) return;
@@ -113,20 +121,47 @@ export class MainWindowController {
       ? displays.find(d => d.id !== gameDisplay.id)
       : displays.find(d => d.id !== primaryDisplay.id);
 
-    if (!targetDisplay) return;
+    if (targetDisplay) {
+      const bounds = this.browserWindow.getBounds();
+      const currentDisplay = screen.getDisplayMatching(bounds);
+      if (currentDisplay.id !== targetDisplay.id) {
+        const { workArea } = targetDisplay;
+        const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
+        const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
+        this.printLogMessage(`[window] game launch: moving to secondary display x=${x} y=${y}`);
+        this.browserWindow.setBounds({ ...bounds, x, y });
+      }
+    }
 
-    const { workArea } = targetDisplay;
-    const bounds = this.browserWindow.getBounds();
-    const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
-    const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
-
-    this.browserWindow.setBounds({ ...bounds, x, y });
+    // Show and force to front — setAlwaysOnTop must come before focus() on Windows
     this.browserWindow.show();
-    // Windows workaround: toggle always-on-top to force window above others
-    this.browserWindow.setAlwaysOnTop(true);
-    this.browserWindow.setAlwaysOnTop(false);
+    this.browserWindow.setAlwaysOnTop(true, 'pop-up-menu');
     this.browserWindow.focus();
-    this.printLogMessage('Moved main window to second screen');
+    this.browserWindow.setAlwaysOnTop(false);
+  }
+
+  /**
+   * Restore main window after game exits. On multi-monitor setups, moves the
+   * window back to its pre-game position. Always shows and brings to front.
+   */
+  public restoreWindowAfterGameExit(): void {
+    if (!this.browserWindow || this.browserWindow.isDestroyed()) return;
+
+    const savedBounds = this.preGameBounds;
+    this.preGameBounds = null;
+
+    // Show and bring to front first so the window is in a stable visible state
+    this.browserWindow.show();
+    this.browserWindow.setAlwaysOnTop(true, 'pop-up-menu');
+    this.browserWindow.focus();
+    this.browserWindow.setAlwaysOnTop(false);
+
+    // Set bounds after show — on Windows, show() can restore last-visible position
+    const displays = screen.getAllDisplays();
+    if (displays.length >= 2 && savedBounds) {
+      this.printLogMessage(`[window] game exit: restoring to x=${savedBounds.x} y=${savedBounds.y}`);
+      this.browserWindow.setBounds(savedBounds);
+    }
   }
 
   private getGameDisplay(): Electron.Display | null {
@@ -390,6 +425,26 @@ export class MainWindowController {
     });
 
     // Theme settings IPC handlers
+    ipcMain.handle('settings-get-launch-on-startup', () => {
+      if (!electronApp.isPackaged) return false;
+      return electronApp.getLoginItemSettings().openAtLogin;
+    });
+
+    ipcMain.handle('settings-set-launch-on-startup', (event, enable: boolean) => {
+      if (!electronApp.isPackaged) return false;
+      electronApp.setLoginItemSettings({ openAtLogin: enable });
+      return true;
+    });
+
+    ipcMain.handle('settings-get-widget-auto-show', () => {
+      return this.settingsService.getWidgetAutoShow();
+    });
+
+    ipcMain.handle('settings-set-widget-auto-show', (_event, value: boolean) => {
+      this.settingsService.setWidgetAutoShow(value);
+      return true;
+    });
+
     ipcMain.handle('settings-get-theme', () => {
       return this.settingsService.getTheme();
     });
@@ -573,20 +628,34 @@ export class MainWindowController {
     await this.createWidget();
   }
 
+  /**
+   * Public method to destroy widget (called from Application on game exit)
+   */
+  public destroyWidgetWindow(): void {
+    // Destroy the overlay window only — keep the controller alive for reuse
+    this.widgetController?.destroy();
+  }
+
+  private getOrCreateWidgetController(): WidgetWindowController {
+    if (!this.widgetController) {
+      this.widgetController = this.createWidgetWinController();
+    }
+    return this.widgetController;
+  }
+
   private async createWidget() {
-    // create a browser window for overlay widget and load a url
-    this.widgetController = this.createWidgetWinController();
-    await this.widgetController.createWidget();
+    // Reuse the existing controller so IPC handlers and listeners aren't duplicated
+    const controller = this.getOrCreateWidgetController();
+    await controller.createWidget();
   }
 
   private async toggleWidget() {
-    if (this.widgetController) {
-      this.widgetController.toggleVisibility();
-      return;
+    const controller = this.getOrCreateWidgetController();
+    if (controller.overlayBrowserWindow) {
+      controller.toggleVisibility();
+    } else {
+      await controller.createWidget();
     }
-
-    this.widgetController = this.createWidgetWinController();
-    await this.widgetController.createWidget();
   }
 
   private async openWidgetDevTools() {

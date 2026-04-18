@@ -33,16 +33,16 @@ export class CMPService {
       const winreg = await import('winreg');
       const regKey = new winreg.default({
         hive: winreg.default.HKCU,
-        key: '\\Software\\aimii'
+        key: '\\Software\\aimii\\Privacy'
       });
 
       return new Promise<boolean>((resolve) => {
-        regKey.get('GDPRRegion', (err: Error | null, item: any) => {
+        regKey.get('Region', (err: Error | null, item: any) => {
           if (err || !item) {
             // Fallback to Overwolf API if no registry setting
             this.fallbackToCMPAPI().then(resolve).catch(() => resolve(true));
           } else {
-            resolve(item.value === 'true');
+            resolve(item.value === 'EU');
           }
         });
       });

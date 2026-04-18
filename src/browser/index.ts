@@ -18,7 +18,6 @@ import { SensitivityConverterService } from './services/sensitivity-converter.se
 
 import { WindowStateService } from './services/window-state.service';
 import { HotkeyService } from './services/hotkey.service';
-import { CustomGameDetectorService } from './services/custom-game-detector.service';
 import { CMPController } from './controllers/cmp.controller';
 
 // Simple global console override - just like a normal website
@@ -30,9 +29,6 @@ let earlyLogs: Array<{ args: any[], timestamp: number }> = [];
 declare global {
   var mainWindowController: MainWindowController | null;
 }
-
-// Global reference for cleanup
-let customGameDetectorService: CustomGameDetectorService | null = null;
 
 const safeStringify = (obj: any): string => {
   if (obj === null) return 'null';
@@ -99,14 +95,9 @@ const bootstrap = (): Application => {
   const gamesService = new GamesService();
   const currentGameService = new CurrentGameService(overlayService, gamesService);
 
-  // Inject GEP service into current game service for fallback detection
-  currentGameService.setGepService(gepService);
-
   const sensitivityConverterService = new SensitivityConverterService(gamesService, settingsService, currentGameService);
   const windowStateService = new WindowStateService();
   const hotkeyService = new HotkeyService(settingsService);
-  customGameDetectorService = new CustomGameDetectorService(gamesService);
-
   // Initialize CMP controller for consent management
   const cmpController = new CMPController();
 
@@ -130,12 +121,6 @@ const bootstrap = (): Application => {
     windowStateService,
     hotkeyService
   );
-
-  // Inject custom game detector into current game service
-  currentGameService.setCustomGameDetectorService(customGameDetectorService);
-
-  // Start custom game detector monitoring
-  customGameDetectorService.startMonitoring();
 
   // Store reference for cleanup
   global.mainWindowController = mainWindowController;
@@ -161,8 +146,4 @@ ElectronApp.on('before-quit', () => {
     global.mainWindowController.destroy();
   }
 
-  // Stop custom game detector
-  if (customGameDetectorService) {
-    customGameDetectorService.stopMonitoring();
-  }
 });

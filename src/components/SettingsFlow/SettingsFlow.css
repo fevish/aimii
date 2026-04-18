@@ -143,6 +143,12 @@
     margin-top: auto;
   }
 
+  .settings-navigation-right {
+    display: flex;
+    gap: var(--spacing);
+    margin-left: auto;
+  }
+
   .settings-btn {
     padding: var(--spacing) calc(2 * var(--spacing));
     border: 1px solid currentColor;
@@ -156,7 +162,6 @@
   .settings-btn-next {
     background-color: var(--primary);
     color: var(--dark);
-    margin-left: auto;
   }
 
   .settings-btn-next:hover:not(:disabled) {

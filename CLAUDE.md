@@ -34,7 +34,7 @@ Built with Overwolf-wrapped Electron (`ow-electron`), React, TypeScript, and Web
 | `src/types/`               | Shared TypeScript types.                                                                       |
 | `public/`                  | Static HTML entry points and assets.                                                           |
 | `scripts/`                 | Build and packaging scripts.                                                                   |
-| `docs/`                    | Internal docs including `roadmap.md`.                                                          |
+| `ROADMAP.md`               | Product and feature roadmap.                                                                   |
 
 Key directories contain a `context.md` with further detail on their contents and conventions.
 
@@ -65,6 +65,11 @@ the `public/aim-trainer.html` inclusion.
 - Game injection (overlay) always fires `event.inject()` for all games; allowed games are registered separately in `onOverlayServiceReady`
 - The widget window is created/destroyed on game inject/eject events, not at app startup
 - GEP (`GameEventsService`) detects game events; `OverlayService` handles injection and widget creation
+
+## Current Focus
+
+We are working through Overwolf QA feedback fixes tracked in `overwolf-fixes.md`. After completing
+any item from that list, mark it `[x]` in the doc before finishing.
 
 ## Post-Prompt Checklist
 

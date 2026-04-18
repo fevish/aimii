@@ -1,6 +1,6 @@
 import path from 'path';
 import { OverlayService } from '../services/overlay.service';
-import { OverlayBrowserWindow, OverlayWindowOptions, PassthroughType, ZOrderType } from '@overwolf/ow-electron-packages-types';
+import { OverlayBrowserWindow, OverlayWindowOptions } from '@overwolf/ow-electron-packages-types';
 import { SettingsService } from '../services/settings.service';
 import { CurrentGameService } from '../services/current-game.service';
 import { HotkeyService } from '../services/hotkey.service';
@@ -10,7 +10,8 @@ export class WidgetWindowController {
   private widgetWindow: OverlayBrowserWindow | null = null;
   private isVisible: boolean = false;
   private savePositionTimeout: NodeJS.Timeout | null = null;
-  private hotkeysRegistered: boolean = false; // Prevent duplicate registrations
+  private hotkeysRegistered: boolean = false;
+  private gameWindowListenerAdded: boolean = false;
 
   // Centralized hotkey configuration
   private readonly WIDGET_HOTKEY = {
@@ -114,8 +115,8 @@ export class WidgetWindowController {
       transparent: true, // Frameless overlay
       resizable: false, // Keep fixed size
       frame: false, // No title bar
-      passthrough: PassthroughType.NoPassThrough,
-      zOrder: ZOrderType.TopMost,
+      passthrough: 'noPassThrough',
+      zOrder: 'topMost',
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
@@ -148,16 +149,16 @@ export class WidgetWindowController {
       path.join(__dirname, '../widget/widget.html')
     );
 
-    // Listen for game window changes (resolution changes, etc.)
-    if (this.overlayService.overlayApi) {
-      this.overlayService.overlayApi.on('game-window-changed', (windowInfo: any, gameInfo: any, reason: any) => {
+    // Listen for game window changes (resolution changes, etc.) — only add once
+    if (this.overlayService.overlayApi && !this.gameWindowListenerAdded) {
+      this.overlayService.overlayApi.on('game-window-changed', (windowInfo: any) => {
         this.checkAndRepositionWidget(windowInfo);
       });
+      this.gameWindowListenerAdded = true;
     }
 
-    // Restore visibility state
-    const savedVisibility = this.settingsService.getWidgetVisible();
-    if (savedVisibility) {
+    // Show widget if auto-show is enabled
+    if (this.settingsService.getWidgetAutoShow()) {
       this.show();
     }
 
@@ -233,11 +234,9 @@ export class WidgetWindowController {
     if (this.isVisible) {
       this.widgetWindow.window.hide();
       this.isVisible = false;
-      this.settingsService.setWidgetVisible(false);
     } else {
       this.widgetWindow.window.show();
       this.isVisible = true;
-      this.settingsService.setWidgetVisible(true);
     }
   }
 
@@ -245,14 +244,12 @@ export class WidgetWindowController {
     if (!this.widgetWindow) return;
     this.widgetWindow.window.show();
     this.isVisible = true;
-    this.settingsService.setWidgetVisible(true);
   }
 
   public hide(): void {
     if (!this.widgetWindow) return;
     this.widgetWindow.window.hide();
     this.isVisible = false;
-    this.settingsService.setWidgetVisible(false);
   }
 
   public destroy(): void {
@@ -260,7 +257,6 @@ export class WidgetWindowController {
       // Save final position before destroying
       const bounds = this.widgetWindow.window.getBounds();
       this.settingsService.setWidgetPosition(bounds.x, bounds.y);
-      this.settingsService.setWidgetVisible(false);
 
       // Clear any pending timeouts
       if (this.savePositionTimeout) {
@@ -271,6 +267,7 @@ export class WidgetWindowController {
       this.widgetWindow.window.close();
       this.widgetWindow = null;
       this.isVisible = false;
+      this.hotkeysRegistered = false; // Re-register on next game launch
     }
   }
 
@@ -329,7 +326,7 @@ export class WidgetWindowController {
         shift: widgetHotkeyInfo.modifiers.shift,
         alt: widgetHotkeyInfo.modifiers.alt
       },
-      passthrough: true
+      passthrough: false
     }, (hotkey, state) => {
       if (state === 'pressed') {
         this.toggleVisibility();
@@ -344,7 +341,7 @@ export class WidgetWindowController {
         ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
         shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
       },
-      passthrough: true
+      passthrough: false
     }, (hotkey, state) => {
       if (state === 'pressed') {
         this.openDevTools();

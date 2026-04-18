@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import './Settings.css';
+import { SvgIcon } from '../SvgIcon/SvgIcon';
 
 interface HotkeyConfig {
   id: string;
@@ -36,6 +37,7 @@ interface CanonicalSettings {
 
 interface SettingsProps {
   handleRestartOnboarding: () => Promise<void>;
+  onBack: () => void;
 }
 
 declare global {
@@ -58,11 +60,15 @@ declare global {
       setTheme: (theme: string) => Promise<boolean>;
       onThemeChanged: (callback: (theme: string) => void) => void;
       removeThemeListener: () => void;
+      getLaunchOnStartup: () => Promise<boolean>;
+      setLaunchOnStartup: (enable: boolean) => Promise<boolean>;
+      getWidgetAutoShow: () => Promise<boolean>;
+      setWidgetAutoShow: (value: boolean) => Promise<boolean>;
     };
   }
 }
 
-const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
+const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: handleBack }) => {
   const [hotkeys, setHotkeys] = useState<HotkeyConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingHotkey, setEditingHotkey] = useState<string | null>(null);
@@ -72,6 +78,8 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   const [modifierDisplay, setModifierDisplay] = useState<string>('');
   const [currentTheme, setCurrentTheme] = useState<string>('default');
   const [cmpRequired, setCmpRequired] = useState<boolean | null>(null);
+  const [launchOnStartup, setLaunchOnStartup] = useState<boolean>(false);
+  const [widgetAutoShow, setWidgetAutoShow] = useState<boolean>(true);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Available themes
@@ -84,7 +92,47 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
     loadHotkeys();
     loadTheme();
     checkCmpRequirement();
+    loadLaunchOnStartup();
+    loadWidgetAutoShow();
   }, []);
+
+  const loadLaunchOnStartup = async () => {
+    try {
+      const enabled = await window.settings.getLaunchOnStartup();
+      setLaunchOnStartup(enabled);
+    } catch (error) {
+      console.error('Failed to load launch on startup setting:', error);
+    }
+  };
+
+  const loadWidgetAutoShow = async () => {
+    try {
+      const value = await window.settings.getWidgetAutoShow();
+      setWidgetAutoShow(value);
+    } catch (error) {
+      console.error('Failed to load widget auto-show setting:', error);
+    }
+  };
+
+  const handleWidgetAutoShowToggle = async () => {
+    const newValue = !widgetAutoShow;
+    try {
+      await window.settings.setWidgetAutoShow(newValue);
+      setWidgetAutoShow(newValue);
+    } catch (error) {
+      console.error('Failed to set widget auto-show setting:', error);
+    }
+  };
+
+  const handleLaunchOnStartupToggle = async () => {
+    const newValue = !launchOnStartup;
+    try {
+      await window.settings.setLaunchOnStartup(newValue);
+      setLaunchOnStartup(newValue);
+    } catch (error) {
+      console.error('Failed to set launch on startup:', error);
+    }
+  };
 
   const checkCmpRequirement = async () => {
     try {
@@ -482,8 +530,10 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
   return (
     <div className="settings-container">
       <div className="settings-header">
+        <button onClick={handleBack} className="btn-back">
+          <SvgIcon name="arrow-back" />
+        </button>
         <h2>Settings</h2>
-        {/* {message && <div className="message">{message}</div>} */}
       </div>
 
       <div className="settings-content">
@@ -536,8 +586,39 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
           </div>
         </section>
 
-        <section className="theme-section">
+        {/* Show Widget at Game Launch */}
+        <section className="settings-section">
+          <div className="setting-item">
+            <div className="setting-info">
+              <h4>Show widget at game launch</h4>
+              <p className="setting-description">Automatically display the in-game overlay when a supported game starts.</p>
+            </div>
+            <button
+              onClick={handleWidgetAutoShowToggle}
+              className={`toggle-switch${widgetAutoShow ? ' active' : ''}`}
+              title={widgetAutoShow ? 'Disable auto-show widget' : 'Enable auto-show widget'}
+              aria-pressed={widgetAutoShow}
+            />
+          </div>
+        </section>
 
+        {/* Launch on Startup */}
+        <section className="settings-section">
+          <div className="setting-item">
+            <div className="setting-info">
+              <h4>Launch on Startup</h4>
+              <p className="setting-description">Automatically start aimii when Windows starts.</p>
+            </div>
+            <button
+              onClick={handleLaunchOnStartupToggle}
+              className={`toggle-switch${launchOnStartup ? ' active' : ''}`}
+              title={launchOnStartup ? 'Disable launch on startup' : 'Enable launch on startup'}
+              aria-pressed={launchOnStartup}
+            />
+          </div>
+        </section>
+
+        <section className="theme-section">
           <div className="theme-controls">
             <div className="form-group select-theme">
               <h4>Select Theme</h4>
@@ -555,7 +636,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
 
         {/* Kill Switch Section */}
         <section className="settings-section">
-          <div className="setting-item">
+          <div>
             <div className="setting-info">
               <h4>Reset Application</h4>
               <p className="setting-description">Clears all user + app settings and restarts onboarding.</p>
@@ -572,7 +653,7 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding }) => {
         {/* Privacy Settings - Only show for EU users */}
         {cmpRequired && (
           <section>
-            <button className="privacy-link"
+            <button className="privacy-link link-button"
               onClick={async () => {
                 try {
                   await window.cmp.openPrivacySettings();

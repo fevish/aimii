@@ -168,7 +168,7 @@ const Widget: React.FC = () => {
     ipcRenderer.on('theme-changed', handleThemeChanged);
 
     // Listen for hotkey change events
-    const handleHotkeyChanged = (id: string, updatedHotkey: any) => {
+    const handleHotkeyChanged = (_event: any, id: string) => {
       if (id === 'widget-toggle') {
         fetchHotkeyInfo();
       }

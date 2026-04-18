@@ -120,12 +120,27 @@ Function ConsentPageLeave
   ${EndIf}
 FunctionEnd
 
+; Cleanup on uninstall
+!macro customUnInstall
+  ; Do not call SetShellVarContext here — electron-builder's perMachine template sets
+  ; SetShellVarContext all, which makes $APPDATA resolve to C:\ProgramData. Use
+  ; ReadEnvStr to get the actual current user's APPDATA from the environment instead.
+  ReadEnvStr $R0 APPDATA
+  RMDir /r "$R0\aimii.app"
+  ReadEnvStr $R0 LOCALAPPDATA
+  RMDir /r "$R0\aimii.app-updater"
+  ; Remove registry entries written by installer
+  DeleteRegKey HKCU "Software\aimii"
+  ; Remove install directory. /REBOOTOK schedules any locked files for silent deletion
+  ; at next reboot (no prompt). SetRebootFlag false suppresses the reboot dialog.
+  RMDir /r /REBOOTOK "$INSTDIR"
+  SetRebootFlag false
+!macroend
+
 ; Hook into existing initialization using macro
 !macro customInit
   StrCpy $RegionSelection "OTHER"
   StrCpy $ConsentGiven "0"
   StrCpy $ShowConsentPage "0"
-  ; Set installation mode to all users and default directory
-  SetShellVarContext all
-  StrCpy $InstDir "$PROGRAMFILES\aimii"
+  StrCpy $InstDir "$PROGRAMFILES64\aimii.app"
 !macroend

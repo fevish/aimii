@@ -55,8 +55,8 @@ All conversion math lives in `src/utils/sensitivity-conversion.ts` — never dup
 GDPR compliance is required for EU users only.
 
 **Detection:**
-- Registry: `HKCU\Software\aimii\GDPRRegion` (set by installer)
-- Fallback: `app.overwolf.isCMPRequired()`
+- Registry: `HKCU\Software\aimii\Privacy` → `Region = "EU"` (set by installer EU checkbox)
+- Fallback: `app.overwolf.isCMPRequired()` (Overwolf API) if no registry entry exists
 - Safety default: show CMP if detection fails
 
 **Two-layer flow:**
@@ -64,9 +64,12 @@ GDPR compliance is required for EU users only.
 - **Layer 2** — settings: opens `app.overwolf.openAdPrivacySettingsWindow()` for granular controls
 
 **Key files:**
-- `src/browser/services/cmp.service.ts`
-- `src/browser/controllers/cmp.controller.ts`
-- `scripts/installer.nsh` (NSIS Layer 1)
+- `src/browser/services/cmp.service.ts` — reads registry, calls Overwolf CMP API
+- `src/browser/controllers/cmp.controller.ts` — IPC handlers
+- `src/components/Settings/Settings.tsx` — renders `.privacy-link` button (EU only)
+- `scripts/installer.nsh` — writes Region to registry
+
+**Testing without reinstall:** set `CMPService.TEST_EU_USER = true` in `cmp.service.ts`.
 
 Non-EU users see no privacy UI.
 
