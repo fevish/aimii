@@ -1,6 +1,5 @@
 import { OverlayService } from './overlay.service';
 import { GamesService } from './games.service';
-import { CustomGameDetectorService } from './custom-game-detector.service';
 import EventEmitter from 'events';
 
 /**
@@ -15,161 +14,63 @@ export interface CurrentGameInfo {
   detectionSource: 'gep' | 'overlay' | 'custom';
 }
 
-/**
- * Configuration for the CurrentGameService
- */
-interface CurrentGameServiceConfig {
-  readonly UPDATE_DEBOUNCE_MS: number;
-  readonly PERIODIC_CHECK_MS: number;
-}
-
-/**
- * Central service for managing game detection across multiple sources.
- *
- * This service coordinates detection from:
- * - GEP (Game Events Package) - Primary detection for supported games
- * - Overlay API - Secondary detection for overlay-enabled games
- * - Custom Detector - Fallback detection for unsupported games
- *
- * Features:
- * - Multi-source game detection with deduplication
- * - Event-driven updates with debouncing
- * - Periodic verification of running games
- * - Automatic cleanup of stale game states
- */
 export class CurrentGameService extends EventEmitter {
-  // Configuration
-  private readonly config: CurrentGameServiceConfig = {
-    UPDATE_DEBOUNCE_MS: 200,
-    PERIODIC_CHECK_MS: 2000
-  };
-
-  // State management
   private currentGameInfo: CurrentGameInfo | null = null;
-  private allDetectedGames: CurrentGameInfo[] = [];
-  private previousState: {
-    gameInfo: CurrentGameInfo | null;
-    detectedGamesCount: number;
-  } = { gameInfo: null, detectedGamesCount: 0 };
-
-  // Dependencies (injected)
-  private gepService: any = null;
-  private customGameDetectorService: CustomGameDetectorService | null = null;
-
-  // Timers and cleanup
-  private updateTimeout: NodeJS.Timeout | null = null;
-  private periodicCheckInterval: NodeJS.Timeout | null = null;
-  private lastUpdateTime: number = 0;
+  private previousState: { gameInfo: CurrentGameInfo | null } = { gameInfo: null };
 
   constructor(
     private readonly overlayService: OverlayService,
     private readonly gamesService: GamesService
   ) {
     super();
-    this.setupEventListeners();
+    this.setupOverlayEventListeners();
   }
 
   // ============================================================================
   // PUBLIC API
   // ============================================================================
 
-  /**
-   * Get the currently selected game information
-   */
   public getCurrentGameInfo(): CurrentGameInfo | null {
     return this.currentGameInfo;
   }
 
-  /**
-   * Get all currently detected games from all sources
-   */
   public getAllDetectedGames(): CurrentGameInfo[] {
-    return this.allDetectedGames;
+    return this.currentGameInfo ? [this.currentGameInfo] : [];
   }
 
-  /**
-   * Set the current game by ID
-   */
-  public setCurrentGame(gameId: number): void {
-    const normalizedId = this.normalizeGameId(gameId);
-    const game = this.allDetectedGames.find(g => this.normalizeGameId(g.id) === normalizedId);
-    if (game) {
-      this.currentGameInfo = game;
-      console.log('Game Changed:', game.name);
-      this.emit('game-changed', game);
-    }
-  }
+  /** No-op: single-game model, switching is not supported */
+  public setCurrentGame(_gameId: number): void {}
 
-  /**
-   * Check if any game is currently running
-   */
   public isGameRunning(): boolean {
-    return this.getCurrentGameInfo() !== null;
+    return this.currentGameInfo !== null;
   }
 
-  /**
-   * Get the name of the current game
-   */
   public getCurrentGameName(): string | null {
-    const gameInfo = this.getCurrentGameInfo();
-    return gameInfo ? gameInfo.name : null;
+    return this.currentGameInfo?.name ?? null;
   }
 
-  /**
-   * Check if the current game is supported
-   */
   public isCurrentGameSupported(): boolean {
-    const gameInfo = this.getCurrentGameInfo();
-    return gameInfo ? gameInfo.isSupported : false;
+    return this.currentGameInfo?.isSupported ?? false;
   }
 
-  /**
-   * Manually trigger a game state update
-   */
   public refreshCurrentGame(): void {
-    this.updateGameState();
+    this.syncFromOverlay();
   }
 
-  /**
-   * Inject the GEP service for game detection
-   */
   public setGepService(gepService: any): void {
-    this.gepService = gepService;
     this.setupGepEventListeners(gepService);
   }
 
-  /**
-   * Inject the custom game detector service
-   */
-  public setCustomGameDetectorService(customGameDetectorService: CustomGameDetectorService): void {
-    this.customGameDetectorService = customGameDetectorService;
-    this.setupCustomDetectorEventListeners(customGameDetectorService);
-  }
-
-  /**
-   * Cleanup resources and prevent memory leaks
-   */
-  public cleanup(): void {
-    this.clearTimers();
-  }
+  public cleanup(): void {}
 
   // ============================================================================
-  // PRIVATE METHODS - Event Setup
+  // PRIVATE METHODS
   // ============================================================================
-
-  private setupEventListeners(): void {
-    this.setupOverlayEventListeners();
-  }
 
   private setupOverlayEventListeners(): void {
-    this.overlayService.on('ready', () => {
-      this.registerOverlayGameEvents();
-      this.scheduleUpdate();
-    });
-
+    this.overlayService.on('ready', () => this.registerOverlayGameEvents());
     if (this.overlayService.overlayApi) {
       this.registerOverlayGameEvents();
-      this.scheduleUpdate();
     }
   }
 
@@ -177,34 +78,18 @@ export class CurrentGameService extends EventEmitter {
     if (!this.overlayService.overlayApi) return;
 
     this.overlayService.overlayApi.on('game-injected', () => {
-      this.scheduleUpdate();
+      this.syncFromOverlay();
     });
 
-    this.overlayService.overlayApi.on('game-launched', (event, gameInfo) => {
-      const normalizedGameId = this.normalizeGameId(gameInfo.classId || '');
-      if (this.gamesService.getGameByOwId(normalizedGameId)) {
-        event.inject();
+    this.overlayService.overlayApi.on('game-exit', (gameInfo: any) => {
+      const exitedId = String(gameInfo?.classId ?? gameInfo?.id ?? '');
+      const next = this.overlayService.overlayApi?.getActiveGameInfo();
+      const nextId = String((next as any)?.gameInfo?.classId ?? '');
+      if (next?.gameInfo && nextId && nextId !== exitedId) {
+        this.syncFromOverlay();
+      } else {
+        this.updateCurrentGame(null);
       }
-
-      this.scheduleUpdate();
-    });
-
-    this.overlayService.overlayApi.on('game-focus-changed', (window, game, focus) => {
-      if (focus) {
-        this.scheduleUpdate();
-      }
-    });
-
-    // Use the overlay's reliable Win32-based exit signal to clean up GEP state,
-    // since GEP sometimes misses its own game-exit event.
-    this.overlayService.overlayApi.on('game-exit', (gameInfo) => {
-      const classId = typeof gameInfo.classId === 'string'
-        ? parseInt(gameInfo.classId, 10)
-        : gameInfo.classId;
-      if (classId) {
-        this.removeGepGame(classId);
-      }
-      this.scheduleUpdate();
     });
   }
 
@@ -212,308 +97,55 @@ export class CurrentGameService extends EventEmitter {
     if (!gepService) return;
 
     gepService.on('game-detected', () => {
-      this.scheduleUpdate();
+      this.syncFromOverlay();
     });
 
-    gepService.on('game-exit', () => {
-      this.scheduleUpdate();
+    gepService.on('game-exit', (gameId: number) => {
+      const next = this.overlayService.overlayApi?.getActiveGameInfo();
+      const nextId = String((next as any)?.gameInfo?.classId ?? '');
+      if (next?.gameInfo && nextId && nextId !== String(gameId)) {
+        this.syncFromOverlay();
+      } else {
+        this.updateCurrentGame(null);
+      }
     });
 
     gepService.on('ready', async () => {
       try {
-        // Ensure features are set and populate already-running games
         await gepService.setRequiredFeaturesForAllSupportedGames?.();
         await gepService.checkForAlreadyRunningGames?.();
       } catch (_) {
         // ignore
       }
-      setTimeout(() => {
-        this.scheduleUpdate();
-        this.startPeriodicCheck();
-      }, 1000);
+      this.syncFromOverlay();
     });
   }
 
-  private setupCustomDetectorEventListeners(customGameDetectorService: CustomGameDetectorService): void {
-    if (!customGameDetectorService) return;
+  private syncFromOverlay(): void {
+    const active = this.overlayService.overlayApi?.getActiveGameInfo();
+    if (!active?.gameInfo) return;
 
-    customGameDetectorService.on('games-detected', () => {
-      this.scheduleUpdate();
-    });
-  }
+    const classId = String((active as any).gameInfo.classId ?? '');
+    const gameData = this.gamesService.getGameByOwId(classId);
 
-  // ============================================================================
-  // PRIVATE METHODS - Update Management
-  // ============================================================================
-
-  private scheduleUpdate(): void {
-    this.clearUpdateTimeout();
-    this.updateTimeout = setTimeout(() => {
-      this.updateGameState();
-    }, this.config.UPDATE_DEBOUNCE_MS);
-  }
-
-  private updateGameState(): void {
-    const now = Date.now();
-    if (now - this.lastUpdateTime < this.config.UPDATE_DEBOUNCE_MS) {
-      return;
-    }
-
-    this.updateAllDetectedGames();
-    this.checkForStateChanges();
-    this.lastUpdateTime = now;
-  }
-
-  private checkForStateChanges(): void {
-    const newGameInfo = this.currentGameInfo;
-    const newDetectedGamesCount = this.allDetectedGames.length;
-
-    const currentGameChanged = this.hasCurrentGameChanged(newGameInfo);
-    const detectedGamesCountChanged = this.previousState.detectedGamesCount !== newDetectedGamesCount;
-
-    if (currentGameChanged || detectedGamesCountChanged) {
-      this.previousState = {
-        gameInfo: newGameInfo,
-        detectedGamesCount: newDetectedGamesCount
-      };
-
-      this.emit('game-changed', newGameInfo);
-    }
-  }
-
-  private hasCurrentGameChanged(newGameInfo: CurrentGameInfo | null): boolean {
-    const previous = this.previousState.gameInfo;
-
-    if (!previous && !newGameInfo) return false;
-    if (!previous || !newGameInfo) return true;
-
-    return previous.id !== newGameInfo.id ||
-           previous.name !== newGameInfo.name ||
-           previous.isSupported !== newGameInfo.isSupported;
-  }
-
-  // ============================================================================
-  // PRIVATE METHODS - Game Detection
-  // ============================================================================
-
-  private updateAllDetectedGames(): void {
-    // Collect games from all detection sources. Overlay may flap; merge rather than replace
-    const detected: CurrentGameInfo[] = [];
-    detected.push(...this.getGepGames());
-    detected.push(...this.getOverlayGames());
-    detected.push(...this.getCustomDetectedGames());
-
-    // Deduplicate the detected games (in case multiple sources detect the same game)
-    const uniqueDetectedGames = this.deduplicateGames(detected);
-
-        // Log newly detected games
-    const previousGameIds = new Set(this.allDetectedGames.map(g => this.normalizeGameId(g.id)));
-    const newGames = uniqueDetectedGames.filter(g => !previousGameIds.has(this.normalizeGameId(g.id)));
-
-    if (newGames.length === 1) {
-      console.log(`Game detected: ${newGames[0].name}`);
-    } else if (newGames.length > 1) {
-      const gameNames = newGames.map(game => game.name).join(', ');
-      console.log(`Games detected: ${gameNames}`);
-    }
-
-    // Log games that have exited
-    const currentGameIds = new Set(uniqueDetectedGames.map(g => this.normalizeGameId(g.id)));
-    const exitedGames = this.allDetectedGames.filter(g => !currentGameIds.has(this.normalizeGameId(g.id)));
-
-    if (exitedGames.length === 1) {
-      console.log(`Game exited: ${exitedGames[0].name}`);
-    } else if (exitedGames.length > 1) {
-      const gameNames = exitedGames.map(game => game.name).join(', ');
-      console.log(`Games exited: ${gameNames}`);
-    }
-
-    // Replace the detected games list with only currently detected games
-    this.allDetectedGames = uniqueDetectedGames;
-    this.updateCurrentGameSelection();
-  }
-
-  private deduplicateGames(games: CurrentGameInfo[]): CurrentGameInfo[] {
-    const uniqueGames: CurrentGameInfo[] = [];
-    const seenIds = new Set<string>();
-
-    for (const game of games) {
-      const id = this.normalizeGameId(game.id);
-      if (!seenIds.has(id)) {
-        seenIds.add(id);
-        uniqueGames.push(game);
-      }
-    }
-
-    return uniqueGames;
-  }
-
-  private updateCurrentGameSelection(): void {
-    const currentIdStr = this.currentGameInfo ? this.normalizeGameId(this.currentGameInfo.id) : null;
-    const hasCurrent = currentIdStr !== null && this.allDetectedGames.some(g => this.normalizeGameId(g.id) === currentIdStr);
-
-    // Only change current game if no current game is set OR current game is no longer detected
-    if (!hasCurrent) {
-      this.currentGameInfo = this.allDetectedGames[0] || null;
-    }
-  }
-
-  // ============================================================================
-  // PRIVATE METHODS - Detection Sources
-  // ============================================================================
-
-  private getGepGames(): CurrentGameInfo[] {
-    if (!this.gepService) return [];
-
-    const games: CurrentGameInfo[] = [];
-
-    for (const gameId of this.gepService.activeGames) {
-      const normalizedId = this.normalizeGameId(gameId);
-      const gameData = this.gamesService.getGameByOwId(normalizedId);
-      if (gameData) {
-        games.push({
-          id: normalizedId as unknown as number,
-          name: gameData.game,
-          owGameName: gameData.owGameName,
-          isSupported: true,
-          gameData,
-          detectionSource: 'gep'
-        });
-      }
-    }
-
-    return games;
-  }
-
-  private getOverlayGames(): CurrentGameInfo[] {
-    const activeGame = this.overlayService.overlayApi?.getActiveGameInfo();
-    if (!activeGame) return [];
-
-    const classIdOrEmpty: string = String(((activeGame as any)?.gameInfo?.classId) ?? '');
-    const overwolfGameId = this.normalizeGameId(classIdOrEmpty);
-    const gameData = this.gamesService.getGameByOwId(overwolfGameId);
-
-    return [{
-      id: overwolfGameId as unknown as number,
-      name: gameData?.game || activeGame.gameInfo?.name || 'Unknown Game',
+    this.updateCurrentGame({
+      id: parseInt(classId) || 0,
+      name: gameData?.game || (active as any).gameInfo.name || 'Unknown Game',
       owGameName: gameData?.owGameName,
       isSupported: !!gameData,
       gameData: gameData || null,
       detectionSource: 'overlay'
-    }];
+    });
   }
 
-  private getCustomDetectedGames(): CurrentGameInfo[] {
-    if (!this.customGameDetectorService) return [];
+  private updateCurrentGame(game: CurrentGameInfo | null): void {
+    const prev = this.previousState.gameInfo;
+    const unchanged = prev?.id === game?.id && !!prev === !!game;
+    if (unchanged) return;
 
-    const detectedGames = this.customGameDetectorService.getLastDetectedGames();
-    const customGames: CurrentGameInfo[] = [];
-
-    for (const detectedGame of detectedGames) {
-      const gameData = this.gamesService
-        .getAllGames()
-        .find(game => (
-          game.processName &&
-          game.processName.toLowerCase() === detectedGame.processName.toLowerCase()
-        ));
-
-      if (gameData) {
-        customGames.push({
-          id: this.normalizeGameId(gameData.owGameId) as unknown as number,
-          name: gameData.game,
-          owGameName: gameData.owGameName,
-          isSupported: gameData.enable_for_app,
-          gameData,
-          detectionSource: 'custom'
-        });
-      }
-    }
-
-    return customGames;
-  }
-
-  // ============================================================================
-  // PRIVATE METHODS - Periodic Verification
-  // ============================================================================
-
-  private startPeriodicCheck(): void {
-    this.clearPeriodicCheckInterval();
-
-    this.periodicCheckInterval = setInterval(() => {
-      this.performPeriodicVerification();
-    }, this.config.PERIODIC_CHECK_MS);
-  }
-
-  private async performPeriodicVerification(): Promise<void> {
-    const verificationPromises: Promise<void>[] = [];
-
-    // Only verify custom detected games (not GEP games - GEP handles its own state)
-    if (this.customGameDetectorService !== null) {
-      verificationPromises.push(this.customGameDetectorService.verifyRunningGames());
-    }
-
-    // Skip aggressive GEP verification - GEP handles its own game exit events
-    // verificationPromises.push(this.verifyGepActiveGames());
-
-    // Also proactively check for already running games to add any that started without events
-    if (this.gepService && this.gepService.checkForAlreadyRunningGames) {
-      verificationPromises.push(this.gepService.checkForAlreadyRunningGames());
-    }
-
-    await Promise.all(verificationPromises);
-    this.updateGameState();
-  }
-
-  private async verifyGepActiveGames(): Promise<void> {
-    if (!this.gepService || !this.customGameDetectorService) return;
-
-    const activeGamesToCheck: number[] = Array.from(this.gepService.activeGames);
-
-    for (const gameId of activeGamesToCheck) {
-      const gameData = this.gamesService.getGameByOwId(gameId.toString());
-      if (gameData?.processName) {
-        const isRunning = await this.customGameDetectorService.isProcessRunning(gameData.processName);
-
-        if (!isRunning) {
-          this.removeGepGame(gameId);
-        }
-      }
-    }
-  }
-
-  private removeGepGame(gameId: number): void {
-    if (!this.gepService) return;
-
-    this.gepService.activeGames.delete(gameId);
-    if (this.gepService.activeGame === gameId) {
-      this.gepService.activeGame = 0;
-    }
-  }
-
-  // ============================================================================
-  // PRIVATE METHODS - Utilities
-  // ============================================================================
-
-  private normalizeGameId(gameId: number | string): string {
-    return gameId.toString();
-  }
-
-  private clearUpdateTimeout(): void {
-    if (this.updateTimeout) {
-      clearTimeout(this.updateTimeout);
-      this.updateTimeout = null;
-    }
-  }
-
-  private clearPeriodicCheckInterval(): void {
-    if (this.periodicCheckInterval) {
-      clearInterval(this.periodicCheckInterval);
-      this.periodicCheckInterval = null;
-    }
-  }
-
-  private clearTimers(): void {
-    this.clearUpdateTimeout();
-    this.clearPeriodicCheckInterval();
+    this.currentGameInfo = game;
+    this.previousState = { gameInfo: game };
+    console.log(game ? `Game detected: ${game.name}` : 'Game exited');
+    this.emit('game-changed', game);
   }
 }

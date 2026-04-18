@@ -10,7 +10,6 @@ export interface ConversionParams {
 
 export interface GameData {
   game: string;
-  processName?: string;
   scalingFactor: number;
   owGameId: string;
   owConstant?: string;

@@ -121,8 +121,15 @@ export class Application {
           const gameName = gameData?.game || gameInfo.name || 'Unknown Game';
 
           this.mainWindowController.printLogMessage('Game exited:', gameName);
-          this.mainWindowController.destroyWidgetWindow();
-          this.mainWindowController.restoreWindowAfterGameExit();
+
+          const exitedId = String(owId ?? '');
+          const nextGame = this.overlayService.overlayApi?.getActiveGameInfo();
+          const nextId = String((nextGame as any)?.gameInfo?.classId ?? '');
+          const anotherGameRunning = nextGame?.gameInfo && nextId && nextId !== exitedId;
+          if (!anotherGameRunning) {
+            this.mainWindowController.destroyWidgetWindow();
+            this.mainWindowController.restoreWindowAfterGameExit();
+          }
         });
       }
     });
@@ -169,11 +176,16 @@ export class Application {
       }
     });
 
-    // Listen for GEP game exit to clean up
+    // Listen for GEP game exit to clean up (fallback if overlay exit fires late)
     this.gepService.on('game-exit', (gameId, processName, pid) => {
       this.mainWindowController.printLogMessage(`GEP detected game exit: ${processName} (${gameId})`);
-      this.mainWindowController.destroyWidgetWindow();
-      this.mainWindowController.restoreWindowAfterGameExit();
+      const nextGame = this.overlayService.overlayApi?.getActiveGameInfo();
+      const nextId = String((nextGame as any)?.gameInfo?.classId ?? '');
+      const anotherGameRunning = nextGame?.gameInfo && nextId && nextId !== String(gameId);
+      if (!anotherGameRunning) {
+        this.mainWindowController.destroyWidgetWindow();
+        this.mainWindowController.restoreWindowAfterGameExit();
+      }
     });
   }
 }
