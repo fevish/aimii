@@ -21,16 +21,26 @@ header {
 
   .app-logo {
     display: flex;
-    align-items: flex-end;
-    gap: calc(0.5 * var(--spacing));
-
-    h1 {
-      line-height: 1;
+    align-items: center;
+    padding: 5px;
+    gap: calc(1 * var(--spacing));
+    svg {
+      height: 1.45rem;
+      width: auto;
     }
 
-    .version {
-      font-size: 0.8em;
-      line-height: 1.25;
+    .title {
+      display: flex;
+      align-items: flex-end;
+      gap: calc(0.5 * var(--spacing));
+      h1 {
+        line-height: 1;
+      }
+
+      .version {
+        font-size: 0.8em;
+        line-height: 1.25;
+      }
     }
   }
 }
