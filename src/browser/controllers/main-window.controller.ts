@@ -159,8 +159,25 @@ export class MainWindowController {
     // Set bounds after show — on Windows, show() can restore last-visible position
     const displays = screen.getAllDisplays();
     if (displays.length >= 2 && savedBounds) {
-      this.printLogMessage(`[window] game exit: restoring to x=${savedBounds.x} y=${savedBounds.y}`);
-      this.browserWindow.setBounds(savedBounds);
+      // Verify the saved position is still on a connected display before restoring
+      const targetDisplay = screen.getDisplayMatching(savedBounds);
+      const isOnScreen = targetDisplay.workArea.x <= savedBounds.x &&
+        savedBounds.x < targetDisplay.workArea.x + targetDisplay.workArea.width &&
+        targetDisplay.workArea.y <= savedBounds.y &&
+        savedBounds.y < targetDisplay.workArea.y + targetDisplay.workArea.height;
+
+      if (isOnScreen) {
+        this.printLogMessage(`[window] game exit: restoring to x=${savedBounds.x} y=${savedBounds.y}`);
+        this.browserWindow.setBounds(savedBounds);
+      } else {
+        // Saved position is off-screen (e.g. monitor disconnected) — center on primary
+        const { workArea } = screen.getPrimaryDisplay();
+        const bounds = this.browserWindow.getBounds();
+        const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
+        const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
+        this.printLogMessage(`[window] game exit: saved bounds off-screen, centering on primary x=${x} y=${y}`);
+        this.browserWindow.setPosition(x, y);
+      }
     }
   }
 
