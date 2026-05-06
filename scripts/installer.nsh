@@ -1,123 +1,30 @@
 ; Custom NSIS installer script for aimii.app
-; Adds region selection and GDPR consent functionality
+; Shows an informational CMP privacy notice before installation. Region/CMP detection
+; happens at runtime via Overwolf's CMP API; the in-app FTUE shows the first layer for
+; EU users and the Privacy section in Settings is available to all users.
 
 !include "nsDialogs.nsh"
 !include "LogicLib.nsh"
 !include "WinMessages.nsh"
 
-; Variables for region and consent
-Var RegionSelection
-Var ConsentGiven
-Var ShowConsentPage
+; Custom informational page shown before install
+Page custom PrivacyNoticePage
 
-; Custom page for region selection
-Page custom RegionSelectionPage RegionSelectionPageLeave
-
-; Custom page for GDPR consent (conditional)
-Page custom ConsentPage ConsentPageLeave
-
-; Use default uninstaller pages
-
-; Region Selection Page
-Function RegionSelectionPage
+Function PrivacyNoticePage
   nsDialogs::Create 1018
   Pop $0
 
-  ; Set custom page title and subtitle
+  ; Header text
   SendMessage $HWNDPARENT ${WM_SETTEXT} 0 "STR:aimii Setup"
   GetDlgItem $0 $HWNDPARENT 1037
-  SendMessage $0 ${WM_SETTEXT} 0 "STR:Welcome to aimii"
+  SendMessage $0 ${WM_SETTEXT} 0 "STR:Privacy Notice"
   GetDlgItem $0 $HWNDPARENT 1038
-  SendMessage $0 ${WM_SETTEXT} 0 "STR:"
+  SendMessage $0 ${WM_SETTEXT} 0 "STR:Please review before installing."
 
-  ${NSD_CreateLabel} 0 0 100% 30u "This app helps you maintain consistent mouse sensitivity across different FPS games."
+  ${NSD_CreateLabel} 0 0 100% 100% "aimii may display in-app ads to help provide you with a free high-quality app. In order to deliver ads that are relevant for you, aimii and trusted third-party ad partners store and/or access information on your computer, and process personal data such as IP address and cookies.$\r$\n$\r$\nYou can manage your consent preferences at any time from the Privacy section in the app's settings. Click 'Manage' there to control your consents, or to object to the processing of your data when done on the basis of legitimate interest.$\r$\n$\r$\nPurposes we use: Store and/or access information on a device, personalized ads and content, ad and content measurement, audience insights and product development."
   Pop $0
-
-  ${NSD_CreateCheckBox} 0 120u 300u 15u "I am located in the European Union (EU)"
-  Pop $1
-
-  ${NSD_CreateLabel} 0 140u 100% 20u "Do not select this if you live in Canada, United States, or other non-EU countries."
-  Pop $0
-
-  ; Default to unchecked (non-EU)
-  StrCpy $RegionSelection "OTHER"
-  StrCpy $ShowConsentPage "0"
-
-  ; Set up callback
-  ${NSD_OnClick} $1 RegionToggle
 
   nsDialogs::Show
-FunctionEnd
-
-Function RegionToggle
-  Pop $0 ; Get the checkbox handle
-  ${NSD_GetState} $0 $1
-  ${If} $1 == ${BST_CHECKED}
-    StrCpy $RegionSelection "EU"
-    StrCpy $ShowConsentPage "1"
-  ${Else}
-    StrCpy $RegionSelection "OTHER"
-    StrCpy $ShowConsentPage "0"
-  ${EndIf}
-FunctionEnd
-
-Function RegionSelectionPageLeave
-  ; Write region to registry
-  WriteRegStr HKCU "Software\aimii\Privacy" "Region" $RegionSelection
-FunctionEnd
-
-; GDPR Consent Page (only shown for EU users)
-Function ConsentPage
-  ${If} $ShowConsentPage != "1"
-    Abort ; Skip this page if not EU
-  ${EndIf}
-
-  nsDialogs::Create 1018
-  Pop $0
-
-  ${NSD_CreateLabel} 0 0 100% 40u "As an EU resident, we need your consent to process your data according to GDPR regulations. This includes storing your sensitivity settings and game preferences locally on your device."
-  Pop $0
-
-  ${NSD_CreateCheckBox} 0 50u 300u 15u "I consent to the processing of my data as described"
-  Pop $1
-
-  ${NSD_CreateLabel} 0 70u 100% 40u "You can withdraw this consent at any time through the application settings. Without consent, some features may not be available."
-  Pop $0
-
-  ; Set up callback
-  ${NSD_OnClick} $1 ConsentToggle
-
-  StrCpy $ConsentGiven "0"
-
-  ; Disable the Next button initially
-  GetDlgItem $2 $HWNDPARENT 1 ; Next button ID is 1
-  EnableWindow $2 0 ; Disable the Next button
-
-  nsDialogs::Show
-FunctionEnd
-
-Function ConsentToggle
-  Pop $0 ; Get the checkbox handle
-  ${NSD_GetState} $0 $1
-
-  ; Get the Next button handle
-  GetDlgItem $2 $HWNDPARENT 1 ; Next button ID is 1
-
-  ${If} $1 == ${BST_CHECKED}
-    StrCpy $ConsentGiven "1"
-    EnableWindow $2 1 ; Enable the Next button
-  ${Else}
-    StrCpy $ConsentGiven "0"
-    EnableWindow $2 0 ; Disable the Next button
-  ${EndIf}
-FunctionEnd
-
-Function ConsentPageLeave
-  ${If} $ShowConsentPage == "1"
-    ; Write consent status to registry
-    WriteRegStr HKCU "Software\aimii\Privacy" "ConsentGiven" $ConsentGiven
-    WriteRegStr HKCU "Software\aimii\Privacy" "ConsentDate" "${__DATE__}"
-  ${EndIf}
 FunctionEnd
 
 ; Cleanup on uninstall
@@ -129,7 +36,7 @@ FunctionEnd
   RMDir /r "$R0\aimii.app"
   ReadEnvStr $R0 LOCALAPPDATA
   RMDir /r "$R0\aimii.app-updater"
-  ; Remove registry entries written by installer
+  ; Remove registry entries (including legacy Privacy/Region values from prior installs)
   DeleteRegKey HKCU "Software\aimii"
   ; Remove install directory. /REBOOTOK schedules any locked files for silent deletion
   ; at next reboot (no prompt). SetRebootFlag false suppresses the reboot dialog.
@@ -137,10 +44,6 @@ FunctionEnd
   SetRebootFlag false
 !macroend
 
-; Hook into existing initialization using macro
 !macro customInit
-  StrCpy $RegionSelection "OTHER"
-  StrCpy $ConsentGiven "0"
-  StrCpy $ShowConsentPage "0"
   StrCpy $InstDir "$PROGRAMFILES64\aimii.app"
 !macroend

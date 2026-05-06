@@ -200,8 +200,11 @@ contextBridge.exposeInMainWorld('cmp', {
   openPrivacySettings: (options?: any) => {
     return ipcRenderer.invoke('cmp-open-privacy-settings', options);
   },
-  isFirstTimeUser: () => {
-    return ipcRenderer.invoke('cmp-is-first-time-user');
+  isFirstLayerAcknowledged: () => {
+    return ipcRenderer.invoke('cmp-is-first-layer-acknowledged');
+  },
+  acknowledgeFirstLayer: () => {
+    return ipcRenderer.invoke('cmp-acknowledge-first-layer');
   }
 });
 

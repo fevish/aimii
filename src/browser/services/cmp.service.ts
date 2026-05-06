@@ -19,43 +19,15 @@ export class CMPService {
   private static readonly TEST_EU_USER = false;
 
   /**
-   * Check if user needs to be informed about CMP (GDPR compliance)
-   * @returns Promise<boolean> - true if CMP is required for this user
+   * Check if user needs to be informed about CMP (GDPR compliance).
+   * Detection is delegated to Overwolf's CMP API, which uses the user's region.
    */
   async isCMPRequired(): Promise<boolean> {
-    // Test flag override - always return true when testing EU functionality
     if (CMPService.TEST_EU_USER) {
       console.log('🧪 CMP Test Mode: Emulating EU user (privacy links will show)');
       return true;
     }
     try {
-      // First check if user selected EU region during installation
-      const winreg = await import('winreg');
-      const regKey = new winreg.default({
-        hive: winreg.default.HKCU,
-        key: '\\Software\\aimii\\Privacy'
-      });
-
-      return new Promise<boolean>((resolve) => {
-        regKey.get('Region', (err: Error | null, item: any) => {
-          if (err || !item) {
-            // Fallback to Overwolf API if no registry setting
-            this.fallbackToCMPAPI().then(resolve).catch(() => resolve(true));
-          } else {
-            resolve(item.value === 'EU');
-          }
-        });
-      });
-    } catch (error) {
-      console.error('Error checking CMP requirement:', error);
-      // Fallback to Overwolf API
-      return await this.fallbackToCMPAPI();
-    }
-  }
-
-  private async fallbackToCMPAPI(): Promise<boolean> {
-    try {
-      // Use the official Overwolf API as documented
       return await (app as any).overwolf.isCMPRequired();
     } catch (error) {
       console.error('Error with Overwolf CMP API:', error);
@@ -65,8 +37,8 @@ export class CMPService {
   }
 
   /**
-   * Open the Ad Privacy Settings window (CMP second layer)
-   * @param options - Configuration options for the CMP window
+   * Open the Ad Privacy Settings window. Window contents adapt to the user's
+   * region — safe to call for non-EU users as well.
    */
   async openPrivacySettings(options: CMPWindowOptions = {}): Promise<void> {
     try {
@@ -79,7 +51,6 @@ export class CMPService {
         ...options
       };
 
-      // Use the official ow-electron API as documented
       await (app as any).overwolf.openAdPrivacySettingsWindow(defaultOptions);
     } catch (error) {
       console.error('Error opening CMP privacy settings:', error);
@@ -88,20 +59,30 @@ export class CMPService {
   }
 
   /**
-   * Check if this is the first time the app is running
-   * This helps determine when to show the first layer CMP
+   * Whether the user has already acknowledged the CMP first-layer notice.
    */
-  async isFirstTimeUser(): Promise<boolean> {
+  async isFirstLayerAcknowledged(): Promise<boolean> {
     try {
-      // Check if baseline settings exist - if not, this is a first-time user
       const { SettingsService } = await import('./settings.service');
       const settingsService = new SettingsService();
-      const hasSettings = await settingsService.hasBaselineSettings();
-      return !hasSettings;
+      return settingsService.getCmpFirstLayerAcknowledged();
     } catch (error) {
-      console.error('Error checking first-time user status:', error);
-      // Default to true for safety - better to show CMP when not needed
-      return true;
+      console.error('Error reading CMP acknowledgment:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Persist that the user has acknowledged the CMP first-layer notice
+   * (via either Accept All or Manage Settings).
+   */
+  async acknowledgeFirstLayer(): Promise<void> {
+    try {
+      const { SettingsService } = await import('./settings.service');
+      const settingsService = new SettingsService();
+      settingsService.setCmpFirstLayerAcknowledged(true);
+    } catch (error) {
+      console.error('Error persisting CMP acknowledgment:', error);
     }
   }
 }

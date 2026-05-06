@@ -20,9 +20,14 @@ export class CMPController {
       return await this.cmpService.openPrivacySettings(options);
     });
 
-    // Check if this is first time user (for first layer CMP)
-    ipcMain.handle('cmp-is-first-time-user', async () => {
-      return await this.cmpService.isFirstTimeUser();
+    // Whether user has already acknowledged the first-layer CMP notice
+    ipcMain.handle('cmp-is-first-layer-acknowledged', async () => {
+      return await this.cmpService.isFirstLayerAcknowledged();
+    });
+
+    // Persist first-layer acknowledgment
+    ipcMain.handle('cmp-acknowledge-first-layer', async () => {
+      return await this.cmpService.acknowledgeFirstLayer();
     });
   }
 }

@@ -270,14 +270,14 @@ button:disabled {
 }
 
 .btn-primary {
-  background: currentColor;
+  background-color: var(--primary);
   color: var(--dark);
   border: 2px solid currentColor;
 }
 
 .btn-primary:hover {
   background: var(--light-gray);
-  transform: scale(1.02);
+  opacity: 0.7;
 }
 
 .btn-secondary {
@@ -287,8 +287,9 @@ button:disabled {
 }
 
 .btn-secondary:hover {
-  background: var(--secondary);
-  color: var(--dark);
+  background: var(--dark);
+  color: var(--light);
+  border-color: var(--gray);
 }
 
 .btn-outline {

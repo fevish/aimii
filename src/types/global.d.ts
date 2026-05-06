@@ -2,6 +2,8 @@ import { BaselineSettings, GameData, HotkeyInfo } from './app';
 import { CurrentGameInfo } from '../browser/services/current-game.service';
 import { SensitivityConversion } from '../browser/services/sensitivity-converter.service';
 
+declare module '*.css';
+
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -70,7 +72,8 @@ declare global {
     cmp: {
       isRequired: () => Promise<boolean>;
       openPrivacySettings: (options?: any) => Promise<void>;
-      isFirstTimeUser: () => Promise<boolean>;
+      isFirstLayerAcknowledged: () => Promise<boolean>;
+      acknowledgeFirstLayer: () => Promise<void>;
     };
     aimTrainer: {
       open: (config: any) => Promise<void>;
