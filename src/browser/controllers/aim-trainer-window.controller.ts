@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow, nativeImage } from 'electron';
+import { app, ipcMain, BrowserWindow, nativeImage } from 'electron';
 import path from 'path';
 import { WINDOW_CONFIG, AIM_TRAINER_HEADER_HEIGHT_PX } from '../services/window-state.service';
 import type { AimTrainerConfig } from '../../types/aim-trainer';
@@ -8,7 +8,7 @@ export class AimTrainerWindowController {
   private config: AimTrainerConfig | null = null;
 
   private loadAppIcon(): Electron.NativeImage {
-    const isDev = process.resourcesPath.includes('node_modules');
+    const isDev = !app.isPackaged;
     const iconPath = isDev
       ? path.join(process.cwd(), 'dist/icon.ico')
       : path.join(process.resourcesPath, '../icon.ico');
@@ -40,7 +40,7 @@ export class AimTrainerWindowController {
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: true,
-        devTools: true,
+        devTools: !app.isPackaged,
         preload: path.join(__dirname, '../preload/preload.js'),
         backgroundThrottling: false,
       },

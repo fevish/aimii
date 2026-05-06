@@ -188,7 +188,7 @@ export class MainWindowController {
    */
   private loadAppIcon(): Electron.NativeImage {
     // Check if we're in development or production
-    const isDev = process.resourcesPath.includes('node_modules');
+    const isDev = !electronApp.isPackaged;
 
     let iconPath: string;
     if (isDev) {
@@ -228,7 +228,7 @@ export class MainWindowController {
         // to enable IPC communication between main and renderer processes
         nodeIntegration: true,
         contextIsolation: true,
-        devTools: true,
+        devTools: !electronApp.isPackaged,
         // relative to root folder of the project
         preload: path.join(__dirname, '../preload/preload.js'),
       },
@@ -350,9 +350,11 @@ export class MainWindowController {
 
     ipcMain.handle('toggleWidget', async () => await this.toggleWidget());
 
-    ipcMain.handle('openWidgetDevTools', () => {
-      this.openWidgetDevTools();
-    });
+    if (!electronApp.isPackaged) {
+      ipcMain.handle('openWidgetDevTools', () => {
+        this.openWidgetDevTools();
+      });
+    }
 
     // Games service IPC handlers
     ipcMain.handle('games-get-all', () => {

@@ -4,7 +4,7 @@ import { OverlayBrowserWindow, OverlayWindowOptions } from '@overwolf/ow-electro
 import { SettingsService } from '../services/settings.service';
 import { CurrentGameService } from '../services/current-game.service';
 import { HotkeyService } from '../services/hotkey.service';
-import { ipcMain } from 'electron';
+import { app, ipcMain } from 'electron';
 
 export class WidgetWindowController {
   private widgetWindow: OverlayBrowserWindow | null = null;
@@ -120,7 +120,7 @@ export class WidgetWindowController {
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
-        devTools: true,
+        devTools: !app.isPackaged,
       },
     };
 
@@ -333,20 +333,21 @@ export class WidgetWindowController {
       }
     });
 
-    // Register dev tools hotkey (keep this as is since it's not configurable)
-    this.overlayService.overlayApi.hotkeys.register({
-      name: this.DEV_TOOLS_HOTKEY.name,
-      keyCode: this.DEV_TOOLS_HOTKEY.keyCode,
-      modifiers: {
-        ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
-        shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
-      },
-      passthrough: false
-    }, (hotkey, state) => {
-      if (state === 'pressed') {
-        this.openDevTools();
-      }
-    });
+    if (!app.isPackaged) {
+      this.overlayService.overlayApi.hotkeys.register({
+        name: this.DEV_TOOLS_HOTKEY.name,
+        keyCode: this.DEV_TOOLS_HOTKEY.keyCode,
+        modifiers: {
+          ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
+          shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
+        },
+        passthrough: false
+      }, (hotkey, state) => {
+        if (state === 'pressed') {
+          this.openDevTools();
+        }
+      });
+    }
 
     this.hotkeysRegistered = true;
   }

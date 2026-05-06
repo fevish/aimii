@@ -182,19 +182,18 @@ const Widget: React.FC = () => {
     ipcRenderer.on('hotkey-changed', handleHotkeyChanged);
     ipcRenderer.on('hotkeys-reset', handleHotkeysReset);
 
-    // Add hotkey listeners for dev tools (Ctrl+Shift+I or Ctrl+Shift+C)
-    // Widget has nodeIntegration, no preload - use ipcRenderer directly
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.shiftKey) {
-        if (event.key === 'I' || event.key === 'C') {
-          event.preventDefault();
-          const { ipcRenderer } = require('electron');
-          ipcRenderer.invoke('openWidgetDevTools');
+    // Dev-only: Ctrl+Shift+I/C opens widget DevTools when widget has focus (desktop mode)
+    const handleKeyDown = process.env.NODE_ENV !== 'production'
+      ? (event: KeyboardEvent) => {
+          if (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'C')) {
+            event.preventDefault();
+            const { ipcRenderer } = require('electron');
+            ipcRenderer.invoke('openWidgetDevTools');
+          }
         }
-      }
-    };
+      : null;
 
-    document.addEventListener('keydown', handleKeyDown);
+    if (handleKeyDown) document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       ipcRenderer.removeListener('current-game-changed', handleGameChanged);
@@ -202,7 +201,7 @@ const Widget: React.FC = () => {
       ipcRenderer.removeListener('theme-changed', handleThemeChanged);
       ipcRenderer.removeListener('hotkey-changed', handleHotkeyChanged);
       ipcRenderer.removeListener('hotkeys-reset', handleHotkeysReset);
-      document.removeEventListener('keydown', handleKeyDown);
+      if (handleKeyDown) document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
