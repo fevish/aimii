@@ -29,19 +29,25 @@ FunctionEnd
 
 ; Cleanup on uninstall
 !macro customUnInstall
-  ; Do not call SetShellVarContext here — electron-builder's perMachine template sets
-  ; SetShellVarContext all, which makes $APPDATA resolve to C:\ProgramData. Use
-  ; ReadEnvStr to get the actual current user's APPDATA from the environment instead.
-  ReadEnvStr $R0 APPDATA
-  RMDir /r "$R0\aimii.app"
-  ReadEnvStr $R0 LOCALAPPDATA
-  RMDir /r "$R0\aimii.app-updater"
-  ; Remove registry entries (including legacy Privacy/Region values from prior installs)
-  DeleteRegKey HKCU "Software\aimii"
-  ; Remove install directory. /REBOOTOK schedules any locked files for silent deletion
-  ; at next reboot (no prompt). SetRebootFlag false suppresses the reboot dialog.
-  RMDir /r /REBOOTOK "$INSTDIR"
-  SetRebootFlag false
+  ; Skip all cleanup during an auto-update — electron-updater runs this uninstaller as
+  ; part of applying the update. ${isUpdated} is true in that case; without this guard
+  ; the RMDir below would wipe the user's settings (%APPDATA%\aimii.app) on every update.
+  ; On a genuine user uninstall ${isUpdated} is false and the cleanup runs as normal.
+  ${ifNot} ${isUpdated}
+    ; Do not call SetShellVarContext here — electron-builder's perMachine template sets
+    ; SetShellVarContext all, which makes $APPDATA resolve to C:\ProgramData. Use
+    ; ReadEnvStr to get the actual current user's APPDATA from the environment instead.
+    ReadEnvStr $R0 APPDATA
+    RMDir /r "$R0\aimii.app"
+    ReadEnvStr $R0 LOCALAPPDATA
+    RMDir /r "$R0\aimii.app-updater"
+    ; Remove registry entries (including legacy Privacy/Region values from prior installs)
+    DeleteRegKey HKCU "Software\aimii"
+    ; Remove install directory. /REBOOTOK schedules any locked files for silent deletion
+    ; at next reboot (no prompt). SetRebootFlag false suppresses the reboot dialog.
+    RMDir /r /REBOOTOK "$INSTDIR"
+    SetRebootFlag false
+  ${endif}
 !macroend
 
 !macro customInit

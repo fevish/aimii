@@ -305,6 +305,13 @@ export class MainWindowController {
     // Set up console logging to Chrome dev tools
     setMainWindowForConsole(this.browserWindow);
 
+    // Auto-check for updates once the window has loaded. The short delay lets
+    // electron-updater settle on a cold launch — checking the instant the renderer
+    // mounts can silently no-op before the updater is warm. Fires on reloads too.
+    this.browserWindow.webContents.on('did-finish-load', () => {
+      setTimeout(() => this.updaterService.checkForUpdates(), 3000);
+    });
+
     this.browserWindow.loadFile(path.join(__dirname, '..', 'main.html'));
 
     // Show the window after it's loaded

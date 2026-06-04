@@ -76,8 +76,9 @@ export function useUpdater(): UpdaterState {
         setStatus('error');
       });
 
-      // Kick off the initial check once listeners are attached (no-op in dev builds).
-      window.updater.checkForUpdates();
+      // The automatic launch check is triggered by the main process after the window
+      // finishes loading (see MainWindowController) — more reliable on a cold start than
+      // checking the instant this hook mounts. Manual checks go through `check()` below.
     } catch (error) {
       console.error('Error setting up updater listeners:', error);
     }
