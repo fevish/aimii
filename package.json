@@ -99,6 +99,7 @@
   },
   "dependencies": {
     "@types/three": "^0.160.0",
+    "electron-updater": "^6.8.3",
     "three": "^0.160.0"
   },
   "devDependencies": {

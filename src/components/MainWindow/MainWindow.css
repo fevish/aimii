@@ -119,6 +119,14 @@ header {
   gap: 2px;
 }
 
+.header-update-btn {
+  white-space: nowrap;
+  -webkit-app-region: no-drag;
+  color: var(--primary);
+  margin-right: 1.5rem;
+}
+
+
 .window-control-btn {
   background: transparent;
   border: none;

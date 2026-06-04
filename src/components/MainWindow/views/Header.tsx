@@ -1,5 +1,6 @@
 import React from 'react';
 import { SvgIcon } from '../../SvgIcon/SvgIcon';
+import { UpdaterStatus } from '../../UpdateNotice/useUpdater';
 
 interface HeaderProps {
   activeTab: 'main' | 'settings';
@@ -7,6 +8,9 @@ interface HeaderProps {
   showOnboarding: boolean;
   onMinimize: () => void;
   onClose: () => void;
+  updaterStatus: UpdaterStatus;
+  updaterProgress: number;
+  onUpdateAction: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,7 +19,13 @@ export const Header: React.FC<HeaderProps> = ({
   showOnboarding,
   onMinimize,
   onClose,
+  updaterStatus,
+  updaterProgress,
+  onUpdateAction,
 }) => {
+  const showUpdateButton =
+    !showOnboarding &&
+    (updaterStatus === 'available' || updaterStatus === 'downloading' || updaterStatus === 'downloaded');
   return (
     <header className="app-header">
       <div className="app-logo">
@@ -26,6 +36,17 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
       <div className="header-controls">
+        {showUpdateButton && (
+          <button
+            className="tab-button header-update-btn"
+            onClick={onUpdateAction}
+            title="A new version of aimii is available"
+          >
+            {updaterStatus === 'available' && 'Update Available'}
+            {updaterStatus === 'downloading' && `Updating… ${updaterProgress}%`}
+            {updaterStatus === 'downloaded' && 'Restart to update'}
+          </button>
+        )}
         {!showOnboarding && (
           <nav className="tab-navigation">
             <button

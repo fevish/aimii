@@ -14,6 +14,7 @@ import { CurrentGameService } from '../services/current-game.service';
 import { SensitivityConverterService } from '../services/sensitivity-converter.service';
 
 import { HotkeyService } from '../services/hotkey.service';
+import { UpdaterService } from '../services/updater.service';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
 
@@ -38,10 +39,12 @@ export class MainWindowController {
     private readonly currentGameService: CurrentGameService,
     private readonly sensitivityConverterService: SensitivityConverterService,
     private readonly windowStateService: WindowStateService,
-    private readonly hotkeyService: HotkeyService
+    private readonly hotkeyService: HotkeyService,
+    private readonly updaterService: UpdaterService
   ) {
     this.registerToIpc();
     this.setupGameChangeListener();
+    this.setupUpdaterListener();
 
     gepService.on('log', this.printLogMessage.bind(this));
     overlayService.on('log', this.printLogMessage.bind(this));
@@ -78,6 +81,26 @@ export class MainWindowController {
 
     // Trigger initial game detection
     this.currentGameService.refreshCurrentGame();
+  }
+
+  /**
+   * Forward updater status from the service to the main window renderer. The renderer
+   * drives the initial check on mount (so its listeners are attached first), then
+   * reacts to these events to show the update notice.
+   */
+  private setupUpdaterListener(): void {
+    const forward = (channel: string) => (payload?: unknown) => {
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send(channel, payload);
+      }
+    };
+
+    this.updaterService.on('checking', forward('updater-checking'));
+    this.updaterService.on('available', forward('updater-available'));
+    this.updaterService.on('not-available', forward('updater-not-available'));
+    this.updaterService.on('download-progress', forward('updater-download-progress'));
+    this.updaterService.on('downloaded', forward('updater-downloaded'));
+    this.updaterService.on('error', forward('updater-error'));
   }
 
   /**
@@ -633,6 +656,12 @@ export class MainWindowController {
     ipcMain.handle('widget-get-hotkey-info', () => {
       return this.hotkeyService.getHotkeyInfo('widget-toggle');
     });
+
+    // Auto-updater IPC handlers
+    ipcMain.handle('updater-check-for-updates', () => this.updaterService.checkForUpdates());
+    ipcMain.handle('updater-download', () => this.updaterService.downloadUpdate());
+    ipcMain.handle('updater-quit-and-install', () => this.updaterService.quitAndInstall());
+    ipcMain.handle('updater-get-version', () => this.updaterService.getCurrentVersion());
   }
 
   /**

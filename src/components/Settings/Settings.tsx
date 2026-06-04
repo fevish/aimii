@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import './Settings.css';
 import { SvgIcon } from '../SvgIcon/SvgIcon';
+import { UpdaterStatus } from '../UpdateNotice/useUpdater';
 
 interface HotkeyConfig {
   id: string;
@@ -38,6 +39,10 @@ interface CanonicalSettings {
 interface SettingsProps {
   handleRestartOnboarding: () => Promise<void>;
   onBack: () => void;
+  currentVersion: string;
+  updaterStatus: UpdaterStatus;
+  updaterErrorMessage: string | null;
+  onCheckForUpdates: () => void;
 }
 
 declare global {
@@ -68,7 +73,14 @@ declare global {
   }
 }
 
-const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: handleBack }) => {
+const Settings: React.FC<SettingsProps> = ({
+  handleRestartOnboarding,
+  onBack: handleBack,
+  currentVersion,
+  updaterStatus,
+  updaterErrorMessage,
+  onCheckForUpdates
+}) => {
   const [hotkeys, setHotkeys] = useState<HotkeyConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingHotkey, setEditingHotkey] = useState<string | null>(null);
@@ -502,6 +514,16 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: ha
     setModifierDisplay('');
   };
 
+  const updaterStatusText: Record<UpdaterStatus, string> = {
+    idle: '',
+    checking: 'Checking for updates…',
+    available: 'Update Available — see the banner above.',
+    downloading: 'Downloading update…',
+    downloaded: 'Update downloaded — restart to apply.',
+    'not-available': "You're on the latest version.",
+    error: updaterErrorMessage ? `Update check failed: ${updaterErrorMessage}` : 'Update check failed.'
+  };
+
   if (isLoading) {
     return (
       <div className="settings-container">
@@ -619,6 +641,27 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: ha
                 searchable={false}
               />
             </div>
+          </div>
+        </section>
+
+        {/* Updates Section */}
+        <section className="settings-section">
+          <div className="setting-item">
+            <div className="setting-info">
+              <h4>Updates</h4>
+              <p className="setting-description">
+                aimii v{currentVersion || '—'}
+                {updaterStatusText[updaterStatus] ? ` · ${updaterStatusText[updaterStatus]}` : ''}
+              </p>
+            </div>
+            <button
+              className="btn btn-primary"
+              onClick={onCheckForUpdates}
+              disabled={updaterStatus === 'checking' || updaterStatus === 'downloading'}
+              title="Check for updates"
+            >
+              {updaterStatus === 'checking' ? 'Checking…' : 'Check for updates'}
+            </button>
           </div>
         </section>
 

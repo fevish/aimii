@@ -1,0 +1,50 @@
+.update-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  -webkit-app-region: no-drag;
+}
+
+.update-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  width: min(420px, 90vw);
+  padding: calc(1.5 * var(--spacing));
+  background: var(--dark);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.update-modal-title {
+  margin: 0;
+}
+
+.update-modal-body {
+  margin: 0;
+}
+
+.update-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(0.5 * var(--spacing));
+  margin-top: 2rem;
+}
+
+.update-modal-progress {
+  height: 6px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.update-modal-progress-bar {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.2s ease;
+}

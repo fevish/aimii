@@ -86,6 +86,19 @@ declare global {
       removeConfigListener: () => void;
       close: () => Promise<void>;
     };
+    updater: {
+      checkForUpdates: () => Promise<void>;
+      downloadUpdate: () => Promise<void>;
+      quitAndInstall: () => Promise<void>;
+      getVersion: () => Promise<string>;
+      onChecking: (callback: () => void) => void;
+      onUpdateAvailable: (callback: (info: { version: string }) => void) => void;
+      onUpdateNotAvailable: (callback: (info: { version: string }) => void) => void;
+      onDownloadProgress: (callback: (percent: number) => void) => void;
+      onUpdateDownloaded: (callback: (info: { version: string }) => void) => void;
+      onError: (callback: (message: string) => void) => void;
+      removeUpdaterListeners: () => void;
+    };
     ipcRenderer: {
       on: (channel: string, func: (...args: any[]) => void) => void;
       removeAllListeners: (channel: string) => void;
