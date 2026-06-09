@@ -10,7 +10,7 @@ import { HomeView } from './views/HomeView';
 import { Header } from './views/Header';
 import { applyTheme } from '../../utils/theme';
 import { SvgIcon } from '../SvgIcon/SvgIcon';
-import { UpdateNotice, InstallIntent } from '../UpdateNotice/UpdateNotice';
+import { UpdateNotice } from '../UpdateNotice/UpdateNotice';
 import { useUpdater } from '../UpdateNotice/useUpdater';
 
 export const MainWindow: React.FC = () => {
@@ -177,27 +177,25 @@ export const MainWindow: React.FC = () => {
   // Ad detection event listeners
   useAdDetection();
 
-  // Auto-updater state (single subscriber — see useUpdater docs)
+  // Auto-updater state (single subscriber — see useUpdater docs). Updates download
+  // automatically and install on the next restart; "Install now" only expedites that.
   const updater = useUpdater();
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [installIntent, setInstallIntent] = useState<InstallIntent>(null);
+  const [installRequested, setInstallRequested] = useState(false);
 
-  const handleUpdateNow = () => {
-    setInstallIntent('now');
-    updater.download();
+  const handleInstallNow = () => setInstallRequested(true);
+
+  const handleCloseUpdateModal = () => {
+    setIsUpdateModalOpen(false);
+    setInstallRequested(false);
   };
 
-  const handleUpdateOnRestart = () => {
-    setInstallIntent('later');
-    updater.download();
-  };
-
-  // When the user chose "Update now", install as soon as the download finishes.
+  // Once the (auto-)download finishes, an "Install now" request restarts to apply it.
   useEffect(() => {
-    if (updater.status === 'downloaded' && installIntent === 'now') {
+    if (installRequested && updater.status === 'downloaded') {
       updater.restart();
     }
-  }, [updater.status, installIntent]);
+  }, [installRequested, updater.status]);
 
   const handleToggleWidget = async () => {
     try {
@@ -449,12 +447,10 @@ export const MainWindow: React.FC = () => {
         status={updater.status}
         version={updater.version}
         progressPercent={updater.progressPercent}
-        installIntent={installIntent}
+        isInstalling={installRequested}
         errorMessage={updater.errorMessage}
-        onUpdateNow={handleUpdateNow}
-        onUpdateOnRestart={handleUpdateOnRestart}
-        onRestartNow={updater.restart}
-        onClose={() => setIsUpdateModalOpen(false)}
+        onInstallNow={handleInstallNow}
+        onClose={handleCloseUpdateModal}
       />
 
     </div >

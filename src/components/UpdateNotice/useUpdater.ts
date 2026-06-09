@@ -22,16 +22,14 @@ export interface UpdaterState {
   errorMessage: string | null;
   /** Manually re-check the feed. */
   check: () => void;
-  /** Start downloading an available update. */
-  download: () => void;
   /** Quit and install a downloaded update. */
   restart: () => void;
 }
 
 /**
  * Subscribes to main-process updater events and drives an initial check on mount (after
- * listeners are attached, so no events are missed). User-prompted flow: an `available`
- * status appears first, then the user triggers download() and finally restart().
+ * listeners are attached, so no events are missed). Updates download automatically and
+ * install on next restart; restart() lets the user install immediately once `downloaded`.
  *
  * Mount this hook in exactly one place — the preload bridge uses removeAllListeners on
  * cleanup, so a second concurrent subscriber would clobber the first's listeners.
@@ -99,12 +97,6 @@ export function useUpdater(): UpdaterState {
     window.updater.checkForUpdates();
   }, []);
 
-  const download = useCallback(() => {
-    setProgressPercent(0);
-    setStatus('downloading');
-    window.updater.downloadUpdate();
-  }, []);
-
   const restart = useCallback(() => {
     window.updater.quitAndInstall();
   }, []);
@@ -116,7 +108,6 @@ export function useUpdater(): UpdaterState {
     progressPercent,
     errorMessage,
     check,
-    download,
     restart
   };
 }

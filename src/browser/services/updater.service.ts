@@ -6,8 +6,9 @@ import { autoUpdater, UpdateInfo, ProgressInfo } from 'electron-updater';
  * Wraps electron-updater. Checks the Overwolf CDN feed configured via the `publish`
  * block in package.json and re-emits status as plain, serializable events for the renderer.
  *
- * UX is user-prompted: autoDownload is off, so an `available` event fires first; the
- * renderer calls downloadUpdate(), then quitAndInstall() once `downloaded` fires.
+ * Updates download automatically (autoDownload) and install on the next app quit
+ * (autoInstallOnAppQuit), so a pending update always applies on the next restart — there is
+ * no "skip" path. The renderer surfaces this and can call quitAndInstall() to install now.
  *
  * electron-updater refuses to run in unpacked/dev builds, so every method is a guarded
  * no-op unless ElectronApp.isPackaged. Failures are logged and surfaced via `error` —
@@ -17,7 +18,7 @@ export class UpdaterService extends EventEmitter {
   constructor() {
     super();
 
-    autoUpdater.autoDownload = false;
+    autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
 
     autoUpdater.on('checking-for-update', () => this.emit('checking'));

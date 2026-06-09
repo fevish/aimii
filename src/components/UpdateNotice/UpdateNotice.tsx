@@ -2,41 +2,37 @@ import React from 'react';
 import './UpdateNotice.css';
 import { UpdaterStatus } from './useUpdater';
 
-export type InstallIntent = 'now' | 'later' | null;
-
 interface UpdateNoticeProps {
   isOpen: boolean;
   status: UpdaterStatus;
   version: string | null;
   progressPercent: number;
-  installIntent: InstallIntent;
+  /** True once the user clicked "Install now" — the app is about to restart to install. */
+  isInstalling: boolean;
   errorMessage: string | null;
-  onUpdateNow: () => void;
-  onUpdateOnRestart: () => void;
-  onRestartNow: () => void;
+  onInstallNow: () => void;
   onClose: () => void;
 }
 
 /**
- * Update modal for the user-prompted flow. Opened from the header button. Lets the user
- * choose to update now (download → restart) or on next restart (download in the
- * background; installs automatically on quit). Download progress is shown inline.
+ * Update modal opened from the header button. Updates download automatically and install on
+ * the next restart — there is no defer/skip choice. The modal informs the user of the pending
+ * update and offers to install it now (restart immediately).
  */
 export const UpdateNotice: React.FC<UpdateNoticeProps> = ({
   isOpen,
   status,
   version,
   progressPercent,
-  installIntent,
+  isInstalling,
   errorMessage,
-  onUpdateNow,
-  onUpdateOnRestart,
-  onRestartNow,
+  onInstallNow,
   onClose
 }) => {
   if (!isOpen) return null;
 
   const versionLabel = version ? ` (v${version})` : '';
+  const hasUpdate = status === 'available' || status === 'downloading' || status === 'downloaded';
 
   return (
     <div className="update-modal-backdrop" onClick={onClose}>
@@ -46,51 +42,31 @@ export const UpdateNotice: React.FC<UpdateNoticeProps> = ({
         aria-modal="true"
         onClick={e => e.stopPropagation()}
       >
-        {status === 'available' && (
+        {isInstalling ? (
           <>
-            <h2 className="update-modal-title">Update Available</h2>
+            <h2 className="update-modal-title">Installing update</h2>
             <p className="update-modal-body">
-              A new version{versionLabel} is available. When would you like to update?
+              aimii.app will restart to finish installing the update{versionLabel}.
             </p>
-            <div className="update-modal-actions">
-              <button className="btn btn-outline" onClick={onUpdateOnRestart}>On next restart</button>
-              <button className="btn btn-primary" onClick={onUpdateNow}>Update now</button>
-            </div>
+            {status === 'downloading' && (
+              <div className="update-modal-progress">
+                <div className="update-modal-progress-bar" style={{ width: `${progressPercent}%` }} />
+              </div>
+            )}
           </>
-        )}
-
-        {status === 'downloading' && (
+        ) : hasUpdate ? (
           <>
-            <h2 className="update-modal-title">Downloading update</h2>
-            <div className="update-modal-progress">
-              <div className="update-modal-progress-bar" style={{ width: `${progressPercent}%` }} />
-            </div>
+            <h2 className="update-modal-title">Update available</h2>
             <p className="update-modal-body">
-              {progressPercent}%
-              {installIntent === 'later' && ' — it will install when you next restart aimii.'}
+              An update{versionLabel} is available and will be installed automatically the next
+              time you restart aimii.app.
             </p>
             <div className="update-modal-actions">
               <button className="btn btn-outline" onClick={onClose}>Close</button>
+              <button className="btn btn-primary" onClick={onInstallNow}>Install now</button>
             </div>
           </>
-        )}
-
-        {status === 'downloaded' && (
-          <>
-            <h2 className="update-modal-title">Update ready</h2>
-            <p className="update-modal-body">
-              {installIntent === 'now'
-                ? `Update${versionLabel} downloaded — restarting to install…`
-                : `Update${versionLabel} downloaded. It will install when you next restart aimii.`}
-            </p>
-            <div className="update-modal-actions">
-              <button className="btn btn-outline" onClick={onClose}>Later</button>
-              <button className="btn btn-primary" onClick={onRestartNow}>Restart now</button>
-            </div>
-          </>
-        )}
-
-        {status === 'error' && (
+        ) : status === 'error' ? (
           <>
             <h2 className="update-modal-title">Update failed</h2>
             <p className="update-modal-body">{errorMessage || 'Something went wrong while updating. Please try again later.'}</p>
@@ -98,7 +74,7 @@ export const UpdateNotice: React.FC<UpdateNoticeProps> = ({
               <button className="btn btn-primary" onClick={onClose}>Close</button>
             </div>
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );
