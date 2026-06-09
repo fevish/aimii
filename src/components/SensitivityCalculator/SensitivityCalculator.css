@@ -10,16 +10,21 @@
 
 }
 
+.game-input {
+  display: flex;
+  flex-flow: column;
+}
+
 .game-selection {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: calc(1 * var(--spacing));
+}
 
-  .game-input {
-    display: flex;
-    flex-flow: column;
-  }
-
+.value-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: calc(1 * var(--spacing));
 }
 
 .results-container {
@@ -27,15 +32,4 @@
   display: flex;
   flex-flow: column;
   gap: calc(1 * var(--spacing));
-}
-
-.sensitivity-inputs {
-  display: grid;
-  gap: calc(1 * var(--spacing));
-  grid-template-columns: 1fr 1fr;
-
-  .input-group {
-    display: flex;
-    flex-flow: column;
-  }
 }

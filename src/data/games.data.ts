@@ -50,7 +50,7 @@ export const gamesData: GameData[] = [
     enable_for_app: true
   },
   {
-    game: 'Counter-Strike 2',
+    game: 'Counter-Strike 2 (CS2)',
     scalingFactor: 0.022,
     owGameId: '22730',
     owConstant: 'CounterStrike2',
