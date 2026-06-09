@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { GameData } from '../../types/app';
 import { calculateCm360, calculateTargetSensitivity } from '../../utils/sensitivity-conversion';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import { formatSensitivity } from '../../utils/format';
+import { useAnimatedNumber } from './useAnimatedNumber';
 import './SensitivityCalculator.css';
 
 interface SensitivityCalculatorProps {
@@ -14,6 +15,7 @@ interface SensitivityCalculatorProps {
     toGame: GameData | null;
     fromSensitivity: string;
     fromDpi: string;
+    toDpi: string;
     convertedSensitivity: number;
     eDpi: number;
     inches360: number;
@@ -38,15 +40,16 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
   const [toGameValue, setToGameValue] = useState<string>(() => initialState?.toGame?.game || '');
   const [fromSensitivity, setFromSensitivity] = useState<string>(initialState?.fromSensitivity || '');
   const [fromDpi, setFromDpi] = useState<string>(initialState?.fromDpi || '');
-  const [toDpi, setToDpi] = useState<string>('');
+  const [toDpi, setToDpi] = useState<string>(initialState?.toDpi || '');
   const [convertedSensitivity, setConvertedSensitivity] = useState<number>(initialState?.convertedSensitivity || 0);
   const [eDpi, setEDpi] = useState<number>(initialState?.eDpi || 0);
   const [inches360, setInches360] = useState<number>(initialState?.inches360 || 0);
   const [cm360, setCm360] = useState<number>(initialState?.cm360 || 0);
-  const [displayedValue, setDisplayedValue] = useState<number>(initialState?.convertedSensitivity || 0);
-  const rafRef = useRef<number | null>(null);
-  const lastValueRef = useRef(displayedValue);
-  lastValueRef.current = displayedValue;
+
+  // Animated display values (ease toward each new result)
+  const displayedSens = useAnimatedNumber(convertedSensitivity);
+  const displayedEDpi = useAnimatedNumber(eDpi);
+  const displayedCm360 = useAnimatedNumber(cm360);
 
   const enabledGames = gamesData.filter(game => game.enable_for_app);
 
@@ -65,110 +68,52 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
     : gameOptions;
   const toGameOptions = gameOptions;
 
-  // Debounced sensitivity calculation
-  const debouncedCalculateSensitivity = useCallback(
+  // Debounced conversion: derives every result from the same input snapshot in one pass so the
+  // values stay self-consistent (e.g. eDPI = convertedSens × toDPI never flickers on a DPI change).
+  const debouncedCalculate = useCallback(
     (() => {
       let timeoutId: NodeJS.Timeout;
-      return (fromGame: any, toGame: any, fromSensitivity: string) => {
+      return (fromGame: any, toGame: any, fromSensitivity: string, fromDpi: string, toDpi: string) => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
-          if (!fromGame || !toGame || !fromSensitivity) {
-            setConvertedSensitivity(0);
-            return;
-          }
-
           const fromSens = parseFloat(fromSensitivity);
-          if (isNaN(fromSens)) {
+          if (!fromGame || !toGame || !fromSensitivity || isNaN(fromSens)) {
+            setConvertedSensitivity(0);
+            setEDpi(0);
+            setInches360(0);
+            setCm360(0);
             return;
           }
 
-          const standardDpi = 800;
-          const cm360From = calculateCm360(fromGame, fromSens, standardDpi);
-          const convertedSens = calculateTargetSensitivity(toGame, cm360From, standardDpi);
+          const effectiveFromDpi = parseFloat(fromDpi) || 800;
+          const effectiveToDpi = parseFloat(toDpi) || effectiveFromDpi;
+          const cm360From = calculateCm360(fromGame, fromSens, effectiveFromDpi);
+          const convertedSens = calculateTargetSensitivity(toGame, cm360From, effectiveToDpi);
+
           setConvertedSensitivity(convertedSens);
-          console.log('Calculated Sensitivity:', {
+          setEDpi(convertedSens * effectiveToDpi);
+          setCm360(cm360From);
+          setInches360(cm360From / 2.54);
+
+          console.log('Calculated conversion:', {
             fromGame: fromGame?.game,
             fromSens: formatSensitivity(fromSens),
+            fromDpi: effectiveFromDpi,
             toGame: toGame?.game,
-            toSens: formatSensitivity(convertedSens)
+            toSens: formatSensitivity(convertedSens),
+            toDpi: effectiveToDpi,
+            eDpi: convertedSens * effectiveToDpi,
+            cm360: cm360From
           });
-        }, 700); // 300ms debounce delay
+        }, 700); // debounce delay
       };
     })(),
     []
   );
 
   useEffect(() => {
-    debouncedCalculateSensitivity(actualFromGame, actualToGame, fromSensitivity);
-  }, [actualFromGame, actualToGame, fromSensitivity, debouncedCalculateSensitivity]);
-
-  // Animate displayed value when converted result changes (ease-in-out)
-  useEffect(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    const from = lastValueRef.current;
-    const to = convertedSensitivity;
-    const range = to - from;
-    if (Math.abs(range) < 0.0001) {
-      setDisplayedValue(to);
-      return;
-    }
-    const duration = 1000;
-    const start = performance.now();
-    const easeInOut = (t: number) => t * t * (3 - 2 * t); // smoothstep
-    const tick = (now: number) => {
-      const elapsed = now - start;
-      const t = Math.min(elapsed / duration, 1);
-      setDisplayedValue(from + range * easeInOut(t));
-      if (t < 1) rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [convertedSensitivity]);
-
-  // Debounced DPI calculation
-  const debouncedCalculateDpi = useCallback(
-    (() => {
-      let timeoutId: NodeJS.Timeout;
-      return (fromGame: any, toGame: any, fromSensitivity: string, fromDpi: string, convertedSensitivity: number) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          if (!fromGame || !toGame || !fromSensitivity || !convertedSensitivity) {
-            setEDpi(0);
-            setInches360(0);
-            setCm360(0);
-            return;
-          }
-
-          const fromSens = parseFloat(fromSensitivity);
-          const fromDpiNum = parseFloat(fromDpi);
-
-          if (isNaN(fromSens) || isNaN(fromDpiNum)) {
-            setEDpi(0);
-            setInches360(0);
-            setCm360(0);
-            return;
-          }
-
-          const cm360WithUserDpi = calculateCm360(fromGame, fromSens, fromDpiNum);
-          setEDpi(convertedSensitivity * fromDpiNum);
-          setInches360(cm360WithUserDpi / 2.54);
-          setCm360(cm360WithUserDpi);
-
-          console.log('Calculated from DPI:', {
-            fromSens: formatSensitivity(fromSens),
-            toSens: formatSensitivity(convertedSensitivity),
-            eDpi: convertedSensitivity * fromDpiNum,
-            cm360: cm360WithUserDpi
-          });
-        }, 700); // 700ms debounce delay (same as sensitivity)
-      };
-    })(),
-    []
-  );
-
-  useEffect(() => {
-    debouncedCalculateDpi(actualFromGame, actualToGame, fromSensitivity, fromDpi, convertedSensitivity);
-  }, [actualFromGame, actualToGame, fromSensitivity, fromDpi, convertedSensitivity, debouncedCalculateDpi]);
+    debouncedCalculate(actualFromGame, actualToGame, fromSensitivity, fromDpi, toDpi);
+  }, [actualFromGame, actualToGame, fromSensitivity, fromDpi, toDpi, debouncedCalculate]);
 
   useEffect(() => {
     if (onStateChange) {
@@ -177,13 +122,14 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
         toGame: actualToGame,
         fromSensitivity,
         fromDpi,
+        toDpi,
         convertedSensitivity,
         eDpi,
         inches360,
         cm360
       });
     }
-  }, [actualFromGame, actualToGame, fromSensitivity, fromDpi, convertedSensitivity, eDpi, inches360, cm360, onStateChange]);
+  }, [actualFromGame, actualToGame, fromSensitivity, fromDpi, toDpi, convertedSensitivity, eDpi, inches360, cm360, onStateChange]);
 
   const handleFromGameChange = (value: string) => setFromGameValue(value);
   const handleToGameChange = (value: string) => setToGameValue(value);
@@ -231,14 +177,23 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
   const handleSensitivityKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && fromSensitivity) {
       e.preventDefault();
-      // Focus the DPI input
-      const dpiInput = document.getElementById('dpi-input');
+      // Focus the From DPI input
+      const dpiInput = document.getElementById('from-dpi-input');
       dpiInput?.focus();
     }
   };
 
-  const handleDpiKeyDown = (e: React.KeyboardEvent) => {
+  const handleFromDpiKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && fromDpi) {
+      e.preventDefault();
+      // Focus the To DPI input
+      const toDpiInput = document.getElementById('to-dpi-input');
+      toDpiInput?.focus();
+    }
+  };
+
+  const handleToDpiKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
       e.preventDefault();
       // Focus the first game select (for next conversion)
       const fromGameSelect = document.getElementById('from-game-select');
@@ -275,8 +230,12 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
           />
         </div>
 
+      </div>
+
+      {/* Sensitivity + DPI inputs in a single row */}
+      <div className="value-inputs">
         <div className="game-input">
-          <label>Sensitivity (From Game)</label>
+          <label>Sensitivity</label>
           <input
             id="sensitivity-input"
             type="text"
@@ -288,29 +247,28 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
         </div>
 
         <div className="game-input">
-          <label>Mouse DPI</label>
+          <label>Current DPI</label>
           <input
-            id="dpi-input"
+            id="from-dpi-input"
             type="text"
             placeholder="800"
             value={fromDpi}
             onChange={(e) => setFromDpi(e.target.value)}
-            onKeyDown={handleDpiKeyDown}
+            onKeyDown={handleFromDpiKeyDown}
           />
         </div>
-      </div>
 
-      {/* Sensitivity and DPI Inputs */}
-      <div className="sensitivity-inputs">
-
-        {/* <div className="input-group">
-          <label>To DPI</label>
+        <div className="game-input">
+          <label>New DPI (Optional)</label>
           <input
-            type="number"
+            id="to-dpi-input"
+            type="text"
+            placeholder={fromDpi || '800'}
             value={toDpi}
             onChange={(e) => setToDpi(e.target.value)}
+            onKeyDown={handleToDpiKeyDown}
           />
-        </div> */}
+        </div>
       </div>
 
 
@@ -319,7 +277,7 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
         <div className="main-setting">
           <div className="setting-row">
             <h3 className="heading">// Converted Sens {actualToGame ? `for ${actualToGame.game}` : 'for.. (Select game)'}</h3>
-            <p className="value-large">{displayedValue ? formatSensitivity(displayedValue) : '0'}</p>
+            <p className="value-large">{displayedSens ? formatSensitivity(displayedSens) : '0'}</p>
           </div>
         </div>
         {/* Results */}
@@ -328,11 +286,11 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
           <div className="settings-grid">
             <div className="setting-row">
               <span className="setting-label">eDPI</span>
-              <span className="setting-value">{eDpi ? eDpi.toFixed(0) : '-'}</span>
+              <span className="setting-value">{eDpi ? displayedEDpi.toFixed(0) : '-'}</span>
             </div>
             <div className="setting-row">
               <span className="setting-label">Mouse Travel cm/360°</span>
-              <span className="setting-value">{cm360 ? cm360.toFixed(3) : '—'}</span>
+              <span className="setting-value">{cm360 ? displayedCm360.toFixed(3) : '—'}</span>
             </div>
             {/* <div className="setting-row">
               <button className="reset-button" onClick={handleReset}>

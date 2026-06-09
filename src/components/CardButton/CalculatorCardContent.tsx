@@ -7,6 +7,7 @@ export interface CalculatorState {
   toGame: GameData | null;
   fromSensitivity: string;
   fromDpi: string;
+  toDpi: string;
   convertedSensitivity: number;
   eDpi: number;
   inches360: number;
