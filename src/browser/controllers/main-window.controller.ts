@@ -26,6 +26,10 @@ export class MainWindowController {
   private widgetController: WidgetWindowController | null = null;
   private tray: Tray | null = null;
   private preGameBounds: Electron.Rectangle | null = null;
+  // True once the app is genuinely quitting (e.g. an electron-updater install that calls
+  // app.quit()). Lets the close handler stop vetoing so the process exits and releases its
+  // file locks — otherwise the pending update installer hangs on the still-running app.
+  private isQuitting = false;
 
   /**
    *
@@ -369,7 +373,11 @@ export class MainWindowController {
     if (!this.browserWindow) return;
 
     this.browserWindow.on('close', event => {
-      // Prevent the default close behavior
+      // When genuinely quitting (e.g. applying an update), let the window close so the
+      // process can exit. Otherwise the update installer hangs on the locked, running app.
+      if (this.isQuitting) return;
+
+      // Default behavior: minimize to tray instead of closing.
       event.preventDefault();
 
       // Hide the window instead of closing it
@@ -667,7 +675,11 @@ export class MainWindowController {
     // Auto-updater IPC handlers
     ipcMain.handle('updater-check-for-updates', () => this.updaterService.checkForUpdates());
     ipcMain.handle('updater-download', () => this.updaterService.downloadUpdate());
-    ipcMain.handle('updater-quit-and-install', () => this.updaterService.quitAndInstall());
+    ipcMain.handle('updater-quit-and-install', () => {
+      // Allow the window to actually close so the process exits before the installer runs.
+      this.isQuitting = true;
+      this.updaterService.quitAndInstall();
+    });
     ipcMain.handle('updater-get-version', () => this.updaterService.getCurrentVersion());
   }
 

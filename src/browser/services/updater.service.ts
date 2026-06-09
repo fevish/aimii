@@ -75,6 +75,10 @@ export class UpdaterService extends EventEmitter {
   public quitAndInstall(): void {
     if (!this.isSupported()) return;
 
-    autoUpdater.quitAndInstall();
+    // Silent install (/S) + relaunch. Without this the assisted (oneClick:false) installer
+    // tries to run during the auto-update with no surfaced window, so setup.exe just hangs.
+    // Silent mode skips all wizard/custom pages and, with the per-user install dir, applies
+    // the update without elevation (no UAC).
+    autoUpdater.quitAndInstall(true, true);
   }
 }
