@@ -3,9 +3,8 @@ import { EventEmitter } from 'events';
 import { autoUpdater, UpdateInfo, ProgressInfo } from 'electron-updater';
 
 /**
- * Wraps electron-updater. Checks the configured feed (GitHub Releases today; swap the
- * `publish` block in package.json to Overwolf's CDN later — no code change here) and
- * re-emits status as plain, serializable events for the renderer.
+ * Wraps electron-updater. Checks the Overwolf CDN feed configured via the `publish`
+ * block in package.json and re-emits status as plain, serializable events for the renderer.
  *
  * UX is user-prompted: autoDownload is off, so an `available` event fires first; the
  * renderer calls downloadUpdate(), then quitAndInstall() once `downloaded` fires.
@@ -39,47 +38,12 @@ export class UpdaterService extends EventEmitter {
     return ElectronApp.isPackaged;
   }
 
-  /**
-   * TEMP dev test mode: simulates the full available → downloading → downloaded flow
-   * through the real IPC pipeline on any unpacked (dev) launch — no feed, release, or
-   * packaged build needed. Never active in packaged builds (isSupported() is true there).
-   * Remove this getter (and the runFake* helpers) before shipping.
-   */
-  private get fakeMode(): boolean {
-    return !this.isSupported();
-  }
-
-  private runFakeCheck(): void {
-    console.log('[updater] (fake) simulating update check');
-    this.emit('checking');
-    setTimeout(() => this.emit('available', { version: '9.9.9' }), 800);
-  }
-
-  private runFakeDownload(): void {
-    let percent = 0;
-    const timer = setInterval(() => {
-      percent += 20;
-      if (percent >= 100) {
-        clearInterval(timer);
-        this.emit('download-progress', 100);
-        this.emit('downloaded', { version: '9.9.9' });
-      } else {
-        this.emit('download-progress', percent);
-      }
-    }, 400);
-  }
-
   public getCurrentVersion(): string {
     return ElectronApp.getVersion();
   }
 
   public async checkForUpdates(): Promise<void> {
     if (!this.isSupported()) {
-      if (this.fakeMode) {
-        this.runFakeCheck();
-        return;
-      }
-
       console.log('[updater] skipped check — updates only run in packaged builds');
       this.emit('not-available', { version: this.getCurrentVersion() });
       return;
@@ -95,7 +59,7 @@ export class UpdaterService extends EventEmitter {
 
   public async downloadUpdate(): Promise<void> {
     if (!this.isSupported()) {
-      if (this.fakeMode) this.runFakeDownload();
+      console.log('[updater] skipped download — updates only run in packaged builds');
       return;
     }
 
@@ -109,10 +73,7 @@ export class UpdaterService extends EventEmitter {
 
   /** Quits and installs the staged update. Only call after a `downloaded` event. */
   public quitAndInstall(): void {
-    if (!this.isSupported()) {
-      if (this.fakeMode) console.log('[updater] (fake) quitAndInstall — would restart and install now');
-      return;
-    }
+    if (!this.isSupported()) return;
 
     autoUpdater.quitAndInstall();
   }
