@@ -94,17 +94,6 @@ export const SensitivityCalculator: React.FC<SensitivityCalculatorProps> = ({
           setEDpi(convertedSens * effectiveToDpi);
           setCm360(cm360From);
           setInches360(cm360From / 2.54);
-
-          console.log('Calculated conversion:', {
-            fromGame: fromGame?.game,
-            fromSens: formatSensitivity(fromSens),
-            fromDpi: effectiveFromDpi,
-            toGame: toGame?.game,
-            toSens: formatSensitivity(convertedSens),
-            toDpi: effectiveToDpi,
-            eDpi: convertedSens * effectiveToDpi,
-            cm360: cm360From
-          });
         }, 700); // debounce delay
       };
     })(),

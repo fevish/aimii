@@ -33,14 +33,3 @@
   flex-flow: column;
   gap: calc(1 * var(--spacing));
 }
-
-.sensitivity-inputs {
-  display: grid;
-  gap: calc(1 * var(--spacing));
-  grid-template-columns: 1fr 1fr;
-
-  .input-group {
-    display: flex;
-    flex-flow: column;
-  }
-}
