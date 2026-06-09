@@ -20,13 +20,13 @@ Function PrivacyNoticePage
   Pop $0
 
   ; Header text
-  SendMessage $HWNDPARENT ${WM_SETTEXT} 0 "STR:aimii Setup"
+  SendMessage $HWNDPARENT ${WM_SETTEXT} 0 "STR:aimii.app Setup"
   GetDlgItem $0 $HWNDPARENT 1037
   SendMessage $0 ${WM_SETTEXT} 0 "STR:Privacy Notice"
   GetDlgItem $0 $HWNDPARENT 1038
   SendMessage $0 ${WM_SETTEXT} 0 "STR:Please review before installing."
 
-  ${NSD_CreateLabel} 0 0 100% 100% "aimii may display in-app ads to help provide you with a free high-quality app. In order to deliver ads that are relevant for you, aimii and trusted third-party ad partners store and/or access information on your computer, and process personal data such as IP address and cookies.$\r$\n$\r$\nYou can manage your consent preferences at any time from the Privacy section in the app's settings. Click 'Manage' there to control your consents, or to object to the processing of your data when done on the basis of legitimate interest.$\r$\n$\r$\nPurposes we use: Store and/or access information on a device, personalized ads and content, ad and content measurement, audience insights and product development."
+  ${NSD_CreateLabel} 0 0 100% 100% "aimii.app may display in-app ads to help provide you with a free high-quality app. In order to deliver ads that are relevant for you, aimii.app and trusted third-party ad partners store and/or access information on your computer, and process personal data such as IP address and cookies.$\r$\n$\r$\nYou can manage your consent preferences at any time from the Privacy section in the app's settings. Click 'Manage' there to control your consents, or to object to the processing of your data when done on the basis of legitimate interest.$\r$\n$\r$\nPurposes we use: Store and/or access information on a device, personalized ads and content, ad and content measurement, audience insights and product development."
   Pop $0
 
   nsDialogs::Show
@@ -46,9 +46,9 @@ Function InstallDirInfoPage
   GetDlgItem $0 $HWNDPARENT 1037
   SendMessage $0 ${WM_SETTEXT} 0 "STR:Installation folder"
   GetDlgItem $0 $HWNDPARENT 1038
-  SendMessage $0 ${WM_SETTEXT} 0 "STR:aimii will be installed in the location below."
+  SendMessage $0 ${WM_SETTEXT} 0 "STR:aimii.app will be installed in the location below."
 
-  ${NSD_CreateLabel} 0 0 100% 16u "aimii will be installed to:"
+  ${NSD_CreateLabel} 0 0 100% 16u "aimii.app will be installed to:"
   Pop $0
 
   ${NSD_CreateText} 0 20u 100% 12u "$INSTDIR"

@@ -1,6 +1,6 @@
 {
   "name": "aimii.app",
-  "version": "0.1.7",
+  "version": "0.1.2",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
@@ -94,7 +94,7 @@
       "runAfterFinish": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "aimii",
+      "shortcutName": "aimii.app",
       "installerIcon": "./dist/icon.ico",
       "uninstallerIcon": "./dist/icon.ico",
       "warningsAsErrors": false,
