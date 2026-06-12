@@ -1,0 +1,39 @@
+.cmp-first-layer {
+  display: flex;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+.cmp-first-layer-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  width: 100%;
+  overflow: auto;
+}
+
+.cmp-why summary {
+  cursor: pointer;
+  text-decoration: underline;
+  opacity: 0.85;
+  width: fit-content;
+  user-select: none;
+}
+
+.cmp-why summary:hover {
+  opacity: 1;
+}
+
+.cmp-why p {
+  margin-top: calc(0.5 * var(--spacing));
+  opacity: 0.85;
+}
+
+.cmp-first-layer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing);
+  margin-top: calc(1.25 * var(--spacing));
+  margin-bottom: calc(-0.75 * var(--spacing));
+}

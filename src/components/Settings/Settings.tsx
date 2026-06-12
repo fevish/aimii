@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import './Settings.css';
 import { SvgIcon } from '../SvgIcon/SvgIcon';
+import { UpdaterStatus } from '../UpdateNotice/useUpdater';
 
 interface HotkeyConfig {
   id: string;
@@ -38,6 +39,10 @@ interface CanonicalSettings {
 interface SettingsProps {
   handleRestartOnboarding: () => Promise<void>;
   onBack: () => void;
+  currentVersion: string;
+  updaterStatus: UpdaterStatus;
+  updaterErrorMessage: string | null;
+  onCheckForUpdates: () => void;
 }
 
 declare global {
@@ -68,7 +73,14 @@ declare global {
   }
 }
 
-const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: handleBack }) => {
+const Settings: React.FC<SettingsProps> = ({
+  handleRestartOnboarding,
+  onBack: handleBack,
+  currentVersion,
+  updaterStatus,
+  updaterErrorMessage,
+  onCheckForUpdates
+}) => {
   const [hotkeys, setHotkeys] = useState<HotkeyConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingHotkey, setEditingHotkey] = useState<string | null>(null);
@@ -77,7 +89,6 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: ha
   const [modifierState, setModifierState] = useState({ ctrl: false, shift: false, alt: false });
   const [modifierDisplay, setModifierDisplay] = useState<string>('');
   const [currentTheme, setCurrentTheme] = useState<string>('default');
-  const [cmpRequired, setCmpRequired] = useState<boolean | null>(null);
   const [launchOnStartup, setLaunchOnStartup] = useState<boolean>(false);
   const [widgetAutoShow, setWidgetAutoShow] = useState<boolean>(true);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -91,7 +102,6 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: ha
   useEffect(() => {
     loadHotkeys();
     loadTheme();
-    checkCmpRequirement();
     loadLaunchOnStartup();
     loadWidgetAutoShow();
   }, []);
@@ -131,16 +141,6 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: ha
       setLaunchOnStartup(newValue);
     } catch (error) {
       console.error('Failed to set launch on startup:', error);
-    }
-  };
-
-  const checkCmpRequirement = async () => {
-    try {
-      const required = await window.cmp.isRequired();
-      setCmpRequired(required);
-    } catch (error) {
-      console.error('Failed to check CMP requirement:', error);
-      setCmpRequired(false);
     }
   };
 
@@ -514,6 +514,16 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: ha
     setModifierDisplay('');
   };
 
+  const updaterStatusText: Record<UpdaterStatus, string> = {
+    idle: '',
+    checking: 'Checking for updates…',
+    available: 'Update Available — see the banner above.',
+    downloading: 'Downloading update…',
+    downloaded: 'Update downloaded — restart to apply.',
+    'not-available': "You're on the latest version.",
+    error: updaterErrorMessage ? `Update check failed: ${updaterErrorMessage}` : 'Update check failed.'
+  };
+
   if (isLoading) {
     return (
       <div className="settings-container">
@@ -634,6 +644,27 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: ha
           </div>
         </section>
 
+        {/* Updates Section */}
+        <section className="settings-section">
+          <div className="setting-item">
+            <div className="setting-info">
+              <h4>Updates</h4>
+              <p className="setting-description">
+                aimii v{currentVersion || '—'}
+                {updaterStatusText[updaterStatus] ? ` · ${updaterStatusText[updaterStatus]}` : ''}
+              </p>
+            </div>
+            <button
+              className="btn btn-primary"
+              onClick={onCheckForUpdates}
+              disabled={updaterStatus === 'checking' || updaterStatus === 'downloading'}
+              title="Check for updates"
+            >
+              {updaterStatus === 'checking' ? 'Checking…' : 'Check for updates'}
+            </button>
+          </div>
+        </section>
+
         {/* Kill Switch Section */}
         <section className="settings-section">
           <div>
@@ -650,10 +681,15 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: ha
             </button>
           </div>
         </section>
-        {/* Privacy Settings - Only show for EU users */}
-        {cmpRequired && (
-          <section>
-            <button className="privacy-link link-button"
+        {/* Privacy Section - Visible to all users; CMP window adapts by region */}
+        <section className="settings-section">
+          <div>
+            <div className="setting-info">
+              <h4>Privacy</h4>
+              <p className="setting-description">Manage your data privacy and consent preferences.</p>
+            </div>
+            <button
+              className="btn btn-primary"
               onClick={async () => {
                 try {
                   await window.cmp.openPrivacySettings();
@@ -665,10 +701,10 @@ const Settings: React.FC<SettingsProps> = ({ handleRestartOnboarding, onBack: ha
               }}
               title="Manage your data privacy preferences"
             >
-              Privacy Settings
+              Manage
             </button>
-          </section>
-        )}
+          </div>
+        </section>
       </div>
     </div>
   );

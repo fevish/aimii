@@ -34,6 +34,7 @@ export interface UserSettings {
   baseline: StorageBaselineSettings | null;
   hotkeys: HotkeyConfig[];
   theme: string;
+  cmpFirstLayerAcknowledged: boolean;
 }
 
 export class SettingsService {
@@ -58,7 +59,8 @@ export class SettingsService {
       },
       baseline: null,
       hotkeys: [],
-      theme: 'default'
+      theme: 'default',
+      cmpFirstLayerAcknowledged: false
     };
   }
 
@@ -187,6 +189,16 @@ export class SettingsService {
 
   public setTheme(theme: string): void {
     this.settings.theme = theme;
+    this.saveSettings();
+  }
+
+  // CMP first-layer acknowledgment
+  public getCmpFirstLayerAcknowledged(): boolean {
+    return this.settings.cmpFirstLayerAcknowledged ?? false;
+  }
+
+  public setCmpFirstLayerAcknowledged(value: boolean): void {
+    this.settings.cmpFirstLayerAcknowledged = value;
     this.saveSettings();
   }
 

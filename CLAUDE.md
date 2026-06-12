@@ -68,7 +68,7 @@ the `public/aim-trainer.html` inclusion.
 
 ## Current Focus
 
-We are working through Overwolf QA feedback fixes tracked in `overwolf-fixes.md`. After completing
+We are working through Overwolf QA feedback fixes tracked in `ow-fixes.md`. After completing
 any item from that list, mark it `[x]` in the doc before finishing.
 
 ## Post-Prompt Checklist

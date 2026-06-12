@@ -77,6 +77,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
     toGame: null as any,
     fromSensitivity: '',
     fromDpi: '',
+    toDpi: '',
     convertedSensitivity: 0,
     eDpi: 0,
     inches360: 0,

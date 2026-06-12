@@ -4,7 +4,7 @@ import { OverlayBrowserWindow, OverlayWindowOptions } from '@overwolf/ow-electro
 import { SettingsService } from '../services/settings.service';
 import { CurrentGameService } from '../services/current-game.service';
 import { HotkeyService } from '../services/hotkey.service';
-import { ipcMain } from 'electron';
+import { app, ipcMain } from 'electron';
 
 export class WidgetWindowController {
   private widgetWindow: OverlayBrowserWindow | null = null;
@@ -12,6 +12,9 @@ export class WidgetWindowController {
   private savePositionTimeout: NodeJS.Timeout | null = null;
   private hotkeysRegistered: boolean = false;
   private gameWindowListenerAdded: boolean = false;
+  private interceptionListenerAdded: boolean = false;
+  private exclusiveModeListenerAdded: boolean = false;
+  private pendingAutoShow: boolean = false;
 
   // Centralized hotkey configuration
   private readonly WIDGET_HOTKEY = {
@@ -43,6 +46,7 @@ export class WidgetWindowController {
     if (this.overlayService.overlayApi) {
       this.registerHotkey();
     }
+
 
     // Listen for hotkey changes from settings
     this.hotkeyService.on('hotkey-changed', (id: string, updatedHotkey: any) => {
@@ -120,7 +124,7 @@ export class WidgetWindowController {
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
-        devTools: true,
+        devTools: !app.isPackaged,
       },
     };
 
@@ -157,9 +161,39 @@ export class WidgetWindowController {
       this.gameWindowListenerAdded = true;
     }
 
+    if (this.overlayService.overlayApi && !this.interceptionListenerAdded) {
+      // When game captures input: re-enter exclusive mode if widget is visible,
+      // or try to enter it so the exclusive-mode-changed event fires for pending auto-show
+      this.overlayService.overlayApi.on('game-input-interception-changed', () => {
+        if (this.isVisible || this.pendingAutoShow) {
+          this.enterExclusiveModeIfNeeded();
+        }
+      });
+      this.interceptionListenerAdded = true;
+    }
+
+    if (this.overlayService.overlayApi && !this.exclusiveModeListenerAdded) {
+      // For exclusive-mode games with auto-show: show widget only once exclusive mode is active
+      this.overlayService.overlayApi.on('game-input-exclusive-mode-changed', (info: any) => {
+        if (info.exclusiveMode && this.pendingAutoShow) {
+          this.pendingAutoShow = false;
+          this.widgetWindow?.window.show();
+          this.isVisible = true;
+        }
+      });
+      this.exclusiveModeListenerAdded = true;
+    }
+
     // Show widget if auto-show is enabled
     if (this.settingsService.getWidgetAutoShow()) {
-      this.show();
+      const currentGame = this.currentGameService.getCurrentGameInfo();
+      if (currentGame?.gameData?.exclusive_mode) {
+        // Defer show until exclusive mode is confirmed active
+        this.pendingAutoShow = true;
+        this.enterExclusiveModeIfNeeded();
+      } else {
+        this.show();
+      }
     }
 
     this.registerWindowEvents();
@@ -221,11 +255,6 @@ export class WidgetWindowController {
       this.widgetWindow.window.setPosition(newX, newY);
     }
 
-    // Log bounds status
-    const isWithinBounds = bounds.x >= 0 &&
-                          bounds.y >= 0 &&
-                          bounds.x + bounds.width <= gameWidth &&
-                          bounds.y + bounds.height <= gameHeight;
   }
 
   public toggleVisibility(): void {
@@ -234,9 +263,11 @@ export class WidgetWindowController {
     if (this.isVisible) {
       this.widgetWindow.window.hide();
       this.isVisible = false;
+      this.exitExclusiveModeIfActive();
     } else {
       this.widgetWindow.window.show();
       this.isVisible = true;
+      this.enterExclusiveModeIfNeeded();
     }
   }
 
@@ -244,16 +275,31 @@ export class WidgetWindowController {
     if (!this.widgetWindow) return;
     this.widgetWindow.window.show();
     this.isVisible = true;
+    this.enterExclusiveModeIfNeeded();
   }
 
   public hide(): void {
     if (!this.widgetWindow) return;
     this.widgetWindow.window.hide();
     this.isVisible = false;
+    this.exitExclusiveModeIfActive();
+  }
+
+  private enterExclusiveModeIfNeeded(): void {
+    const currentGame = this.currentGameService.getCurrentGameInfo();
+    if (!currentGame?.gameData?.exclusive_mode) return;
+    this.overlayService.overlayApi?.enterExclusiveMode();
+  }
+
+  private exitExclusiveModeIfActive(): void {
+    // Call unconditionally — the API is a no-op when not in exclusive mode
+    this.overlayService.overlayApi?.exitExclusiveMode();
   }
 
   public destroy(): void {
     if (this.widgetWindow) {
+      this.exitExclusiveModeIfActive();
+
       // Save final position before destroying
       const bounds = this.widgetWindow.window.getBounds();
       this.settingsService.setWidgetPosition(bounds.x, bounds.y);
@@ -267,7 +313,11 @@ export class WidgetWindowController {
       this.widgetWindow.window.close();
       this.widgetWindow = null;
       this.isVisible = false;
-      this.hotkeysRegistered = false; // Re-register on next game launch
+      this.hotkeysRegistered = false;
+      this.gameWindowListenerAdded = false;
+      this.interceptionListenerAdded = false;
+      this.exclusiveModeListenerAdded = false;
+      this.pendingAutoShow = false;
     }
   }
 
@@ -327,26 +377,27 @@ export class WidgetWindowController {
         alt: widgetHotkeyInfo.modifiers.alt
       },
       passthrough: false
-    }, (hotkey, state) => {
+    }, (_hotkey, state) => {
       if (state === 'pressed') {
         this.toggleVisibility();
       }
     });
 
-    // Register dev tools hotkey (keep this as is since it's not configurable)
-    this.overlayService.overlayApi.hotkeys.register({
-      name: this.DEV_TOOLS_HOTKEY.name,
-      keyCode: this.DEV_TOOLS_HOTKEY.keyCode,
-      modifiers: {
-        ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
-        shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
-      },
-      passthrough: false
-    }, (hotkey, state) => {
-      if (state === 'pressed') {
-        this.openDevTools();
-      }
-    });
+    if (!app.isPackaged) {
+      this.overlayService.overlayApi.hotkeys.register({
+        name: this.DEV_TOOLS_HOTKEY.name,
+        keyCode: this.DEV_TOOLS_HOTKEY.keyCode,
+        modifiers: {
+          ctrl: this.DEV_TOOLS_HOTKEY.modifiers.ctrl,
+          shift: this.DEV_TOOLS_HOTKEY.modifiers.shift
+        },
+        passthrough: false
+      }, (_hotkey, state) => {
+        if (state === 'pressed') {
+          this.openDevTools();
+        }
+      });
+    }
 
     this.hotkeysRegistered = true;
   }
@@ -376,11 +427,5 @@ export class WidgetWindowController {
       }
     });
 
-    // Log resize events
-    this.widgetWindow.window.on('resized', () => {
-      if (this.widgetWindow) {
-        const bounds = this.widgetWindow.window.getBounds();
-      }
-    });
   }
 }

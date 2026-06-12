@@ -2,6 +2,8 @@ import { BaselineSettings, GameData, HotkeyInfo } from './app';
 import { CurrentGameInfo } from '../browser/services/current-game.service';
 import { SensitivityConversion } from '../browser/services/sensitivity-converter.service';
 
+declare module '*.css';
+
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -70,7 +72,8 @@ declare global {
     cmp: {
       isRequired: () => Promise<boolean>;
       openPrivacySettings: (options?: any) => Promise<void>;
-      isFirstTimeUser: () => Promise<boolean>;
+      isFirstLayerAcknowledged: () => Promise<boolean>;
+      acknowledgeFirstLayer: () => Promise<void>;
     };
     aimTrainer: {
       open: (config: any) => Promise<void>;
@@ -82,6 +85,19 @@ declare global {
       onConfigUpdated: (callback: (event: any, config: any) => void) => void;
       removeConfigListener: () => void;
       close: () => Promise<void>;
+    };
+    updater: {
+      checkForUpdates: () => Promise<void>;
+      downloadUpdate: () => Promise<void>;
+      quitAndInstall: () => Promise<void>;
+      getVersion: () => Promise<string>;
+      onChecking: (callback: () => void) => void;
+      onUpdateAvailable: (callback: (info: { version: string }) => void) => void;
+      onUpdateNotAvailable: (callback: (info: { version: string }) => void) => void;
+      onDownloadProgress: (callback: (percent: number) => void) => void;
+      onUpdateDownloaded: (callback: (info: { version: string }) => void) => void;
+      onError: (callback: (message: string) => void) => void;
+      removeUpdaterListeners: () => void;
     };
     ipcRenderer: {
       on: (channel: string, func: (...args: any[]) => void) => void;

@@ -14,6 +14,7 @@ import { CurrentGameService } from '../services/current-game.service';
 import { SensitivityConverterService } from '../services/sensitivity-converter.service';
 
 import { HotkeyService } from '../services/hotkey.service';
+import { UpdaterService } from '../services/updater.service';
 
 const owElectronApp = electronApp as overwolf.OverwolfApp;
 
@@ -25,6 +26,10 @@ export class MainWindowController {
   private widgetController: WidgetWindowController | null = null;
   private tray: Tray | null = null;
   private preGameBounds: Electron.Rectangle | null = null;
+  // True once the app is genuinely quitting (e.g. an electron-updater install that calls
+  // app.quit()). Lets the close handler stop vetoing so the process exits and releases its
+  // file locks — otherwise the pending update installer hangs on the still-running app.
+  private isQuitting = false;
 
   /**
    *
@@ -38,10 +43,12 @@ export class MainWindowController {
     private readonly currentGameService: CurrentGameService,
     private readonly sensitivityConverterService: SensitivityConverterService,
     private readonly windowStateService: WindowStateService,
-    private readonly hotkeyService: HotkeyService
+    private readonly hotkeyService: HotkeyService,
+    private readonly updaterService: UpdaterService
   ) {
     this.registerToIpc();
     this.setupGameChangeListener();
+    this.setupUpdaterListener();
 
     gepService.on('log', this.printLogMessage.bind(this));
     overlayService.on('log', this.printLogMessage.bind(this));
@@ -78,6 +85,26 @@ export class MainWindowController {
 
     // Trigger initial game detection
     this.currentGameService.refreshCurrentGame();
+  }
+
+  /**
+   * Forward updater status from the service to the main window renderer. The renderer
+   * drives the initial check on mount (so its listeners are attached first), then
+   * reacts to these events to show the update notice.
+   */
+  private setupUpdaterListener(): void {
+    const forward = (channel: string) => (payload?: unknown) => {
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.webContents.send(channel, payload);
+      }
+    };
+
+    this.updaterService.on('checking', forward('updater-checking'));
+    this.updaterService.on('available', forward('updater-available'));
+    this.updaterService.on('not-available', forward('updater-not-available'));
+    this.updaterService.on('download-progress', forward('updater-download-progress'));
+    this.updaterService.on('downloaded', forward('updater-downloaded'));
+    this.updaterService.on('error', forward('updater-error'));
   }
 
   /**
@@ -159,8 +186,25 @@ export class MainWindowController {
     // Set bounds after show — on Windows, show() can restore last-visible position
     const displays = screen.getAllDisplays();
     if (displays.length >= 2 && savedBounds) {
-      this.printLogMessage(`[window] game exit: restoring to x=${savedBounds.x} y=${savedBounds.y}`);
-      this.browserWindow.setBounds(savedBounds);
+      // Verify the saved position is still on a connected display before restoring
+      const targetDisplay = screen.getDisplayMatching(savedBounds);
+      const isOnScreen = targetDisplay.workArea.x <= savedBounds.x &&
+        savedBounds.x < targetDisplay.workArea.x + targetDisplay.workArea.width &&
+        targetDisplay.workArea.y <= savedBounds.y &&
+        savedBounds.y < targetDisplay.workArea.y + targetDisplay.workArea.height;
+
+      if (isOnScreen) {
+        this.printLogMessage(`[window] game exit: restoring to x=${savedBounds.x} y=${savedBounds.y}`);
+        this.browserWindow.setBounds(savedBounds);
+      } else {
+        // Saved position is off-screen (e.g. monitor disconnected) — center on primary
+        const { workArea } = screen.getPrimaryDisplay();
+        const bounds = this.browserWindow.getBounds();
+        const x = workArea.x + Math.max(0, (workArea.width - bounds.width) / 2);
+        const y = workArea.y + Math.max(0, (workArea.height - bounds.height) / 2);
+        this.printLogMessage(`[window] game exit: saved bounds off-screen, centering on primary x=${x} y=${y}`);
+        this.browserWindow.setPosition(x, y);
+      }
     }
   }
 
@@ -188,7 +232,7 @@ export class MainWindowController {
    */
   private loadAppIcon(): Electron.NativeImage {
     // Check if we're in development or production
-    const isDev = process.resourcesPath.includes('node_modules');
+    const isDev = !electronApp.isPackaged;
 
     let iconPath: string;
     if (isDev) {
@@ -228,7 +272,7 @@ export class MainWindowController {
         // to enable IPC communication between main and renderer processes
         nodeIntegration: true,
         contextIsolation: true,
-        devTools: true,
+        devTools: !electronApp.isPackaged,
         // relative to root folder of the project
         preload: path.join(__dirname, '../preload/preload.js'),
       },
@@ -264,6 +308,13 @@ export class MainWindowController {
 
     // Set up console logging to Chrome dev tools
     setMainWindowForConsole(this.browserWindow);
+
+    // Auto-check for updates once the window has loaded. The short delay lets
+    // electron-updater settle on a cold launch — checking the instant the renderer
+    // mounts can silently no-op before the updater is warm. Fires on reloads too.
+    this.browserWindow.webContents.on('did-finish-load', () => {
+      setTimeout(() => this.updaterService.checkForUpdates(), 3000);
+    });
 
     this.browserWindow.loadFile(path.join(__dirname, '..', 'main.html'));
 
@@ -322,7 +373,11 @@ export class MainWindowController {
     if (!this.browserWindow) return;
 
     this.browserWindow.on('close', event => {
-      // Prevent the default close behavior
+      // When genuinely quitting (e.g. applying an update), let the window close so the
+      // process can exit. Otherwise the update installer hangs on the locked, running app.
+      if (this.isQuitting) return;
+
+      // Default behavior: minimize to tray instead of closing.
       event.preventDefault();
 
       // Hide the window instead of closing it
@@ -350,9 +405,11 @@ export class MainWindowController {
 
     ipcMain.handle('toggleWidget', async () => await this.toggleWidget());
 
-    ipcMain.handle('openWidgetDevTools', () => {
-      this.openWidgetDevTools();
-    });
+    if (!electronApp.isPackaged) {
+      ipcMain.handle('openWidgetDevTools', () => {
+        this.openWidgetDevTools();
+      });
+    }
 
     // Games service IPC handlers
     ipcMain.handle('games-get-all', () => {
@@ -614,6 +671,16 @@ export class MainWindowController {
     ipcMain.handle('widget-get-hotkey-info', () => {
       return this.hotkeyService.getHotkeyInfo('widget-toggle');
     });
+
+    // Auto-updater IPC handlers
+    ipcMain.handle('updater-check-for-updates', () => this.updaterService.checkForUpdates());
+    ipcMain.handle('updater-download', () => this.updaterService.downloadUpdate());
+    ipcMain.handle('updater-quit-and-install', () => {
+      // Allow the window to actually close so the process exits before the installer runs.
+      this.isQuitting = true;
+      this.updaterService.quitAndInstall();
+    });
+    ipcMain.handle('updater-get-version', () => this.updaterService.getCurrentVersion());
   }
 
   /**

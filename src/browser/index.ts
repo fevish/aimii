@@ -18,6 +18,7 @@ import { SensitivityConverterService } from './services/sensitivity-converter.se
 
 import { WindowStateService } from './services/window-state.service';
 import { HotkeyService } from './services/hotkey.service';
+import { UpdaterService } from './services/updater.service';
 import { CMPController } from './controllers/cmp.controller';
 
 // Simple global console override - just like a normal website
@@ -98,6 +99,7 @@ const bootstrap = (): Application => {
   const sensitivityConverterService = new SensitivityConverterService(gamesService, settingsService, currentGameService);
   const windowStateService = new WindowStateService();
   const hotkeyService = new HotkeyService(settingsService);
+  const updaterService = new UpdaterService();
   // Initialize CMP controller for consent management
   const cmpController = new CMPController();
 
@@ -119,7 +121,8 @@ const bootstrap = (): Application => {
     currentGameService,
     sensitivityConverterService,
     windowStateService,
-    hotkeyService
+    hotkeyService,
+    updaterService
   );
 
   // Store reference for cleanup

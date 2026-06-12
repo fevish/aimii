@@ -166,8 +166,6 @@ export class WindowStateService {
       typeof state === 'object' &&
       typeof state.x === 'number' &&
       typeof state.y === 'number' &&
-      typeof state.width === 'number' &&
-      typeof state.height === 'number' &&
       typeof state.isMaximized === 'boolean' &&
       typeof state.isMinimized === 'boolean' &&
       typeof state.devToolsOpen === 'boolean'

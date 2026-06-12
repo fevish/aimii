@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SettingsFlow } from '../SettingsFlow/SettingsFlow';
+import { CMPFirstLayer } from '../CMPFirstLayer';
 import type { GameData } from '../../types/app';
 import './Onboarding.css';
 
@@ -36,49 +37,43 @@ export const Onboarding: React.FC<OnboardingProps> = ({
   onComplete,
   onCancel
 }) => {
-  const [isCMPRequired, setIsCMPRequired] = useState<boolean>(false);
+  const [showFirstLayer, setShowFirstLayer] = useState<boolean>(false);
 
   useEffect(() => {
-    const checkCMPRequirement = async () => {
+    const checkFirstLayer = async () => {
       try {
-        const required = await window.cmp.isRequired();
-        setIsCMPRequired(required);
+        const [required, acknowledged] = await Promise.all([
+          window.cmp.isRequired(),
+          window.cmp.isFirstLayerAcknowledged()
+        ]);
+        setShowFirstLayer(required && !acknowledged);
       } catch (error) {
-        console.error('Failed to check CMP requirement:', error);
-        setIsCMPRequired(false);
+        console.error('Failed to check CMP first-layer state:', error);
+        setShowFirstLayer(false);
       }
     };
 
-    checkCMPRequirement();
+    checkFirstLayer();
   }, []);
+
   // Step 0: Welcome screen with Continue only
   if (onboardingStep === 0) {
     return (
       <section className="onboarding-section">
         <div className="onboarding-container">
-          <div className="settings-flow">
-            <h2>Let's make your aim conistent!</h2>
-            <p>To begin, we're going to calculate your <b>Mouse Travel cm/360°</b>.</p>
-            <p>You can always change this later!</p>
-            <div className="settings-navigation">
-              <button className="settings-btn settings-btn-next" onClick={onNext} autoFocus>Begin</button>
+          {showFirstLayer ? (
+            <CMPFirstLayer onAcknowledge={() => setShowFirstLayer(false)} />
+          ) : (
+            <div className="settings-flow">
+              <h2>Let's make your aim conistent!</h2>
+              <p>To begin, we're going to calculate your <b>Mouse Travel cm/360°</b>.</p>
+              <p>You can always change this later!</p>
+              <div className="settings-navigation">
+                <button className="settings-btn settings-btn-next" onClick={onNext} autoFocus>Begin</button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
-        {/* Privacy Link - Only show for EU users */}
-        {isCMPRequired && (
-          <button className="privacy-link link-button"
-            onClick={async () => {
-              try {
-                await window.cmp.openPrivacySettings();
-              } catch (error) {
-                console.error('Failed to open privacy settings:', error);
-              }
-            }}
-          >
-            Privacy Settings
-          </button>
-        )}
       </section>
     );
   }

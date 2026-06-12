@@ -19,12 +19,14 @@ array. `GameData` is re-exported from `src/types/app.ts` — always import from 
 
 ### Special conversion params
 
-Games with `specialConversion: true` use `conversionParams` in the conversion util:
-- `linearCoefficient`, `offset`, `multiplier` — e.g. Battlefield
-- `constant`, `offset` — e.g. GTA5
-- `baseValue`, `scaleFactor` — e.g. PUBG (exponential)
+Games with `specialConversion: true` use `conversionParams` in the conversion util.
+Currently in the dataset:
+- `baseValue`, `scaleFactor` — **PUBG** (exponential, enabled)
+- `linearCoefficient`, `offset`, `multiplier` — **Minecraft Java** (linear-with-offset, disabled)
 
-Never change conversion formulas without verifying against known real-world values.
+`sensitivity-conversion.ts` supports additional shapes (`constant`/`offset`, cubic, etc.) that
+no current game entry uses. Never change conversion formulas without verifying against known
+real-world values.
 
 ## Detection Pipeline
 

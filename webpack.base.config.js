@@ -96,5 +96,8 @@ module.exports = {
   externals: {
     bufferutil: 'bufferutil',
     'utf-8-validate': 'utf-8-validate',
+    // Required from node_modules at runtime (not bundled): electron-updater reads
+    // app-update.yml from the resources path and uses dynamic requires.
+    'electron-updater': 'commonjs electron-updater',
   },
 };

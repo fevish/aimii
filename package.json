@@ -1,6 +1,6 @@
 {
   "name": "aimii.app",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
@@ -37,6 +37,10 @@
     "icon": "./dist/icon.ico",
     "overwolf": {
       "disableAdOptimization": false
+    },
+    "publish": {
+      "provider": "generic",
+      "url": "https://electron-updates.overwolf.com/electron-updates/electron/eaimfappicclanhddiknkddnkhbofnjpnnhigonm"
     },
     "productName": "aimii.app",
     "directories": {
@@ -84,13 +88,13 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "perMachine": true,
-      "allowElevation": true,
+      "allowToChangeInstallationDirectory": false,
+      "perMachine": false,
+      "allowElevation": false,
       "runAfterFinish": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "aimii",
+      "shortcutName": "aimii.app",
       "installerIcon": "./dist/icon.ico",
       "uninstallerIcon": "./dist/icon.ico",
       "warningsAsErrors": false,
@@ -99,8 +103,8 @@
   },
   "dependencies": {
     "@types/three": "^0.160.0",
-    "three": "^0.160.0",
-    "winreg": "^1.2.5"
+    "electron-updater": "^6.8.3",
+    "three": "^0.160.0"
   },
   "devDependencies": {
     "@overwolf/ow-electron": "^39.6.1",
@@ -112,7 +116,6 @@
     "@types/node": "^18.11.18",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@types/winreg": "^1.2.36",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "concurrently": "^9.1.2",

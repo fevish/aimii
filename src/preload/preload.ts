@@ -200,8 +200,11 @@ contextBridge.exposeInMainWorld('cmp', {
   openPrivacySettings: (options?: any) => {
     return ipcRenderer.invoke('cmp-open-privacy-settings', options);
   },
-  isFirstTimeUser: () => {
-    return ipcRenderer.invoke('cmp-is-first-time-user');
+  isFirstLayerAcknowledged: () => {
+    return ipcRenderer.invoke('cmp-is-first-layer-acknowledged');
+  },
+  acknowledgeFirstLayer: () => {
+    return ipcRenderer.invoke('cmp-acknowledge-first-layer');
   }
 });
 
@@ -220,6 +223,47 @@ contextBridge.exposeInMainWorld('aimTrainer', {
   open: (config: any) => ipcRenderer.invoke('aim-trainer-open', config),
   updateConfig: (config: any) => ipcRenderer.invoke('aim-trainer-update-config', config),
   isOpen: () => ipcRenderer.invoke('aim-trainer-is-open'),
+});
+
+contextBridge.exposeInMainWorld('updater', {
+  checkForUpdates: () => {
+    return ipcRenderer.invoke('updater-check-for-updates');
+  },
+  downloadUpdate: () => {
+    return ipcRenderer.invoke('updater-download');
+  },
+  quitAndInstall: () => {
+    return ipcRenderer.invoke('updater-quit-and-install');
+  },
+  getVersion: () => {
+    return ipcRenderer.invoke('updater-get-version');
+  },
+  onChecking: (callback: () => void) => {
+    ipcRenderer.on('updater-checking', () => callback());
+  },
+  onUpdateAvailable: (callback: (info: { version: string }) => void) => {
+    ipcRenderer.on('updater-available', (event: any, info: { version: string }) => callback(info));
+  },
+  onUpdateNotAvailable: (callback: (info: { version: string }) => void) => {
+    ipcRenderer.on('updater-not-available', (event: any, info: { version: string }) => callback(info));
+  },
+  onDownloadProgress: (callback: (percent: number) => void) => {
+    ipcRenderer.on('updater-download-progress', (event: any, percent: number) => callback(percent));
+  },
+  onUpdateDownloaded: (callback: (info: { version: string }) => void) => {
+    ipcRenderer.on('updater-downloaded', (event: any, info: { version: string }) => callback(info));
+  },
+  onError: (callback: (message: string) => void) => {
+    ipcRenderer.on('updater-error', (event: any, message: string) => callback(message));
+  },
+  removeUpdaterListeners: () => {
+    ipcRenderer.removeAllListeners('updater-checking');
+    ipcRenderer.removeAllListeners('updater-available');
+    ipcRenderer.removeAllListeners('updater-not-available');
+    ipcRenderer.removeAllListeners('updater-download-progress');
+    ipcRenderer.removeAllListeners('updater-downloaded');
+    ipcRenderer.removeAllListeners('updater-error');
+  }
 });
 
 contextBridge.exposeInMainWorld('ipcRenderer', {

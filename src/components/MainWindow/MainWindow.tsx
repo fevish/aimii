@@ -10,6 +10,8 @@ import { HomeView } from './views/HomeView';
 import { Header } from './views/Header';
 import { applyTheme } from '../../utils/theme';
 import { SvgIcon } from '../SvgIcon/SvgIcon';
+import { UpdateNotice } from '../UpdateNotice/UpdateNotice';
+import { useUpdater } from '../UpdateNotice/useUpdater';
 
 export const MainWindow: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string>('');
@@ -174,6 +176,26 @@ export const MainWindow: React.FC = () => {
 
   // Ad detection event listeners
   useAdDetection();
+
+  // Auto-updater state (single subscriber — see useUpdater docs). Updates download
+  // automatically and install on the next restart; "Install now" only expedites that.
+  const updater = useUpdater();
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [installRequested, setInstallRequested] = useState(false);
+
+  const handleInstallNow = () => setInstallRequested(true);
+
+  const handleCloseUpdateModal = () => {
+    setIsUpdateModalOpen(false);
+    setInstallRequested(false);
+  };
+
+  // Once the (auto-)download finishes, an "Install now" request restarts to apply it.
+  useEffect(() => {
+    if (installRequested && updater.status === 'downloaded') {
+      updater.restart();
+    }
+  }, [installRequested, updater.status]);
 
   const handleToggleWidget = async () => {
     try {
@@ -354,6 +376,9 @@ export const MainWindow: React.FC = () => {
         showOnboarding={showOnboarding}
         onMinimize={handleMinimize}
         onClose={handleClose}
+        updaterStatus={updater.status}
+        updaterProgress={updater.progressPercent}
+        onUpdateAction={() => setIsUpdateModalOpen(true)}
       />
 
       <main className="app-content">
@@ -397,7 +422,14 @@ export const MainWindow: React.FC = () => {
             )}
           </>
         ) : (
-          <Settings handleRestartOnboarding={handleRestartOnboarding} onBack={() => setActiveTab('main')} />
+          <Settings
+            handleRestartOnboarding={handleRestartOnboarding}
+            onBack={() => setActiveTab('main')}
+            currentVersion={updater.currentVersion}
+            updaterStatus={updater.status}
+            updaterErrorMessage={updater.errorMessage}
+            onCheckForUpdates={updater.check}
+          />
         )}
         {!showOnboarding && (
           <section className="ad-section" hidden={showOnboarding}>
@@ -409,6 +441,17 @@ export const MainWindow: React.FC = () => {
           </section>
         )}
       </main>
+
+      <UpdateNotice
+        isOpen={isUpdateModalOpen}
+        status={updater.status}
+        version={updater.version}
+        progressPercent={updater.progressPercent}
+        isInstalling={installRequested}
+        errorMessage={updater.errorMessage}
+        onInstallNow={handleInstallNow}
+        onClose={handleCloseUpdateModal}
+      />
 
     </div >
   );

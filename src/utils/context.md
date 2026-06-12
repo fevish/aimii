@@ -33,9 +33,13 @@ targetSens  = 360 / (scalingFactor * targetDPI * inches360)
 
 ### Special conversions
 
-Games with `specialConversion: true` in `games.data.ts` use `conversionParams` for custom formulas
-(Battlefield, GTA5, PUBG, Minecraft, STALKER 2, First Descendant, XDefiant, etc.).
-See the branches in `sensitivity-conversion.ts` for each variant.
+Games with `specialConversion: true` in `games.data.ts` use `conversionParams` for custom formulas.
+Currently in the dataset:
+- **PUBG** — exponential formula via `baseValue` / `scaleFactor` (enabled)
+- **Minecraft Java** — linear-with-offset via `linearCoefficient` / `offset` / `multiplier` (disabled)
+
+`sensitivity-conversion.ts` contains additional formula branches (e.g. `constant`/`offset`,
+cubic, etc.) that no current game uses but remain in place for future additions.
 
 ### Derived metrics
 

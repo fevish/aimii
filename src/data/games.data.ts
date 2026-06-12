@@ -15,6 +15,7 @@ export interface GameData {
   owConstant?: string;
   owGameName?: string;
   enable_for_app: boolean;
+  exclusive_mode?: boolean;
   specialConversion?: boolean;
   conversionParams?: ConversionParams;
 }
@@ -49,7 +50,7 @@ export const gamesData: GameData[] = [
     enable_for_app: true
   },
   {
-    game: 'Counter-Strike 2',
+    game: 'Counter-Strike 2 (CS2)',
     scalingFactor: 0.022,
     owGameId: '22730',
     owConstant: 'CounterStrike2',
@@ -68,7 +69,8 @@ export const gamesData: GameData[] = [
     game: 'Destiny 2',
     scalingFactor: 0.0066,
     owGameId: '21812',
-    enable_for_app: true
+    enable_for_app: true,
+    exclusive_mode: true
   },
   {
     game: 'Escape From Tarkov',
@@ -116,7 +118,8 @@ export const gamesData: GameData[] = [
     game: 'Marathon',
     scalingFactor: 0.0033,
     owGameId: '27856',
-    enable_for_app: true
+    enable_for_app: true,
+    exclusive_mode: true
   },
   {
     game: 'Marvel Rivals',

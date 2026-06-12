@@ -43,17 +43,22 @@ Runs at installer startup. Initialises region/consent variables and sets the ins
 to `$PROGRAMFILES64\aimii.app`.
 
 ### `customUnInstall`
-Runs during uninstall. Cleans up files the NSIS default uninstall doesn't handle:
+Runs during uninstall. Guarded with `${ifNot} ${isUpdated}` so cleanup only fires on a
+genuine user uninstall — **not** during an auto-update (electron-updater runs the old
+uninstaller silently as part of applying an update; without this guard it would wipe the
+user's settings on every update). Cleans up:
 - `%APPDATA%\aimii.app` — Electron userData (settings, logs, cache)
 - `%LOCALAPPDATA%\aimii.app-updater` — updater cache
-- `HKCU\Software\aimii` — registry key written by the installer for region/consent
-- `$INSTDIR` — install directory (`RMDir /r /REBOOTOK` + `SetRebootFlag false` for silent cleanup)
+- `HKCU\Software\aimii` — registry key
+- `$INSTDIR` — install directory (`RMDir /r /REBOOTOK` + `SetRebootFlag false`)
 
-### `RegionSelectionPage` / `RegionToggle` / `RegionSelectionPageLeave`
-Custom installer page for EU residency declaration. Writes
-`HKCU\Software\aimii\Privacy → Region = "EU" | "OTHER"` and controls whether the GDPR
-consent page is shown.
+**Tested:** local E2E update via `generic` provider → localhost feed confirmed that
+`%APPDATA%\aimii.app\aimii-settings.json` survives an auto-update with this guard in place.
 
-### `ConsentPage` / `ConsentToggle` / `ConsentPageLeave`
-GDPR consent page (EU only). Next button disabled until consent is checked. Writes
-`ConsentGiven` and `ConsentDate` to `HKCU\Software\aimii\Privacy`.
+### `customInit`
+Sets the install directory to `$PROGRAMFILES64\aimii.app`.
+
+**perMachine note:** because the app installs to Program Files, `electron-updater` must
+run the NSIS installer elevated (UAC prompt) on every auto-update. This is expected but
+creates friction — each update requires the user to accept UAC. The Overwolf Installer
+(per-user, no UAC) eliminates this when adopted.
