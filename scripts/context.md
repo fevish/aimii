@@ -5,18 +5,23 @@
 Production release pipeline. Run with `npm run release`.
 
 **Steps:**
-1. Deletes `build/` and runs `npm run build:prod`
-2. Copies `installer.nsh` into `build/`
-3. Runs `ow-electron-builder --publish=never` with `process.env` forwarded so `azureSignOptions` receives Azure credentials
+1. Loads `.env` and exits if any signing credential is missing
+2. Deletes `build/` and runs `npm run build:prod`
+3. Copies `installer.nsh` into `build/`
+4. Runs `ow-electron-builder --publish=never` with `process.env` forwarded so both signing steps get credentials
 
-**Artifacts signed (by ow-electron-builder, in order):**
+**Two signatures are required** — GEP and Overlay don't load in a distributed build without both:
+- **Overwolf package signing** — done by ow-electron-builder using `OW_CLI_EMAIL`, `OW_CLI_API_KEY`
+  (Console > Profile > API Keys) and `OW_BUILD_KEY` (Console > Release management > App Keys)
+- **exe signing** — our own certificate via Azure Trusted Signing (below)
+
+**Artifacts exe-signed (by ow-electron-builder, in order):**
 1. Main app exe (`win-unpacked/aimii.app.exe`)
 2. NSIS uninstaller stub — signed *before* it's embedded (prevents "Old-uninstaller.exe is not signed" on upgrades)
 3. Final NSIS installer exe
 
-**Credentials (pick one):**
-- `.env` — `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` (service principal)
-- `az login` — active session; Trusted Signing uses that identity
+**Credentials:** `.env` holds the three `OW_*` keys above plus `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`,
+`AZURE_CLIENT_SECRET` (service principal). The script checks for all six.
 
 **Non-secret config:** `build.win.azureSignOptions` in `package.json` (endpoint, account name, profile name).
 
@@ -29,7 +34,18 @@ Production release pipeline. Run with `npm run release`.
 
 Local packaging without signing — for testing the installer flow. Run with `npm run installer`.
 
-Same steps as `release.js` but strips `azureSignOptions` before invoking `ow-electron-builder`. Produces an unsigned `.exe` in `build/`.
+Same steps as `release.js` but strips `azureSignOptions` and doesn't load `.env`, so the build has
+neither signature. GEP and Overlay won't load in it (dev mode can't activate in a packaged build).
+
+## start.js
+
+Dev launcher behind `npm start`. Loads `.env`, warns if no dev-mode credentials are set, then runs
+ow-electron with the given args. Dev mode needs `OW_CLI_EMAIL` + `OW_CLI_API_KEY`, or `OW_DEV_KEY`;
+without them the app runs but GEP and Overlay don't load.
+
+## load-env.js
+
+Shared `.env` loader used by `release.js` and `start.js`.
 
 ## installer.nsh
 

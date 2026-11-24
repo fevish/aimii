@@ -1,3 +1,5 @@
+/// <reference types="@overwolf/ow-electron/mix" />
+
 import { BaselineSettings, GameData, HotkeyInfo } from './app';
 import { CurrentGameInfo } from '../browser/services/current-game.service';
 import { SensitivityConversion } from '../browser/services/sensitivity-converter.service';

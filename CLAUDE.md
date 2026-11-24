@@ -54,7 +54,7 @@ the `public/aim-trainer.html` inclusion.
 ## Key Technologies
 
 - React 19, TypeScript
-- `@overwolf/ow-electron` (Overwolf-wrapped Electron) — run with `ow-electron .`, not `electron .`
+- `@overwolf/ow-electron` (Overwolf-wrapped Electron) — run with `npm start` (loads `.env` dev credentials), not `electron .`
 - Webpack 5 (three separate configs composed via `webpack.base.config.js`)
 - ESLint with `eslint-config-overwolf-ts` + React hooks rules
 - `typescript-logging` for structured logging

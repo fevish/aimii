@@ -1,8 +1,6 @@
-import { app as electronApp } from 'electron';
-import { overwolf } from '@overwolf/ow-electron'; // TODO: wil be @overwolf/ow-electron
+import { app } from 'electron';
+import { OverwolfGameEventPackage } from '@overwolf/ow-electron-packages-types';
 import EventEmitter from 'events';
-
-const app = electronApp as overwolf.OverwolfApp;
 
 /**
  * Service used to register for Game Events,
@@ -10,7 +8,7 @@ const app = electronApp as overwolf.OverwolfApp;
  *
  */
 export class GameEventsService extends EventEmitter {
-  private gepApi!: overwolf.packages.OverwolfGameEventPackage;
+  private gepApi!: OverwolfGameEventPackage;
   public activeGame = 0;
   public activeGames: Set<number> = new Set(); // Track all active games
   private gepGamesId: number[] = [];
@@ -176,7 +174,7 @@ export class GameEventsService extends EventEmitter {
   /**
    * Register listeners for the GEP Package once it is ready
    *
-   * @param {overwolf.packages.OverwolfGameEventPackage} gep The GEP Package instance
+   * @param {OverwolfGameEventPackage} gep The GEP Package instance
    */
   private async onGameEventsPackageReady() {
 
