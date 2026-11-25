@@ -146,5 +146,8 @@
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "wrapper-webpack-plugin": "^2.1.0"
+  },
+  "overrides": {
+    "@electron/fuses": "2.1.3"
   }
 }
