@@ -1,5 +1,4 @@
-import { app as electronApp } from 'electron';
-import { overwolf } from '@overwolf/ow-electron'; // TODO: wil be @overwolf/ow-electron
+import { app } from 'electron';
 import {
   IOverwolfOverlayApi,
   OverlayWindowOptions,
@@ -7,8 +6,6 @@ import {
   GamesFilter,
 } from '@overwolf/ow-electron-packages-types';
 import EventEmitter from 'events';
-
-const app = electronApp as overwolf.OverwolfApp;
 
 export class OverlayService extends EventEmitter {
   private isOverlayReady = false;

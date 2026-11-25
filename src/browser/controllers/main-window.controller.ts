@@ -5,7 +5,6 @@ import { WINDOW_CONFIG, WindowStateService } from '../services/window-state.serv
 
 import { WidgetWindowController } from './widget-window.controller';
 import { OverlayService } from '../services/overlay.service';
-import { overwolf } from '@overwolf/ow-electron';
 
 import { setMainWindowForConsole } from '../index';
 import { GamesService } from '../services/games.service';
@@ -15,8 +14,6 @@ import { SensitivityConverterService } from '../services/sensitivity-converter.s
 
 import { HotkeyService } from '../services/hotkey.service';
 import { UpdaterService } from '../services/updater.service';
-
-const owElectronApp = electronApp as overwolf.OverwolfApp;
 
 /**
  *
@@ -53,7 +50,7 @@ export class MainWindowController {
     gepService.on('log', this.printLogMessage.bind(this));
     overlayService.on('log', this.printLogMessage.bind(this));
 
-    owElectronApp.overwolf.packages.on('crashed', (e: any, ...args: any[]) => {
+    electronApp.overwolf.packages.on('crashed', (e: any, ...args: any[]) => {
       this.printLogMessage('package crashed', ...args);
       // ow-electron package manager crashed (will be auto relaunch)
       // e.preventDefault();
@@ -61,7 +58,7 @@ export class MainWindowController {
       // automatically re-launching
     });
 
-    owElectronApp.overwolf.packages.on(
+    electronApp.overwolf.packages.on(
       'failed-to-initialize',
       this.logPackageManagerErrors.bind(this)
     );

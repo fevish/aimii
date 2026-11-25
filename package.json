@@ -1,6 +1,6 @@
 {
   "name": "aimii.app",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Mouse Sensitivity Converter App",
   "main": "dist/browser/index.js",
   "author": {
@@ -14,7 +14,7 @@
     "url": "https://github.com/fevish/aimii"
   },
   "scripts": {
-    "start": "ow-electron .",
+    "start": "node scripts/start.js .",
     "build": "webpack --mode=development && npm run start",
     "watch": "npm run build:dev && concurrently \"npm run watch:main\" \"npm run watch:renderer\" \"npm run start\"",
     "installer": "node scripts/package-local.js",
@@ -107,9 +107,9 @@
     "three": "^0.160.0"
   },
   "devDependencies": {
-    "@overwolf/ow-electron": "^39.6.1",
-    "@overwolf/ow-electron-builder": "latest",
-    "@overwolf/ow-electron-packages-types": "^1.0.3",
+    "@overwolf/ow-electron": "44.10.1",
+    "@overwolf/ow-electron-builder": "26.18.2",
+    "@overwolf/ow-electron-packages-types": "1.1.15",
     "@svgr/webpack": "^8.1.0",
     "@types/jquery": "^3.5.16",
     "@types/jsonwebtoken": "^9.0.1",
@@ -146,5 +146,8 @@
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "wrapper-webpack-plugin": "^2.1.0"
+  },
+  "overrides": {
+    "@electron/fuses": "2.1.3"
   }
 }
